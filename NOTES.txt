@@ -1,0 +1,46 @@
+process
+
+= 1. Pick =
+	Go trough the list of upcoming movies/series and decide whether or not we would like to watch the presented option -- yes or no.
+
+	== actions == 
+	- yes -- add to list
+	- no -- next
+	- info - read blurp + provide trailer
+
+	== filter options ==
+	- format: movie or series
+	- type: drama, comedy, action, ...
+
+= 2. List = 
+	View our list of selected movies/series to track/view/remove
+
+	== filter options ==
+	- format: movie or series
+	- type: drama, comedy, action, ...
+	- score
+
+sources
+
+// microservice?
+
+// get torrent
+https://www.programmableweb.com/api/ytsag
+https://yts.gs/api?
+http://tehparadox.com/forum
+http://cyro.se/
+
+// download torrent
+http://www.libtorrent.org/
+https://stackoverflow.com/questions/23375196/libtorrent-how-download-torrent-in-python
+
+//
+https://www.reddit.com/r/learnprogramming/comments/2wrf3q/i_wrote_a_short_python_script_to_download/
+http://pantuts.com/2014/09/20/asskick-py-python-script-search-download-torrents-kickass/
+
+http://www.material-ui.com/
+https://www.npmjs.com/package/react-facebook
+
+https://www.pubnub.com/blog/2015-01-05-websockets-vs-rest-api-understanding-the-difference/
+http://rick-hightower.blogspot.ca/2015/12/websocket-microservice-vs-rest.html
+https://stackoverflow.com/questions/7193033/nodejs-ajax-vs-socket-io-pros-and-cons

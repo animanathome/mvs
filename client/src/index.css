@@ -1,0 +1,46 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+  background: black;
+}
+
+.Select {
+	padding: 16px;
+	padding-top:32px;
+	width: 342px;
+	margin: auto;
+}
+
+.Controls {
+	padding-top: 16px;
+}
+
+.Control {
+    width: 50%;
+    height: 50px;
+    line-height: 50px;
+    color: white;
+    font-weight: bold;
+    -webkit-font-smoothing: antialiased;    
+}
+
+.Remove {
+	background: red;
+	float: right;
+}
+
+.Add {
+	background: green;
+	float: left;
+}
+
+.Done, .Loading{
+	font-size: 48px;
+	color: white;
+	position: fixed;
+	top: 25%;
+	left: 50%;
+	/* bring your own prefixes */
+	transform: translate(-50%, -50%);
+}
