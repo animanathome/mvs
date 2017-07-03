@@ -40,4 +40,4 @@ def upcoming_movies():
 			mc+=1
 			print mc, movie['release_date'], movie['title'] 
 
-upcoming_movies()
+# upcoming_movies()

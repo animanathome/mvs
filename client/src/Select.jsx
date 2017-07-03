@@ -1,4 +1,8 @@
 import React, { Component } from 'react';
+import Paper from 'material-ui/Paper';
+import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
+import FloatingActionButton from 'material-ui/FloatingActionButton';
+import ActionAdd from 'material-ui/svg-icons/content/add';
 
 class Select extends Component {
 
@@ -13,18 +17,30 @@ class Select extends Component {
 			count: 0,
 			done: false
 		}
-		this.data = {}		
+		this._mounted = true;
+		this.data = {}
 
 		this.socket = props.socket
+		this.socket.emit('movies:list', {})
 
-		this.socket.on('movies:upcoming', function(result){
-			scope.data = JSON.parse(result.data);
-			console.log('result', scope.data)
-			scope.setState({
-				'received': scope.state.received+1				
-			})
+		this.socket.on('movies:discover', function(result){
+			if(scope._mounted){
+				console.log('result', scope.data)
+				scope.data = JSON.parse(result.data);
+				scope.setState({
+					'received': scope.state.received+1
+				})
+			}
 		})
-		this.socket.emit('movies:upcoming', {})
+		this.socket.emit('movies:discover', {})
+	}
+
+	componentDidMount() { 
+	  this._mounted = true;
+	}
+
+	componentWillUnmount() {
+	  this._mounted = false;
 	}
 
 	nextItem(){
@@ -43,7 +59,7 @@ class Select extends Component {
 			var page = this.data.page + 1;
 			if(page <= this.data.total_pages){
 				console.log('query page', page)
-				this.socket.emit('movies:upcoming', {
+				this.socket.emit('movies:discover', {
 					page:page
 				})
 			}else{
@@ -57,12 +73,27 @@ class Select extends Component {
 
 	addItem(){
 		console.log('addItem')
-		
+
+		var movie_data = this.data.results[this.state.index]
+		this.socket.emit('movies:track', {
+			mid: movie_data.id,
+			mtitle: movie_data.title,
+			track: true
+		})
+
 		this.setState({'index': this.nextItem()})
 	}
 
 	removeItem(){
 		console.log('removeItem')
+		
+		var movie_data = this.data.results[this.state.index]
+		this.socket.emit('movies:track', {
+			mid: movie_data.id,
+			mtitle: movie_data.title,
+			track: false
+		})
+
 		this.setState({'index': this.nextItem()})
 	}
 
@@ -92,17 +123,23 @@ class Select extends Component {
 				)
 			}else{
 				// THOUGHT: some movies don't have a post (yes?). Maybe we should skip these? Or maybe we should evaluate entire data set? The latter is something we could do on the back end.
-				var image = 'https://image.tmdb.org/t/p/w342'+entry.poster_path
-
-				console.log('id', entry.id)
-				console.log('poster', entry.poster_path)
-
+				var image = 'https://image.tmdb.org/t/p/w500'+entry.poster_path
 				return (
-					<div className='Select'>
-						<img src={image} alt={entry.title} width="342" height="531"></img>
-						<div className='Controls'>
-							<div className='Control Add' onClick={this.addItem.bind(this)}>Yes</div>
-							<div className='Control Remove' onClick={this.removeItem.bind(this)}>No</div>
+					<div>
+						<img className='movie-image' src={image} alt={entry.title}></img>
+						<div onClick={this.removeItem.bind(this)} className='movie-info'>
+							<div className='movie-title'>
+								{entry.title}
+							</div>
+							<div className='movie-overview'>
+								{entry.overview.substring(0,250)+" ..."}
+
+							</div>
+						</div>
+						<div className='movie-add'>
+						 	<FloatingActionButton>
+      							<ActionAdd onTouchTap={this.addItem.bind(this)}/>
+    						</FloatingActionButton>
 						</div>
 					</div>
 				)

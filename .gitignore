@@ -1,2 +1,6 @@
 client/node_modules
 server/node_modules
+server/mongo-db
+search/node_modules
+test/node/download
+test/node/node_modules

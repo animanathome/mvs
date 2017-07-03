@@ -44,3 +44,6 @@ https://www.npmjs.com/package/react-facebook
 https://www.pubnub.com/blog/2015-01-05-websockets-vs-rest-api-understanding-the-difference/
 http://rick-hightower.blogspot.ca/2015/12/websocket-microservice-vs-rest.html
 https://stackoverflow.com/questions/7193033/nodejs-ajax-vs-socket-io-pros-and-cons
+
+THOUGHTS/ENHANCEMENTS
+It might be better to swipe to the next image. At least this way we have the ability to go back to the previous

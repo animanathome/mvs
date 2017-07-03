@@ -1,9 +1,7 @@
 var http = require("https");
 var Q = require("q");
 
-var movies = (function(){
-
-	
+var movies = (function(){	
 	var hostname = 'api.themoviedb.org'
 	var api_key = '1a899ad77496510e9c5643b05f17146a'
 
@@ -42,25 +40,14 @@ var movies = (function(){
 		return deferred.promise;
 	}
 
-	var upcoming = function(input){
-		console.log('upcoming', input)
-
+	var query = function(path){
 		var deferred = Q.defer();
-
-		var get_path = function(input){
-			var page = 1;
-			if(input != undefined && input.hasOwnProperty('page')){
-				page = input.page;
-			}
-
-			return "/3/movie/upcoming?page="+page+"&region=US&language=en-US&api_key="+api_key
-		}
 
 		var options = {
 		  "method": "GET",
 		  "hostname": hostname,
 		  "port": null,
-		  "path": get_path(input),
+		  "path": path,
 		  "headers": {}
 		};
 
@@ -73,6 +60,7 @@ var movies = (function(){
 
 		  res.on("end", function () {
 			var body = Buffer.concat(chunks);
+			// console.log('result', body.toString())
 			deferred.resolve(body.toString());
 		  });
 		});
@@ -83,9 +71,53 @@ var movies = (function(){
 		return deferred.promise;
 	}
 
+	var discover = function(input){
+		console.log('discover', input)
+
+		var year = input.year || '2017';
+		// var sort_by = input.sort_by || 'release_date.desc';
+		var sort_by = input.sort || 'release_date.asc';
+		var page = input.page || 1;
+		var with_genres = input.genre
+
+		var path = '/3/discover/movie?'
+		path += 'primary_release_date.gte='+year+'-01-01'
+		path += '&primary_release_date.lte='+year+'-12-30'
+		path += '&region=US&language=en-US'
+		path += '&sort_by='+sort_by
+		if(with_genres){
+			path += '&with_genres='+with_genres
+		}
+		path += '&page='+page
+		path += '&api_key='+api_key
+
+		console.log('full query', path)
+
+		return query(path)
+	}	
+
+	var upcoming = function(input){
+		console.log('upcoming', input)
+
+		// var deferred = Q.defer();
+
+		var get_path = function(input){
+			var page = 1;
+			if(input != undefined && input.hasOwnProperty('page')){
+				page = input.page;
+			}
+
+			return "/3/movie/upcoming?page="+page+"&region=US&language=en-US&api_key="+api_key
+		}
+		
+		return query(get_path(input))
+	}
+
 	return {
 		configuration: configuration,
-		upcoming: upcoming
+		upcoming: upcoming,
+		discover: discover,
+		find: discover
 	}
 })()
 
