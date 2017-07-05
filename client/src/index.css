@@ -167,8 +167,8 @@ body {
 	font-size: 18px;
 	position: absolute;
 	color: white;
-	text-shadow: 1px 1px 0 #000;
-	bottom: 28px;
+	/*text-shadow: 1px 1px 0 #000;*/
+	bottom: 32px;
 	left: 110px;
 }
 
@@ -176,7 +176,8 @@ body {
 	position: absolute;
 	color: white;
 	bottom: 10px;
-	right: 50px;
+	right: 30px;
+	/*text-shadow: 1px 1px 0 #000;*/
 }
 
 .movie-card-genre {	
@@ -184,7 +185,7 @@ body {
 	font-size: 12px;
 	position: absolute;
 	color: white;
-	text-shadow: 1px 1px 0 #000;
+	/*text-shadow: 1px 1px 0 #000;*/
 	bottom: 14px;
 	left: 110px;
 }

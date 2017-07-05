@@ -15,7 +15,7 @@ import IconSearch from 'material-ui/svg-icons/action/search';
 import IconDiscover from 'material-ui/svg-icons/action/lightbulb-outline';
 import IconTV from 'material-ui/svg-icons/hardware/tv';
 import IconTrackChanges from 'material-ui/svg-icons/action/track-changes';
-import IconStar from 'material-ui/svg-icons/action/stars';
+import IconStar from 'material-ui/svg-icons/action/grade';
 import FontIcon from 'material-ui/FontIcon';
 
 // const recentsIcon = <FontIcon className="material-icons">restore</FontIcon>;
@@ -210,17 +210,26 @@ class MovieCard extends Component {
 		super(props)
 	}
 
+	// componentDidMount(){
+	// 	const element = ReactDOM.findDOMNode(this)
+	// 	// console.log(element.clientHeight)
+	// 	this.props.getHeight(element.clientHeight)
+	// }
+
 	render(){
 		// console.log(this.props.data.poster_path)
 		var image_path = 'https://image.tmdb.org/t/p/w92'+this.props.data.poster_path
-		var backdrop_path = 'https://image.tmdb.org/t/p/w300'+this.props.data.backdrop_path
-
-		console.log('props: ', this.props.data)
-
-		if(!this.props.data.backdrop_path || !this.props.data.poster_path){
-			return (<div></div>)
+		if(!this.props.data.poster_path){
+			image_path = 'images/a_poster.jpg'
 		}
 
+		// console.log('props: ', this.props.data)
+		var backdrop_path = 'https://image.tmdb.org/t/p/w300'+this.props.data.backdrop_path
+		if(!this.props.data.backdrop_path){
+			backdrop_path = 'images/a_backdrop.jpg'
+		}
+
+		// generate genre string
 		var genre_string = ''
 		for(var i = 0; i < this.props.data.genre_ids.length; i++){
 			if(i > 0){
@@ -228,22 +237,26 @@ class MovieCard extends Component {
 			}
 			genre_string += movie_genres[this.props.data.genre_ids[i]]
 		}
-
+		if(genre_string.length > 30){
+			genre_string = genre_string.slice(0, 34)+' ...'
+		}
 
 		return (
 			<div className='movie-card'>
-      			<img className='movie-image' style={{opacity:0.7}} src={backdrop_path} alt="" />
-      			<img className='movie-card-poster' src={image_path} alt="" />
-      			<div className='movie-card-title'>
-      				{this.props.data.title}
-      			</div>
-      			<div className='movie-card-popularity'>
-      				{this.props.data.popularity.toString().slice(0, 3)}
-      				<starIcon/>
-      			</div>
-      			<div className='movie-card-genre'>
-      				{genre_string}
-      			</div>
+				<img className='movie-image' style={{opacity:0.7}}  src={backdrop_path} alt="" />
+				<img className='movie-card-poster' src={image_path} alt="" />
+				<div className='movie-card-title'>
+					{this.props.data.title}
+				</div>
+				<div className='movie-card-popularity'>
+					{this.props.data.popularity.toString().slice(0, 3)}
+					 <FontIcon >
+						<IconStar style={{color:'white', position:'absolute', left:'2px', bottom:'-2px', height:'18px', width:'18px'}}/>
+					</FontIcon>
+				</div>
+				<div className='movie-card-genre'>
+					{genre_string}
+				</div>
 			</div>
 		)
 	}
@@ -372,15 +385,26 @@ class Find extends Component {
 		this.state = {
 			updated: 0
 		}
+		this.card_height = -1;
+		this.page = -1;
+		this.total_pages = -1;
 
 		this.socket = props.socket;
 
 		this.socket.on('movies:find', function(result){
-			// console.log(JSON.parse(result.data))
+			console.log(JSON.parse(result.data))
 			console.log('go content')
 			if(scope._mounted){
-				scope.movies = JSON.parse(result.data).results
+				var data = JSON.parse(result.data)
+				scope.total_pages = data.total_pages
+				scope.page = data.page
+				scope.movies = data.results
 				scope.setState({updated:scope.state.updated+1})
+
+				// reset scroll when one of the query points have changed
+				// TODO: localize scroll
+				// const element = ReactDOM.findDOMNode(this);
+				// document.body.scrollTop = 0;
 			}
 		})
 
@@ -389,10 +413,26 @@ class Find extends Component {
 
 	componentDidMount() { 
 	  this._mounted = true;
+	  window.addEventListener('scroll', this.handleScroll.bind(this));
+	}
+
+	componentDidUpdate(){
+		console.log('componentDidUpdate')
+		if(this.page === 1){
+			// TODO: coincides with the localize scroll. Here we should only create a container of the necessary size
+			let element = ReactDOM.findDOMNode(this);
+			// console.log('movies', this.movies.length)
+			// console.log('root', element, element.clientHeight)
+			var padding = (80 + 60 + (this.movies.length * 10));
+			var container_height = element.clientHeight - padding;
+			this.card_height = container_height/this.movies.length;
+			// console.log('card_height', this.card_height) 
+		}
 	}
 
 	componentWillUnmount() {
 	  this._mounted = false;
+	  window.removeEventListener('scroll', this.handleScroll.bind(this));
 	}
 
 	handleYearChange = function(value){
@@ -411,7 +451,7 @@ class Find extends Component {
 	handleGenreChange = function(value){
 		console.log('change', value)
 		this.query.genre = value
-		this.getContent()
+		this.getContent()		
 	}
 
 	getContent = function(){
@@ -419,13 +459,17 @@ class Find extends Component {
 		this.socket.emit('movies:find', this.query)
 	}
 
-	componentWillUpdate(nextProps, nextState){
-	// 	console.log('componentWillUpdate', nextProps, nextState)
-		// this.getContent(nextState)
-	// 	// console.log('query', nextState)
-	// 	// console.log('socket', this.socket)
-	// 	this.socket.emit('movies:discover', nextState)
-	}
+	handleScroll = function(event) {
+		if(this.card_height < 0){
+			return
+		}
+		console.log('scroll')
+
+		let scrollTop = event.srcElement.body.scrollTop;
+		console.log('top', scrollTop)
+		console.log('card', this.card_height)
+		console.log('card number', scrollTop/this.card_height)
+  }
 
 	onRouteChange = function(route){
 		console.log('onRouteChange', route)
@@ -433,9 +477,15 @@ class Find extends Component {
 		this.props.history.push(route)
 	}
 
+	// setCardHeight = function(height){
+	// 	// NOTE: we really only need this info once ...
+	// 	// console.log('setCardHeight', height)
+	// 	this.card_height = Math.max(this.card_height, height)
+	// 	// console.log('\tresult', this.card_height)
+	// }
 	render(){
 		console.log('movies', this.movies.length)
-
+		var scope = this;
 		return (
 			<div>
 		  	<div className='root-container'>
@@ -460,7 +510,10 @@ class Find extends Component {
 
 						<div className='movie-container'>
 						{this.movies.map(function(item, index){
-							return <MovieCard key={index} data={item}/>
+							return <MovieCard 
+												// getHeight={scope.setCardHeight.bind(scope)} 
+												key={index} 
+												data={item}/>
 						})}
 					</div>
 				</div>
