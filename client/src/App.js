@@ -388,6 +388,7 @@ class Find extends Component {
 		this.card_height = -1;
 		this.page = -1;
 		this.total_pages = -1;
+		this.updated_query = false;
 
 		this.socket = props.socket;
 
@@ -404,7 +405,10 @@ class Find extends Component {
 				// reset scroll when one of the query points have changed
 				// TODO: localize scroll
 				// const element = ReactDOM.findDOMNode(this);
-				// document.body.scrollTop = 0;
+				if(scope.updated_query){
+					document.body.scrollTop = 0;
+					scope.updated_query = false;
+				}
 			}
 		})
 
@@ -440,18 +444,21 @@ class Find extends Component {
 
 		this.query.year = value
 		this.getContent()
+		this.updated_query = true;
 	}
 
 	handleSortChange = function(value){
 		console.log('change', value)
 		this.query.sort = value
 		this.getContent()
+		this.updated_query = true;
 	}
 
 	handleGenreChange = function(value){
 		console.log('change', value)
 		this.query.genre = value
-		this.getContent()		
+		this.getContent()
+		this.updated_query = true;
 	}
 
 	getContent = function(){
