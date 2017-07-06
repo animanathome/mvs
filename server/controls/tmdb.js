@@ -75,10 +75,30 @@ var movies = (function(){
 		console.log('discover', input)
 
 		var year = input.year || '2017';
-		// var sort_by = input.sort_by || 'release_date.desc';
-		var sort_by = input.sort || 'release_date.asc';
+		var sort_by;
+		switch(input.sort || 'pd'){
+			case 'pd': sort_by = 'popularity.desc'; break;
+			case 'pa': sort_by = 'popularity.asc'; break;
+
+			case 'rd': sort_by = 'revenue.desc'; break;
+			case 'ra': sort_by = 'revenue.asc'; break;
+
+			case 'otd': sort_by = 'original_title.desc'; break;
+			case 'ota': sort_by = 'original_title.asc'; break;
+
+			case 'vod': sort_by = 'vote_average.desc'; break;
+			case 'voa': sort_by = 'vote_average.asc'; break;
+
+			case 'rdd': sort_by = 'release_date.asc'; break;
+			case 'rda': sort_by = 'release_date.desc'; break;
+		}
 		var page = input.page || 1;
 		var with_genres = input.genre
+
+		console.log('year:', year)
+		console.log('sort_by:', sort_by)
+		console.log('genres:', with_genres)
+		console.log('page:', page)
 
 		var path = '/3/discover/movie?'
 		path += 'primary_release_date.gte='+year+'-01-01'

@@ -17,6 +17,8 @@ import IconTV from 'material-ui/svg-icons/hardware/tv';
 import IconTrackChanges from 'material-ui/svg-icons/action/track-changes';
 import IconStar from 'material-ui/svg-icons/action/grade';
 import FontIcon from 'material-ui/FontIcon';
+import FloatingActionButton from 'material-ui/FloatingActionButton';
+import ActionAdd from 'material-ui/svg-icons/content/add';
 
 // const recentsIcon = <FontIcon className="material-icons">restore</FontIcon>;
 // const favoritesIcon = <FontIcon className="material-icons">favorite</FontIcon>;
@@ -216,6 +218,14 @@ class MovieCard extends Component {
 	// 	this.props.getHeight(element.clientHeight)
 	// }
 
+	add(){
+		var title = this.props.data.title
+		var year = this.props.data.release_date.split('-')[0]
+		if(this.props.onTouch){
+			this.props.onTouch(title, year)
+		}
+	}
+
 	render(){
 		// console.log(this.props.data.poster_path)
 		var image_path = 'https://image.tmdb.org/t/p/w92'+this.props.data.poster_path
@@ -227,6 +237,12 @@ class MovieCard extends Component {
 		var backdrop_path = 'https://image.tmdb.org/t/p/w300'+this.props.data.backdrop_path
 		if(!this.props.data.backdrop_path){
 			backdrop_path = 'images/a_backdrop.jpg'
+		}
+
+		// title
+		var title = this.props.data.title
+		if(title.length > 26){
+			title = title.slice(0, 22)+' ...'
 		}
 
 		// generate genre string
@@ -241,21 +257,36 @@ class MovieCard extends Component {
 			genre_string = genre_string.slice(0, 34)+' ...'
 		}
 
+		// popularity
+		var popularity = this.props.data.popularity.toString().slice(0, 3)
+		if(popularity[2] === '.'){
+			popularity = popularity.slice(0, 2)
+		}
+
 		return (
 			<div className='movie-card'>
-				<img className='movie-image' style={{opacity:0.7}}  src={backdrop_path} alt="" />
+				<img className='movie-image' 
+					// style={{opacity:0.7}}  
+					src={backdrop_path} 
+					alt="" />
+				<div className='movie-card-color'></div>
 				<img className='movie-card-poster' src={image_path} alt="" />
 				<div className='movie-card-title'>
-					{this.props.data.title}
+					{title}
 				</div>
 				<div className='movie-card-popularity'>
-					{this.props.data.popularity.toString().slice(0, 3)}
+					{popularity}
 					 <FontIcon >
-						<IconStar style={{color:'white', position:'absolute', left:'2px', bottom:'-2px', height:'18px', width:'18px'}}/>
+						<IconStar style={{color:'white', position:'absolute', left:'2px', bottom:'-2px', height:'16px', width:'16px'}}/>
 					</FontIcon>
 				</div>
 				<div className='movie-card-genre'>
 					{genre_string}
+				</div>
+				<div className='movie-card-add'>
+				 	<FloatingActionButton>
+  							<ActionAdd onTouchTap={this.add.bind(this)}/>
+						</FloatingActionButton>
 				</div>
 			</div>
 		)
@@ -340,8 +371,16 @@ class Find extends Component {
 				options:[
 					{value:'pd',text:"Popularity Descending"},
 					{value:'pa',text:"Popularity Ascending"},
-					{value:'rd',text:"Rating Descending"},
-					{value:'ra',text:"Rating Ascending"},
+
+					{value:'rd',text:"Revenue Descending"},
+					{value:'ra',text:"Revenue Ascending"},
+
+					{value:'otd',text:"Original Title Descending"},
+					{value:'ota',text:"Original Title Ascending"},
+
+					{value:'vod',text:"Vote Average Descending"},
+					{value:'voa',text:"Vote Average Ascending"},
+					
 					{value:'rdd',text:"Release Date Descending"},
 					{value:'rda',text:"Release Date Ascending"}
 				],
@@ -376,19 +415,21 @@ class Find extends Component {
 			}
 		}
 		this.movies = []
-		this.query = {
-			year: this.settings.year.value,
-			sort: this.settings.sort.value,
-			genre: this.settings.genre.value,
-		}
 
 		this.state = {
 			updated: 0
 		}
+		
 		this.card_height = -1;
-		this.page = -1;
 		this.total_pages = -1;
 		this.updated_query = false;
+		
+		this.query = {
+			year: this.settings.year.value,
+			sort: this.settings.sort.value,
+			genre: this.settings.genre.value,
+			page: 1
+		}
 
 		this.socket = props.socket;
 
@@ -399,7 +440,11 @@ class Find extends Component {
 				var data = JSON.parse(result.data)
 				scope.total_pages = data.total_pages
 				scope.page = data.page
-				scope.movies = data.results
+				if(scope.page === 1){
+					scope.movies = data.results
+				}else{
+					Array.prototype.push.apply(scope.movies, data.results)
+				}
 				scope.setState({updated:scope.state.updated+1})
 
 				// reset scroll when one of the query points have changed
@@ -443,6 +488,8 @@ class Find extends Component {
 		console.log('year', value)
 
 		this.query.year = value
+		this.query.page = 1
+		this.total_pages = -1
 		this.getContent()
 		this.updated_query = true;
 	}
@@ -450,6 +497,8 @@ class Find extends Component {
 	handleSortChange = function(value){
 		console.log('change', value)
 		this.query.sort = value
+		this.query.page = 1
+		this.total_pages = -1
 		this.getContent()
 		this.updated_query = true;
 	}
@@ -457,6 +506,8 @@ class Find extends Component {
 	handleGenreChange = function(value){
 		console.log('change', value)
 		this.query.genre = value
+		this.query.page = 1
+		this.total_pages = -1
 		this.getContent()
 		this.updated_query = true;
 	}
@@ -470,18 +521,32 @@ class Find extends Component {
 		if(this.card_height < 0){
 			return
 		}
-		console.log('scroll')
+		// console.log('scroll')
 
 		let scrollTop = event.srcElement.body.scrollTop;
-		console.log('top', scrollTop)
-		console.log('card', this.card_height)
-		console.log('card number', scrollTop/this.card_height)
+		// console.log('top', scrollTop)
+		// console.log('card', this.card_height)
+		// console.log('card number', scrollTop/this.card_height)
+
+		var next_trigger = (((this.query.page -1) * 20) + 10)
+		var position = Math.floor(scrollTop/this.card_height)
+		// console.log(next_trigger, position)
+		if(next_trigger < position){
+			if(this.query.page < this.total_pages){
+				this.query.page += 1
+				this.getContent()
+			}
+		}
   }
 
 	onRouteChange = function(route){
-		console.log('onRouteChange', route)
-		console.log('this', this)
+		// console.log('onRouteChange', route)
+		// console.log('this', this)
 		this.props.history.push(route)
+	}
+
+	addItem = function(title, year){
+		console.log('addItem', title, year)
 	}
 
 	// setCardHeight = function(height){
@@ -519,6 +584,7 @@ class Find extends Component {
 						{this.movies.map(function(item, index){
 							return <MovieCard 
 												// getHeight={scope.setCardHeight.bind(scope)} 
+												onTouch={scope.addItem.bind(scope)}
 												key={index} 
 												data={item}/>
 						})}
