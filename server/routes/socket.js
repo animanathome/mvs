@@ -14,16 +14,53 @@ module.exports = function (socket) {
 		console.log('disconnect')
 	});
 
-	// list of movies we currently can watch
-	socket.on('movies:list', function(){
-		movie.find({track:true}, {mtitle:1}, function(err, movies){
+	// update a given entry
+	socket.on('item:update', function(data){
+		console.log('item:update', {_id:data.id}, {$set:data.update})
+		movie.findOneAndUpdate({_id:data.id}, {$set:data.update}, function(err, result){
+			console.log(err, result)
+			if(err){
+				console.error(err)
+			}
+		})
+	})
+
+	// list of movies which are available
+	socket.on('movies:watch', function(){
+		movie.find({track:true, available:true}, {myear:1, mtitle:1, path:1}, function(err, movies){
 			if(err) return console.error(err);
 
 			console.log(movies)
 
 			var data = []
 			for(var i = 0; i < movies.length; i++){
-				data.push({title:movies[i].mtitle})
+				data.push({
+					id: movies[i]._id,
+					title:movies[i].mtitle,
+					path:movies[i].path,
+				})
+			}
+
+			socket.emit('movies:watch', {
+				'data': data
+			})
+		})
+	});
+
+	// list of movies we're currently tracking
+	socket.on('movies:list', function(){
+		movie.find({track:true, available:false}, {myear:1, mtitle:1, available:1}, function(err, movies){
+			if(err) return console.error(err);
+
+			console.log(movies)
+
+			var data = []
+			for(var i = 0; i < movies.length; i++){
+				data.push({
+					id: movies[i]._id,
+					title:movies[i].mtitle,
+					year:movies[i].myear
+				})
 			}
 
 			socket.emit('movies:list', {
@@ -32,7 +69,7 @@ module.exports = function (socket) {
 		})
 	});
 
-	// list of movies we're currenlty looking for
+	// add the given to the track list
 	socket.on('movies:track', function(input){
 		console.log(input)
 
@@ -49,7 +86,7 @@ module.exports = function (socket) {
 
 					// console.log('id', m.id)
 					// console.log('mid', m.mid)
-					console.log('done adding', m.mtitle)
+					console.log('done adding', m.myear, m.mtitle)
 				})
 			}else{
 				console.log(input.mtitle, 'is already processed')

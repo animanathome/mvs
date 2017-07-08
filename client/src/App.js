@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
+import Script from 'react-load-script'
 
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import SelectField from 'material-ui/SelectField';
@@ -20,6 +21,8 @@ import FontIcon from 'material-ui/FontIcon';
 import FloatingActionButton from 'material-ui/FloatingActionButton';
 import ActionAdd from 'material-ui/svg-icons/content/add';
 
+import CastPlayer from './CastVideos.js'
+
 // const recentsIcon = <FontIcon className="material-icons">restore</FontIcon>;
 // const favoritesIcon = <FontIcon className="material-icons">favorite</FontIcon>;
 // const nearbyIcon = <IconLocationOn/>;
@@ -28,7 +31,6 @@ const tvIcon = <IconTV/>;
 const trackIcon = <IconTrackChanges/>;
 const discoverIcon = <IconDiscover/>;
 const starIcon = <IconStar/>;
-
 
 // import MenuItem from 'material-ui/MenuItem';
 import IconButton from 'material-ui/IconButton';
@@ -42,88 +44,90 @@ import injectTapEventPlugin from 'react-tap-event-plugin';
 injectTapEventPlugin();
 
 import io from 'socket.io-client';
-let socket = io(`http://localhost:3001`)
 
+var host = location.protocol+'//'+location.hostname+':3001'
+console.log('host', host)
+let socket = io(host)
 
 var genres = {
-  "genres": [
-    {
-      "id": 28,
-      "name": "Action"
-    },
-    {
-      "id": 12,
-      "name": "Adventure"
-    },
-    {
-      "id": 16,
-      "name": "Animation"
-    },
-    {
-      "id": 35,
-      "name": "Comedy"
-    },
-    {
-      "id": 80,
-      "name": "Crime"
-    },
-    {
-      "id": 99,
-      "name": "Documentary"
-    },
-    {
-      "id": 18,
-      "name": "Drama"
-    },
-    {
-      "id": 10751,
-      "name": "Family"
-    },
-    {
-      "id": 14,
-      "name": "Fantasy"
-    },
-    {
-      "id": 36,
-      "name": "History"
-    },
-    {
-      "id": 27,
-      "name": "Horror"
-    },
-    {
-      "id": 10402,
-      "name": "Music"
-    },
-    {
-      "id": 9648,
-      "name": "Mystery"
-    },
-    {
-      "id": 10749,
-      "name": "Romance"
-    },
-    {
-      "id": 878,
-      "name": "Science Fiction"
-    },
-    {
-      "id": 10770,
-      "name": "TV Movie"
-    },
-    {
-      "id": 53,
-      "name": "Thriller"
-    },
-    {
-      "id": 10752,
-      "name": "War"
-    },
-    {
-      "id": 37,
-      "name": "Western"
-    }
-  ]
+	"genres": [
+		{
+			"id": 28,
+			"name": "Action"
+		},
+		{
+			"id": 12,
+			"name": "Adventure"
+		},
+		{
+			"id": 16,
+			"name": "Animation"
+		},
+		{
+			"id": 35,
+			"name": "Comedy"
+		},
+		{
+			"id": 80,
+			"name": "Crime"
+		},
+		{
+			"id": 99,
+			"name": "Documentary"
+		},
+		{
+			"id": 18,
+			"name": "Drama"
+		},
+		{
+			"id": 10751,
+			"name": "Family"
+		},
+		{
+			"id": 14,
+			"name": "Fantasy"
+		},
+		{
+			"id": 36,
+			"name": "History"
+		},
+		{
+			"id": 27,
+			"name": "Horror"
+		},
+		{
+			"id": 10402,
+			"name": "Music"
+		},
+		{
+			"id": 9648,
+			"name": "Mystery"
+		},
+		{
+			"id": 10749,
+			"name": "Romance"
+		},
+		{
+			"id": 878,
+			"name": "Science Fiction"
+		},
+		{
+			"id": 10770,
+			"name": "TV Movie"
+		},
+		{
+			"id": 53,
+			"name": "Thriller"
+		},
+		{
+			"id": 10752,
+			"name": "War"
+		},
+		{
+			"id": 37,
+			"name": "Western"
+		}
+	]
 }
 
 var genresToDict = function(genres_data){
@@ -159,19 +163,19 @@ class MSelectField extends Component {
 
 		return (
 			<div>
- 				<SelectField
-          floatingLabelText={this.props.settings.title}
-          value={this.state.value}
-          onChange={this.handleChange.bind(this)}
-          maxHeight={200}
-          style={this.props.style}
-        >
+				<SelectField
+					floatingLabelText={this.props.settings.title}
+					value={this.state.value}
+					onChange={this.handleChange.bind(this)}
+					maxHeight={200}
+					style={this.props.style}
+				>
 
 				{data.map(function(item, index){
 					return (<MenuItem key={index} value={item.value} primaryText={item.text}/>)
 				})}
-          
-        </SelectField>
+					
+				</SelectField>
 			</div>
 		)
 	}
@@ -183,17 +187,221 @@ const Home = () => (
 	</div>
 )
 
-const Watch = () => (
-	<div>
-		<h2>Watch</h2>
-	</div>
-)
+class WatchItem extends Component {
+	constructor(props){
+		super(props)
 
-const Track = () => (
-	<div>
-		<h2>Home</h2>
-	</div>
-)
+		this.cast_player = null;
+	}
+
+	// componentDidMount(){
+	// 	var scope = this;
+	// 	console.log('componentDidMount', scope.props)
+	// 	if(!this.props.cast){
+	// 		return
+	// 	}
+
+	// 	console.log('cast', cast)
+	// 	// var cast_player = new CastPlayer();
+	// 	// cast_player.initializeCastPlayer();
+	// }
+	render(){
+		console.log('render', this.props)
+		
+		if(this.props.cast){
+			console.log('cast', window.cast)
+		}
+
+		//<div id="media_control">
+		//	<div id="play"></div>
+		//	<div id="pause"></div>
+		//	<div id="progress_bg"></div>
+		//	<div id="progress"></div>
+		//	<div id="progress_indicator"></div>
+		//	<div id="fullscreen_expand"></div>
+		//	<div id="fullscreen_collapse"></div>
+		//	<button is="google-cast-button" id="castbutton"></button>
+		//	<div id="audio_bg"></div>
+		//	<div id="audio_bg_track"></div>
+		//	<div id="audio_indicator"></div>
+		//	<div id="audio_bg_level"></div>
+		//	<div id="audio_on"></div>
+		//	<div id="audio_off"></div>
+		//	<div id="duration">00:00:00</div>
+		//</div>
+
+		return (			
+			<div className='watch-item-card'>				
+				<div className='watch-item-card-title'>
+					{this.props.data.title}
+				</div>
+				<div className='watch-item-card-controls'>
+					<video id="video_element" width="100%" controls>
+						<source src={location.protocol+"//"+location.hostname+":8888/"+this.props.data.path} type="video/mp4"/>
+						Your browser does not support the <code>video</code> element.
+					</video>
+				</div>
+			</div>
+		)
+	}
+}
+
+class Watch extends Component {
+	constructor(props){
+		super(props)
+
+		var scope = this
+		this.socket = props.socket
+		this.state = {
+			updated: 0,
+			cast_available: false
+		}
+		this._mounted = false;
+
+		this.data = []
+		this.socket.on('movies:watch', function(result){
+			if(scope._mounted){
+				// console.log('got', result.data)
+				scope.data = result.data
+				scope.setState({updated:scope.state.updated+1})
+			}
+		})
+
+		this.getContent()
+
+		var scope = this;
+		this.cast_available = false;
+		window['__onGCastApiAvailable'] = function(isAvailable){
+			if (isAvailable) {
+				// console.log('Cast is available', cast)
+				scope.setState({cast_available:true})
+			}
+		};
+	}
+
+	onRouteChange = function(route){
+		// console.log('onRouteChange', route)
+		// console.log('this', this)
+		this.props.history.push(route)
+	}
+
+	componentDidMount() { 
+		this._mounted = true;
+	}
+
+	componentWillUnmount() {
+		this._mounted = false;
+	}
+
+	getContent(){
+		this.socket.emit('movies:watch')
+	}
+
+	handleScriptCreate() {
+	  this.setState({ scriptLoaded: false })
+	}
+
+	handleScriptError() {
+	  this.setState({ scriptError: true })
+	}
+
+	handleScriptLoad() {
+	  this.setState({ scriptLoaded: true })
+	}
+
+	render(){
+		var scope = this;
+		return (
+				<div>
+					<Script 
+						url="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"
+						onCreate={this.handleScriptCreate.bind(this)}
+						onError={this.handleScriptError.bind(this)}
+	    			onLoad={this.handleScriptLoad.bind(this)}
+					/>
+					<div className='watch-container'>
+					{this.data.map(function(item, index){
+						return <WatchItem key={index} data={item} cast={scope.state.cast_available}/>
+					})}
+					</div>
+					<MBottomNavigation value={3} onRouteChange={this.onRouteChange.bind(this)}/>
+				</div>
+		)
+	}
+}
+
+class TrackItem extends Component {
+	constructor(props){
+		super(props)
+	}
+
+	render(){
+		console.log('render', this.props.data)
+		return (
+			<div className='track-item-card'>
+				<div className='track-item-card-title'>
+					{this.props.data.title}
+				</div>
+			</div>
+		)
+	}
+}
+
+class Track extends Component {
+	constructor(props){
+		super(props)
+
+		var scope = this
+		this.socket = props.socket
+		this.state = {
+			updated: 0
+		}
+		this._mounted = false;
+
+		this.data = []
+		this.socket.on('movies:list', function(result){
+			if(scope._mounted){
+				// console.log('got', result.data)
+				scope.data = result.data
+				scope.setState({updated:scope.state.updated+1})
+			}
+		})
+
+		this.getContent()
+	}
+
+	onRouteChange = function(route){
+		// console.log('onRouteChange', route)
+		// console.log('this', this)
+		this.props.history.push(route)
+	}
+
+	componentDidMount() { 
+		this._mounted = true;
+	}
+
+	componentWillUnmount() {
+		this._mounted = false;
+	}
+
+	getContent(){
+		this.socket.emit('movies:list')
+	}
+
+	render(){
+		var scope = this;
+		return (
+				<div>
+					<div className='track-container'>
+					{this.data.map(function(item, index){
+						return <TrackItem key={index} data={item}/>
+					})}
+					</div>
+					<MBottomNavigation value={2} onRouteChange={this.onRouteChange.bind(this)}/>
+				</div>
+		)
+	}
+}
 
 class ListItem extends Component {
 	render(){
@@ -219,10 +427,13 @@ class MovieCard extends Component {
 	// }
 
 	add(){
+		console.log('add', this.props.data)
+		
+		var id = this.props.data.id
 		var title = this.props.data.title
 		var year = this.props.data.release_date.split('-')[0]
 		if(this.props.onTouch){
-			this.props.onTouch(title, year)
+			this.props.onTouch(id, title, year)
 		}
 	}
 
@@ -284,8 +495,8 @@ class MovieCard extends Component {
 					{genre_string}
 				</div>
 				<div className='movie-card-add'>
-				 	<FloatingActionButton>
-  							<ActionAdd onTouchTap={this.add.bind(this)}/>
+					<FloatingActionButton>
+								<ActionAdd onTouchTap={this.add.bind(this)}/>
 						</FloatingActionButton>
 				</div>
 			</div>
@@ -293,58 +504,58 @@ class MovieCard extends Component {
 	}
 }
 
-class List extends Component {
-	constructor(props){
-		super(props)
-		var scope = this;
-		this.state = {
-			loaded: false
-		}
-		this.content = []
-		this.socket = props.socket;
-		this.socket.emit('movies:list', {})
-		this.socket.on('movies:list', function(result){
-			console.log(result)
-			scope.content = result.data;
-			scope.setState({loaded:true})
-		})
-	}
+// class List extends Component {
+// 	constructor(props){
+// 		super(props)
+// 		var scope = this;
+// 		this.state = {
+// 			loaded: false
+// 		}
+// 		this.content = []
+// 		this.socket = props.socket;
+// 		this.socket.emit('movies:list', {})
+// 		this.socket.on('movies:list', function(result){
+// 			console.log(result)
+// 			scope.content = result.data;
+// 			scope.setState({loaded:true})
+// 		})
+// 	}
 
-	render(){
-		var scope = this;
-		var match = this.props.match
+// 	render(){
+// 		var scope = this;
+// 		var match = this.props.match
 
-		console.log('location', this.props.location.pathname)
+// 		console.log('location', this.props.location.pathname)
 
-		return (
-			<div>
-				<h2>Watch List</h2>
-				<div className='movie_list'>
-					{scope.content.map(function(item, index){
-						return (
-						<div key={index} className='movie_card'>
-								<Link to={`${match.url}/${item.title}`}>
-									<div className="image_content">
-									</div>
-								</Link>
-								<div className='movie_info'>
-									<div className="movie_title">
-										<a>{item.title}</a>
-									</div>
-									<p className="movie_overview">
-										Lorem ipsum dolor sit amet, atqui deleniti maluisset nec eu. Vim doming eruditi maiestatis ad, his patrioque disputando cu. Eum sale ludus cu, quo cetero atomorum evertitur ea.
-									</p>
-								</div>
+// 		return (
+// 			<div>
+// 				<h2>Watch List</h2>
+// 				<div className='movie_list'>
+// 					{scope.content.map(function(item, index){
+// 						return (
+// 						<div key={index} className='movie_card'>
+// 								<Link to={`${match.url}/${item.title}`}>
+// 									<div className="image_content">
+// 									</div>
+// 								</Link>
+// 								<div className='movie_info'>
+// 									<div className="movie_title">
+// 										<a>{item.title}</a>
+// 									</div>
+// 									<p className="movie_overview">
+// 										Lorem ipsum dolor sit amet, atqui deleniti maluisset nec eu. Vim doming eruditi maiestatis ad, his patrioque disputando cu. Eum sale ludus cu, quo cetero atomorum evertitur ea.
+// 									</p>
+// 								</div>
 							
-						</div>)
-					})}
-				</div>
+// 						</div>)
+// 					})}
+// 				</div>
 
-				<Route path={`${match.url}/:title`}  component={ListItem}/>
-			</div>
-		)
-	}
-}
+// 				<Route path={`${match.url}/:title`}  component={ListItem}/>
+// 			</div>
+// 		)
+// 	}
+// }
 
 class Find extends Component {
 	constructor(props){
@@ -461,8 +672,8 @@ class Find extends Component {
 	}
 
 	componentDidMount() { 
-	  this._mounted = true;
-	  window.addEventListener('scroll', this.handleScroll.bind(this));
+		this._mounted = true;
+		window.addEventListener('scroll', this.handleScroll.bind(this));
 	}
 
 	componentDidUpdate(){
@@ -480,8 +691,8 @@ class Find extends Component {
 	}
 
 	componentWillUnmount() {
-	  this._mounted = false;
-	  window.removeEventListener('scroll', this.handleScroll.bind(this));
+		this._mounted = false;
+		window.removeEventListener('scroll', this.handleScroll.bind(this));
 	}
 
 	handleYearChange = function(value){
@@ -537,7 +748,7 @@ class Find extends Component {
 				this.getContent()
 			}
 		}
-  }
+	}
 
 	onRouteChange = function(route){
 		// console.log('onRouteChange', route)
@@ -545,8 +756,15 @@ class Find extends Component {
 		this.props.history.push(route)
 	}
 
-	addItem = function(title, year){
-		console.log('addItem', title, year)
+	addItem = function(id, title, year){
+		console.log('addItem', id, title, year)
+
+		this.socket.emit('movies:track', {
+			mid: id,
+			mtitle: title,
+			myear: year,
+			track: true
+		})
 	}
 
 	// setCardHeight = function(height){
@@ -560,10 +778,10 @@ class Find extends Component {
 		var scope = this;
 		return (
 			<div>
-		  	<div className='root-container'>
-		  			<div className='find-container'>
-		  				<Paper>
-		  					<div className='select-container'>
+				<div className='root-container'>
+						<div className='find-container'>
+							<Paper>
+								<div className='select-container'>
 									<MSelectField 
 										style={{marginTop: '-10px', float:'left', width:'100px'}} 
 										settings={this.settings.year} 
@@ -613,13 +831,13 @@ class MAppBar extends Component {
 				title={this.props.title}
 				iconElementRight={
 					<IconMenu
-	      	iconButtonElement={<IconButton><MoreVertIcon /></IconButton>}
-	      	anchorOrigin={{horizontal: 'left', vertical: 'top'}}
-	      	targetOrigin={{horizontal: 'left', vertical: 'top'}}
-	      	iconStyle={{ fill: 'rgb(0, 0, 0)' }}
-	    	>
-		      <MenuItem primaryText="Refresh" />
-		    </IconMenu>
+					iconButtonElement={<IconButton><MoreVertIcon /></IconButton>}
+					anchorOrigin={{horizontal: 'left', vertical: 'top'}}
+					targetOrigin={{horizontal: 'left', vertical: 'top'}}
+					iconStyle={{ fill: 'rgb(0, 0, 0)' }}
+				>
+					<MenuItem primaryText="Refresh" />
+				</IconMenu>
 				}
 			/>
 		</div>
@@ -629,38 +847,38 @@ class MAppBar extends Component {
 
 class MBottomNavigation extends Component {
 
-  select = function(index){
-  	this.props.onRouteChange('/'+['discover', 'find', 'track', 'watch'][index])
-  }
+	select = function(index){
+		this.props.onRouteChange('/'+['discover', 'find', 'track', 'watch'][index])
+	}
 
-  render() {
-    return (
-      <Paper zDepth={1} style ={{position: "fixed", bottom: 0}}>
-        <BottomNavigation selectedIndex={this.props.value}>
-          <BottomNavigationItem
-            label="Discover"
-            icon={discoverIcon}
-            onTouchTap={() => this.select(0)}
-          />
-          <BottomNavigationItem
-            label="Find"
-            icon={findIcon}
-            onTouchTap={() => this.select(1)}
-          />
-          <BottomNavigationItem
-            label="Track"
-            icon={trackIcon}
-            onTouchTap={() => this.select(2)}
-          />
-          <BottomNavigationItem
-            label="Watch"
-            icon={tvIcon}
-            onTouchTap={() => this.select(3)}
-          />
-        </BottomNavigation>
-      </Paper>
-    );
-  }
+	render() {
+		return (
+			<Paper zDepth={1} style ={{position: "fixed", bottom: 0}}>
+				<BottomNavigation selectedIndex={this.props.value}>
+					<BottomNavigationItem
+						label="Discover"
+						icon={discoverIcon}
+						onTouchTap={() => this.select(0)}
+					/>
+					<BottomNavigationItem
+						label="Find"
+						icon={findIcon}
+						onTouchTap={() => this.select(1)}
+					/>
+					<BottomNavigationItem
+						label="Track"
+						icon={trackIcon}
+						onTouchTap={() => this.select(2)}
+					/>
+					<BottomNavigationItem
+						label="Watch"
+						icon={tvIcon}
+						onTouchTap={() => this.select(3)}
+					/>
+				</BottomNavigation>
+			</Paper>
+		);
+	}
 }
 
 class Discover extends Component {
@@ -696,7 +914,7 @@ class App extends Component {
 
 		var scope = this;
 		this.socket = socket;
-		
+
 		socket.on('disconnect', function(){
 			socket.close();
 		});
@@ -704,6 +922,8 @@ class App extends Component {
 		socket.on('init', function(){
 			// scope.init()
 		});
+
+		this.cast = undefined
 	}
 
 	render(){
@@ -711,7 +931,6 @@ class App extends Component {
 			<MuiThemeProvider>
 				<Router>
 					<div>
-						
 						<Route exact path="/" render={(props) => (
 							<Home/>
 						)}/>
@@ -722,6 +941,14 @@ class App extends Component {
 
 						<Route path="/find" render={(props) => (
 							<Find {...props} socket={this.socket}/>
+						)}/>
+
+						<Route path="/track" render={(props) => (
+							<Track {...props} socket={this.socket}/>
+						)}/>
+
+						<Route path="/watch" render={(props) => (
+							<Watch {...props} socket={this.socket}/>
 						)}/>
 
 					</div>

@@ -9,8 +9,27 @@ var MovieSchema = new Schema({
   mid: {
     type: Number
   },
+  myear: {
+  	type: Number
+  },
   track: {
-    type: Boolean
+    type: Boolean,
+    default: false
+  },
+  progress: {
+    type: Number,
+    default: 0
+  },
+  available: {
+  	type: Boolean,
+    default: false
+  },
+  path: {
+    type: String
+  },
+  view: {
+    type: Boolean,
+    default: false
   }
 })
 

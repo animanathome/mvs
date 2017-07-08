@@ -78,6 +78,7 @@ class Select extends Component {
 		this.socket.emit('movies:track', {
 			mid: movie_data.id,
 			mtitle: movie_data.title,
+			myear: movie_data.year,
 			track: true
 		})
 
@@ -91,6 +92,7 @@ class Select extends Component {
 		this.socket.emit('movies:track', {
 			mid: movie_data.id,
 			mtitle: movie_data.title,
+			myear: movie_data.year,
 			track: false
 		})
 

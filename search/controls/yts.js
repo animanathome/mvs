@@ -17,9 +17,12 @@ var yts = (function(){
 		"tracker.leechers-paradise.org:6969"
 	]
 
-	getTorrent = function(title){
-		console.log('getTorrent', title)
+	getTorrent = function(item){
+		console.log('getTorrent', item)
+		var title = item.title;
+		var year = item.year
 
+		// NOTE: here we can't specify the year
 		var uri = "https://yts.ag/api/v2/list_movies.json?query_term="+encodeURIComponent(title)
 		var deferred = Q.defer();
 	
@@ -42,7 +45,10 @@ var yts = (function(){
 				var result = JSON.parse(body.toString())
 				if(result.status === 'ok'){
 					if(result.data.movie_count > 0){
-						deferred.resolve(result.data);
+						deferred.resolve({
+							data:result.data,
+							item:item
+						});
 					}else{
 						deferred.reject('No match found for "'+title+'"')
 					}
@@ -58,21 +64,38 @@ var yts = (function(){
 	}	
 
 	getDownloadDir = function(){
-		var download_dir = __dirname+'/../download'
+		var download_dir = __dirname+'/../../download'
 		if (!fs.existsSync(download_dir)){
 			fs.mkdirSync(download_dir);
 		}
 		return download_dir;
 	}
 
-	getMagnetURI = function(d){
-		console.log('getMagnetURI', d)
+	getMagnetURI = function(d, item){
+		console.log('getMagnetURI')
+		console.log('\tdata', d)
+		console.log('\titem', item)
 
 		if(d.movie_count > 1){
 			console.log('More then one result. Downloading first one "'+d.movies[0].title_long+'"')
 		}
 
-		var movie = d.movies[0]
+		var i, 
+			movie;
+		for(i = 0; i < d.movies.length; i++){
+			console.log(i, d.movies[i].year, '!=', item.year)
+			if(d.movies[i].year == item.year){
+				movie = d.movies[i]
+				break;
+			}
+		}
+		
+		if(movie === undefined){
+			console.log('Unable to find title', item.title)
+			return
+		}
+
+		// var movie = d.movies[0]
 		var i, 
 			torrent;
 		var hash = null;
@@ -80,7 +103,6 @@ var yts = (function(){
 			torrent = movie.torrents[i]
 
 			console.log(i, '--> torrent', torrent)
-
 			if(torrent.quality != quality){
 				continue
 			}
@@ -104,12 +126,15 @@ var yts = (function(){
 		return url
 	}
 
-	downloadTorrent = function(data){
-		console.log('downloadTorrent', data)
+	downloadTorrent = function(result){
+		console.log('downloadTorrent', result)
 
 		var deferred = Q.defer();
 
-		var magnetURI = getMagnetURI(data) || null
+		var data = result.data;
+		var item = result.item;
+
+		var magnetURI = getMagnetURI(data, item) || null
 		console.log('---> URI:', magnetURI)
 		if(!magnetURI){
 			setTimeout(function(){
@@ -123,6 +148,20 @@ var yts = (function(){
 			var interval = setInterval(onProgress, 500)
 			// onProgress()
 
+			// console.log('path', torrent.files.path)
+			// console.log('files', torrent.files)
+			// get file path
+			var path;
+			for(var i = 0; i < torrent.files.length; i++){
+				if(torrent.files[i].path.endsWith('.mp4')){
+					// console.log('path', torrent.files[i].path)
+					path = torrent.files[i].path
+					break;
+				}
+			}
+			// extend item
+			item.path = path;
+
 			function onProgress(){
 				var percent = Math.round(torrent.progress * 100 * 100) / 100;
 				console.log('\tprogress', percent)
@@ -131,7 +170,9 @@ var yts = (function(){
 			function onDone(){
 				console.log('torrent download finished')
 				clearInterval(interval)
-				deferred.resolve();
+				deferred.resolve({
+					item:item
+				});
 			}
 		})
 

@@ -19,13 +19,14 @@ conn.on('init', function(){
 });
 
 conn.on('movies:list', function(result){
-	// console.log(result.data.length)
-	// console.log(result)
+	console.log(result.data.length)
+	console.log(result)
 
 	// TODO: add year when storing which movie we want to track/view
 	for(var i = 0; i < result.data.length; i++){
-		// console.log(i, result.data[i].title)
-		yts.getTorrent(result.data[i].title)
+		console.log(i, result.data[i].title, result.data[i].year)
+		
+		yts.getTorrent(result.data[i])
 		.fail(function(err){
 			// console.error(err)
 		})
@@ -35,11 +36,18 @@ conn.on('movies:list', function(result){
 		.fail(function(err){
 			console.error('ERROR: ', err)
 		})
-		.then(function(){
-			console.log('done downloading')
-
-			// update database so we know, we now can watch this content
-			// pass on content id
+		.then(function(result){
+			console.log('done downloading', result.item)
+			// update database
+			var message = {
+				id:result.item.id,
+				update: {
+					available:true,
+					path: result.item.path
+				}
+			}
+			console.log('sending update', message)
+			conn.emit('item:update', message)
 		})
 
 	}
