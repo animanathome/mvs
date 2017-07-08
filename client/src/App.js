@@ -210,6 +210,9 @@ class WatchItem extends Component {
 		
 		if(this.props.cast){
 			console.log('cast', window.cast)
+
+				var cast_player = new CastPlayer();
+				cast_player.initializeCastPlayer();
 		}
 
 		//<div id="media_control">
@@ -262,7 +265,7 @@ class Watch extends Component {
 		this.socket.on('movies:watch', function(result){
 			if(scope._mounted){
 				// console.log('got', result.data)
-				scope.data = result.data
+				scope.data = [result.data[0]]
 				scope.setState({updated:scope.state.updated+1})
 			}
 		})
@@ -273,7 +276,7 @@ class Watch extends Component {
 		this.cast_available = false;
 		window['__onGCastApiAvailable'] = function(isAvailable){
 			if (isAvailable) {
-				// console.log('Cast is available', cast)
+				console.log('Cast is available', window.cast)
 				scope.setState({cast_available:true})
 			}
 		};
