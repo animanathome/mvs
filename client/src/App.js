@@ -40,6 +40,7 @@ import { BrowserRouter as Router, Route, Link, Switch } from 'react-router-dom'
 
 import Select from './Select.jsx'
 import './App.css';
+import './CastVideos.css';
 import injectTapEventPlugin from 'react-tap-event-plugin';
 injectTapEventPlugin();
 
@@ -212,37 +213,52 @@ class WatchItem extends Component {
 			console.log('cast', window.cast)
 
 				var cast_player = new CastPlayer();
+				cast_player.mediaContents = [
+					{
+						'description':'a movie',
+						'sources':[location.protocol+"//"+location.hostname+":8888/"+this.props.data.path],
+						'subtitle': 'By Manu',
+						'thumb': 'images/a_backdrop.jpg',
+						'title': this.props.data.title
+					}
+				]
+				cast_player.initializeUI();
 				cast_player.initializeCastPlayer();
 		}
-
-		//<div id="media_control">
-		//	<div id="play"></div>
-		//	<div id="pause"></div>
-		//	<div id="progress_bg"></div>
-		//	<div id="progress"></div>
-		//	<div id="progress_indicator"></div>
-		//	<div id="fullscreen_expand"></div>
-		//	<div id="fullscreen_collapse"></div>
-		//	<button is="google-cast-button" id="castbutton"></button>
-		//	<div id="audio_bg"></div>
-		//	<div id="audio_bg_track"></div>
-		//	<div id="audio_indicator"></div>
-		//	<div id="audio_bg_level"></div>
-		//	<div id="audio_on"></div>
-		//	<div id="audio_off"></div>
-		//	<div id="duration">00:00:00</div>
-		//</div>
-
-		return (			
-			<div className='watch-item-card'>				
+		
+		return (
+			<div className='watch-item-card'>
 				<div className='watch-item-card-title'>
 					{this.props.data.title}
 				</div>
-				<div className='watch-item-card-controls'>
-					<video id="video_element" width="100%" controls>
-						<source src={location.protocol+"//"+location.hostname+":8888/"+this.props.data.path} type="video/mp4"/>
-						Your browser does not support the <code>video</code> element.
-					</video>
+				<div id="main_video">
+				
+					<div className="imageSub">
+						<div className="blackbg" id="playerstatebg">IDLE</div>
+						<div className="label" id="playerstate">IDLE</div>
+						<img src="images/a_backdrop.jpg" id="video_image"></img>
+						<div id="video_image_overlay"></div>
+						<video id="video_element" width="100%"></video>
+					</div>
+
+					<div id="media_control">
+						<div id="play"></div>
+						<div id="pause"></div>
+						<div id="progress_bg"></div>
+						<div id="progress"></div>
+						<div id="progress_indicator"></div>
+						<div id="audio_bg"></div>
+						<div id="audio_bg_track"></div>
+						<div id="audio_indicator"></div>
+						<div id="audio_bg_level"></div>
+						<div id="audio_on"></div>
+						<div id="audio_off"></div>
+						<div id="duration">00:00:00</div>
+						<button is="google-cast-button" id="castbutton"></button>
+						<div id="fullscreen_expand"></div>
+						<div id="fullscreen_collapse"></div>
+					</div>
+
 				</div>
 			</div>
 		)
