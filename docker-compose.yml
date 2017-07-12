@@ -1,0 +1,9 @@
+version: "2"
+services:
+  nginx:
+    container_name: nginx-proxy
+    build: ./nginx
+    ports:
+      - 80:80
+    volumes:
+    - /Users/manu/Code/mvs/client/build:/code/mvs
