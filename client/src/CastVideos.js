@@ -415,7 +415,7 @@ CastPlayer.prototype.seekMedia = function(event) {
     var pos = parseInt(event.offsetX, 10);
     var pi = document.getElementById('progress_indicator');
     var p = document.getElementById('progress');
-    if (event.currentTarget.id == 'progress_indicator') {
+    if (event.currentTarget.id === 'progress_indicator') {
         var curr = parseInt(
             this.currentMediaTime + this.currentMediaDuration * pos /
             PROGRESS_BAR_WIDTH, 10);
@@ -810,7 +810,7 @@ CastPlayer.prototype.initializeCastPlayer = function() {
 CastPlayer.prototype.switchPlayer = function() {
 
 	var cast = window.cast;
-	var chrome = window.chrome;
+	// var chrome = window.chrome;
     this.stopProgressTimer();
     this.resetVolumeSlider();
     this.playerHandler.stop();

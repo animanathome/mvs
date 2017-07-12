@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import Paper from 'material-ui/Paper';
-import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
+// import Paper from 'material-ui/Paper';
+// import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
 import FloatingActionButton from 'material-ui/FloatingActionButton';
 import ActionAdd from 'material-ui/svg-icons/content/add';
 
@@ -135,7 +135,6 @@ class Select extends Component {
 							</div>
 							<div className='movie-overview'>
 								{entry.overview.substring(0,250)+" ..."}
-
 							</div>
 						</div>
 						<div className='movie-add'>

@@ -14,13 +14,13 @@ conn.on('disconnect', function(){
 
 conn.on('init', function(){
 	console.log('init')
-
 	conn.emit('movies:list', {})
 });
 
 conn.on('movies:list', function(result){
-	console.log(result.data.length)
+	console.log(result.data.length, 'torrents to search:')
 	console.log(result)
+	console.log('--------------------------------------------------')
 
 	// TODO: add year when storing which movie we want to track/view
 	for(var i = 0; i < result.data.length; i++){
@@ -28,13 +28,13 @@ conn.on('movies:list', function(result){
 		
 		yts.getTorrent(result.data[i])
 		.fail(function(err){
-			// console.error(err)
+			console.error('ERROR:', err)
 		})
 		.then(function(result){
 			return yts.downloadTorrent(result)
 		})
 		.fail(function(err){
-			console.error('ERROR: ', err)
+			console.error('ERROR:', err)
 		})
 		.then(function(result){
 			console.log('done downloading', result.item)
@@ -43,15 +43,13 @@ conn.on('movies:list', function(result){
 				id:result.item.id,
 				update: {
 					available:true,
-					path: result.item.path
+					movie_path: result.item.path
 				}
 			}
 			console.log('sending update', message)
 			conn.emit('item:update', message)
 		})
-
 	}
-
 })
 
 var app = express();

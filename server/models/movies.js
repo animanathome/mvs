@@ -3,6 +3,7 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var MovieSchema = new Schema({
+  // internal data
   mtitle: {
     type: String
   },
@@ -12,6 +13,37 @@ var MovieSchema = new Schema({
   myear: {
   	type: Number
   },
+  msize: {
+    type: Number
+  },
+  
+  // user details
+  title: {
+    type: String
+  },
+  release_date: {
+    type: String
+  },
+  overview: {
+    type: String
+  },
+  vote_average: {
+    type: Number
+  },
+  backdrop_path: {
+    type: String
+  },
+  poster_path: {
+    type: String
+  },
+  movie_path: {
+    type: String
+  },
+  genre_ids: {
+    type: Array
+  },
+
+  // internal status 
   track: {
     type: Boolean,
     default: false
@@ -23,10 +55,7 @@ var MovieSchema = new Schema({
   available: {
   	type: Boolean,
     default: false
-  },
-  path: {
-    type: String
-  },
+  },  
   view: {
     type: Boolean,
     default: false

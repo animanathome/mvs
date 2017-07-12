@@ -5,13 +5,13 @@ import Script from 'react-load-script'
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import SelectField from 'material-ui/SelectField';
 import MenuItem from 'material-ui/MenuItem';
-import AppBar from 'material-ui/AppBar';
-import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
-import IconMenu from 'material-ui/IconMenu';
-import Drawer from 'material-ui/Drawer';
+// import AppBar from 'material-ui/AppBar';
+// import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
+// import IconMenu from 'material-ui/IconMenu';
+// import Drawer from 'material-ui/Drawer';
 import {BottomNavigation, BottomNavigationItem} from 'material-ui/BottomNavigation';
 import Paper from 'material-ui/Paper';
-import IconLocationOn from 'material-ui/svg-icons/communication/location-on';
+// import IconLocationOn from 'material-ui/svg-icons/communication/location-on';
 import IconSearch from 'material-ui/svg-icons/action/search';
 import IconDiscover from 'material-ui/svg-icons/action/lightbulb-outline';
 import IconTV from 'material-ui/svg-icons/hardware/tv';
@@ -19,7 +19,11 @@ import IconTrackChanges from 'material-ui/svg-icons/action/track-changes';
 import IconStar from 'material-ui/svg-icons/action/grade';
 import FontIcon from 'material-ui/FontIcon';
 import FloatingActionButton from 'material-ui/FloatingActionButton';
+// import FlatButton from 'material-ui/FlatButton';
+// import IconButton from 'material-ui/IconButton';
 import ActionAdd from 'material-ui/svg-icons/content/add';
+import ActionClear from 'material-ui/svg-icons/content/clear';
+import ActionBack from 'material-ui/svg-icons/hardware/keyboard-backspace';
 
 import CastPlayer from './CastVideos.js'
 
@@ -30,13 +34,13 @@ const findIcon = <IconSearch/>;
 const tvIcon = <IconTV/>;
 const trackIcon = <IconTrackChanges/>;
 const discoverIcon = <IconDiscover/>;
-const starIcon = <IconStar/>;
+// const starIcon = <IconStar/>;
 
 // import MenuItem from 'material-ui/MenuItem';
 import IconButton from 'material-ui/IconButton';
-import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
+// import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
 
-import { BrowserRouter as Router, Route, Link, Switch } from 'react-router-dom'
+import { BrowserRouter as Router, Route, Link } from 'react-router-dom'
 
 import Select from './Select.jsx'
 import './App.css';
@@ -47,7 +51,7 @@ injectTapEventPlugin();
 import io from 'socket.io-client';
 
 var host = location.protocol+'//'+location.hostname+':3001'
-console.log('host', host)
+// console.log('host', host)
 let socket = io(host)
 
 var genres = {
@@ -132,7 +136,7 @@ var genres = {
 }
 
 var genresToDict = function(genres_data){
-	console.log('genresToDict', genres_data, genres_data.length)
+	// console.log('genresToDict', genres_data, genres_data.length)
 	var genres = {}
 	for(var i = 0; i < genres_data.length; i++){
 		// console.log(i, genres_data[i])
@@ -182,84 +186,261 @@ class MSelectField extends Component {
 	}
 }
 
-const Home = () => (
-	<div>
-		<h2>Home</h2>
-	</div>
-)
+// const Home = () => (
+// 	<div>
+// 		<h2>Home</h2>
+// 	</div>
+// )
+
+class WatchMovie extends Component {
+	// constructor(props){
+	// 	super(props)
+	// }
+
+	remove(){
+		// console.log('remove')
+	}
+
+	render(){
+		// console.log('render', this.props)
+
+		var poster_path = 'https://image.tmdb.org/t/p/w92'+this.props.data.poster_path
+		if(!this.props.data.poster_path){
+			poster_path = 'images/a_poster.jpg'
+		}
+
+		// title
+		var title = this.props.data.title
+		if(title.length > 26){
+			title = title.slice(0, 22)+' ...'
+		}
+
+		// overview
+		var overview = this.props.data.overview
+		if(overview.length > 236){
+			overview = overview.slice(0, 230)+' ...'
+		}
+
+		// generate genre string
+		var genre_string = ''
+		for(var i = 0; i < this.props.data.genre_ids.length; i++){
+			if(i > 0){
+				genre_string += ', '
+			}
+			genre_string += movie_genres[this.props.data.genre_ids[i]]
+		}
+		if(genre_string.length > 30){
+			genre_string = genre_string.slice(0, 34)+' ...'
+		}
+
+		var match = this.props.match
+		return (
+			<div>
+				<div className='track-item-card'>
+					<div className='track-item-card-poster'>
+	 					<Link to={`${match.url}/${this.props.data.title}`}>
+							<img src={poster_path} alt="" />
+						</Link>
+					</div>
+					<div className='track-item-card-details'>
+						<div className='track-item-card-title'>
+							<Link to={`${match.url}/${this.props.data.title}`}>
+								{title}
+							</Link>
+						</div>
+						<div className='track-item-card-genres'>
+							{genre_string}
+						</div>
+						<div className='track-item-card-overview'>
+							{overview}
+						</div>
+						<div className='track-item-card-remove'>
+							<IconButton>
+									<ActionClear onTouchTap={this.remove.bind(this)}/>
+							</IconButton>
+						</div>
+					</div>
+				</div>
+		</div>
+		)
+	}
+}
 
 class WatchItem extends Component {
 	constructor(props){
 		super(props)
 
-		this.cast_player = null;
+		var scope = this;
+		this.socket = props.socket
+		this._mounted = false
+		this.state = {
+			cast_available: false,
+			data_available: false
+		}
+		this.data = []
+
+		this.getContent()
+		socket.on('item:getByName', function(result){
+			if(scope._mounted){
+				// console.log(result)
+				scope.data = result.data
+				scope.setState({data_available:true})
+			}
+		})
+
+		// this.cast_available = false;
+		window['__onGCastApiAvailable'] = function(isAvailable){
+			if (isAvailable) {
+				// console.log('Cast is available', window.cast)
+				scope.setState({cast_available:true})
+			}
+		};
+	}
+	
+	componentDidMount() { 
+		this._mounted = true;
 	}
 
-	// componentDidMount(){
-	// 	var scope = this;
-	// 	console.log('componentDidMount', scope.props)
-	// 	if(!this.props.cast){
-	// 		return
-	// 	}
+	componentWillUnmount() {
+		this._mounted = false;
+	}
+	
+	getContent(){
+		this.socket.emit('item:getByName', {title:this.props.match.params.title})
+	}
+	
+	handleScriptCreate() {
+	  this.setState({ scriptLoaded: false })
+	}
 
-	// 	console.log('cast', cast)
-	// 	// var cast_player = new CastPlayer();
-	// 	// cast_player.initializeCastPlayer();
-	// }
+	handleScriptError() {
+	  this.setState({ scriptError: true })
+	}
+
+	handleScriptLoad() {
+	  this.setState({ scriptLoaded: true })
+	}
+
+	onRouteChange = function(route){
+		// console.log('onRouteChange', route)
+		// console.log('this', this)
+		this.props.history.push(route)
+	}
+
+	remove(){
+		// console.log('remove')
+	}
+
 	render(){
-		console.log('render', this.props)
-		
-		if(this.props.cast){
-			console.log('cast', window.cast)
+		// console.log('render', this.props)
 
+		var backdrop_path = '/images/a_backdrop.jpg'
+		if(this.data && this.data.backdrop_path){
+			backdrop_path = 'https://image.tmdb.org/t/p/w300'+this.data.backdrop_path
+		}
+		// console.log('backdrop_path', backdrop_path)
+		
+		// generate genre string
+		var genre_string = ''
+		if(this.data && this.data.genre_ids){
+			for(var i = 0; i < this.data.genre_ids.length; i++){
+				if(i > 0){
+					genre_string += ', '
+				}
+				genre_string += movie_genres[this.data.genre_ids[i]]
+			}
+		}
+		
+		if(this.state.cast_available && this.state.data_available){
+			// console.log('cast', window.cast)
+			// console.log('path', location.protocol+"//"+location.hostname+":8888/"+this.data.movie_path)
+
+
+				// TODO: this needs to be deleted during unmount
 				var cast_player = new CastPlayer();
 				cast_player.mediaContents = [
 					{
 						'description':'a movie',
-						'sources':[location.protocol+"//"+location.hostname+":8888/"+this.props.data.path],
+						'sources':[location.protocol+"//"+location.hostname+":8888/"+this.data.movie_path],
 						'subtitle': 'By Manu',
-						'thumb': 'images/a_backdrop.jpg',
-						'title': this.props.data.title
+						'thumb': backdrop_path,
+						'title': this.props.match.params.title
 					}
 				]
 				cast_player.initializeUI();
 				cast_player.initializeCastPlayer();
 		}
-		
+
+
 		return (
-			<div className='watch-item-card'>
-				<div className='watch-item-card-title'>
-					{this.props.data.title}
-				</div>
-				<div id="main_video">
+			<div>
+				<Script 
+						url="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"
+						onCreate={this.handleScriptCreate.bind(this)}
+						onError={this.handleScriptError.bind(this)}
+	    			onLoad={this.handleScriptLoad.bind(this)}
+				/>
 				
-					<div className="imageSub">
-						<div className="blackbg" id="playerstatebg">IDLE</div>
-						<div className="label" id="playerstate">IDLE</div>
-						<img src="images/a_backdrop.jpg" id="video_image"></img>
-						<div id="video_image_overlay"></div>
-						<video id="video_element" width="100%"></video>
-					</div>
+		 		<div className='watch-item-card'>
+		 			<div className='watch-item-card-top'>
+			 			
+			 			<div className='watch-item-card-back'>
+			 				<Link to="/watch">
+			 					<IconButton>
+									<ActionBack/>
+								</IconButton>
+							</Link>
+						</div>
+	 					
+	 					<div className='watch-item-card-title'>
+							{this.props.match.params.title}
+	 					</div>
+	 					
+	 					<div className='track-item-card-remove'>
+							<IconButton>
+									<ActionClear onTouchTap={this.remove.bind(this)}/>
+							</IconButton>
+						</div>
 
-					<div id="media_control">
-						<div id="play"></div>
-						<div id="pause"></div>
-						<div id="progress_bg"></div>
-						<div id="progress"></div>
-						<div id="progress_indicator"></div>
-						<div id="audio_bg"></div>
-						<div id="audio_bg_track"></div>
-						<div id="audio_indicator"></div>
-						<div id="audio_bg_level"></div>
-						<div id="audio_on"></div>
-						<div id="audio_off"></div>
-						<div id="duration">00:00:00</div>
-						<button is="google-cast-button" id="castbutton"></button>
-						<div id="fullscreen_expand"></div>
-						<div id="fullscreen_collapse"></div>
 					</div>
+ 					
+ 					<div id="main_video">
+ 						<div className="imageSub">
+ 							<div className="blackbg" id="playerstatebg">IDLE</div>
+ 							<div className="label" id="playerstate">IDLE</div>
+ 							<img src={backdrop_path} id="video_image" alt=""></img>
+ 							<div id="video_image_overlay"></div>
+ 							<video id="video_element" width="100%"></video>
+ 						</div>
 
-				</div>
+	 					<div id="media_control">
+	 						<div id="play"></div>
+	 						<div id="pause"></div>
+	 						<div id="progress_bg"></div>
+	 						<div id="progress"></div>
+	 						<div id="progress_indicator"></div>
+	 						<div id="audio_bg"></div>
+	 						<div id="audio_bg_track"></div>
+	 						<div id="audio_indicator"></div>
+	 						<div id="audio_bg_level"></div>
+	 						<div id="audio_on"></div>
+	 						<div id="audio_off"></div>
+	 						<div id="duration">00:00:00</div>
+	 						<button is="google-cast-button" id="castbutton"></button>
+	 						<div id="fullscreen_expand"></div>
+	 						<div id="fullscreen_collapse"></div>
+	 					</div>
+		 			</div>
+
+		 			<div className="watch-item-card-genres">
+		 				{genre_string}
+		 			</div>
+		 			<div className="watch-item-card-overview">
+		 				{this.data.overview}
+		 			</div>
+
+		 		</div>
+		 		<MBottomNavigation value={3} onRouteChange={this.onRouteChange.bind(this)}/>
 			</div>
 		)
 	}
@@ -272,8 +453,7 @@ class Watch extends Component {
 		var scope = this
 		this.socket = props.socket
 		this.state = {
-			updated: 0,
-			cast_available: false
+			updated: 0			
 		}
 		this._mounted = false;
 
@@ -281,21 +461,14 @@ class Watch extends Component {
 		this.socket.on('movies:watch', function(result){
 			if(scope._mounted){
 				// console.log('got', result.data)
-				scope.data = [result.data[0]]
+				scope.data = result.data
 				scope.setState({updated:scope.state.updated+1})
 			}
 		})
 
 		this.getContent()
 
-		var scope = this;
-		this.cast_available = false;
-		window['__onGCastApiAvailable'] = function(isAvailable){
-			if (isAvailable) {
-				console.log('Cast is available', window.cast)
-				scope.setState({cast_available:true})
-			}
-		};
+		var scope = this;		
 	}
 
 	onRouteChange = function(route){
@@ -315,32 +488,15 @@ class Watch extends Component {
 	getContent(){
 		this.socket.emit('movies:watch')
 	}
-
-	handleScriptCreate() {
-	  this.setState({ scriptLoaded: false })
-	}
-
-	handleScriptError() {
-	  this.setState({ scriptError: true })
-	}
-
-	handleScriptLoad() {
-	  this.setState({ scriptLoaded: true })
-	}
-
+	
 	render(){
 		var scope = this;
+		var match = this.props.match
 		return (
-				<div>
-					<Script 
-						url="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"
-						onCreate={this.handleScriptCreate.bind(this)}
-						onError={this.handleScriptError.bind(this)}
-	    			onLoad={this.handleScriptLoad.bind(this)}
-					/>
+				<div>					
 					<div className='watch-container'>
 					{this.data.map(function(item, index){
-						return <WatchItem key={index} data={item} cast={scope.state.cast_available}/>
+						return <WatchMovie key={index} data={item} match={match}/>
 					})}
 					</div>
 					<MBottomNavigation value={3} onRouteChange={this.onRouteChange.bind(this)}/>
@@ -352,14 +508,73 @@ class Watch extends Component {
 class TrackItem extends Component {
 	constructor(props){
 		super(props)
+		this.socket = this.props.socket;
+	}
+
+	remove(){
+		// console.log('remove', this.props.data)
+
+		var scope = this;
+		this.socket.emit('movies:track', {
+			action: 'remove',
+			data: {
+				id: scope.props.data.id
+			}
+		})
 	}
 
 	render(){
-		console.log('render', this.props.data)
+		// console.log('render', this.props.data)
+		
+		var poster_path = 'https://image.tmdb.org/t/p/w92'+this.props.data.poster_path
+		if(!this.props.data.poster_path){
+			poster_path = 'images/a_poster.jpg'
+		}
+
+		// title
+		var title = this.props.data.title
+		if(title.length > 26){
+			title = title.slice(0, 22)+' ...'
+		}
+
+		// overview
+		var overview = this.props.data.overview
+		if(overview.length > 236){
+			overview = overview.slice(0, 230)+' ...'
+		}
+
+		// generate genre string
+		var genre_string = ''
+		for(var i = 0; i < this.props.data.genre_ids.length; i++){
+			if(i > 0){
+				genre_string += ', '
+			}
+			genre_string += movie_genres[this.props.data.genre_ids[i]]
+		}
+		if(genre_string.length > 30){
+			genre_string = genre_string.slice(0, 34)+' ...'
+		}
+
 		return (
 			<div className='track-item-card'>
-				<div className='track-item-card-title'>
-					{this.props.data.title}
+				<div className='track-item-card-poster'>
+					<img src={poster_path} alt="" />
+				</div>
+				<div className='track-item-card-details'>
+					<div className='track-item-card-title'>
+						{title}
+					</div>
+					<div className='track-item-card-genres'>
+						{genre_string}
+					</div>
+					<div className='track-item-card-overview'>
+						{overview}
+					</div>
+					<div className='track-item-card-remove'>
+						<IconButton>
+								<ActionClear onTouchTap={this.remove.bind(this)}/>
+						</IconButton>
+					</div>
 				</div>
 			</div>
 		)
@@ -409,35 +624,46 @@ class Track extends Component {
 
 	render(){
 		var scope = this;
-		return (
+		if(this.data.length === 0){
+			return (
+				<div>
+					<div className='Loading'>
+						Nothing to track for now
+					</div>
+					<MBottomNavigation value={2} onRouteChange={this.onRouteChange.bind(this)}/>
+				</div>
+			)		
+		}else{
+			return (
 				<div>
 					<div className='track-container'>
 					{this.data.map(function(item, index){
-						return <TrackItem key={index} data={item}/>
+						return <TrackItem key={index} data={item} socket={scope.socket}/>
 					})}
 					</div>
 					<MBottomNavigation value={2} onRouteChange={this.onRouteChange.bind(this)}/>
 				</div>
-		)
+			)
+		}
 	}
 }
 
-class ListItem extends Component {
-	render(){
-		console.log('rendering', this.props.match.params.title)
-		var scope = this;
-		return (
-			<div>
-				<h3>{scope.props.match.params.title}</h3>
-			</div>
-		)
-	}
-}
+// class ListItem extends Component {
+// 	render(){
+// 		// console.log('rendering', this.props.match.params.title)
+// 		var scope = this;
+// 		return (
+// 			<div>
+// 				<h3>{scope.props.match.params.title}</h3>
+// 			</div>
+// 		)
+// 	}
+// }
 
 class MovieCard extends Component {
-	constructor(props){
-		super(props)
-	}
+	// constructor(props){
+	// 	super(props)
+	// }
 
 	// componentDidMount(){
 	// 	const element = ReactDOM.findDOMNode(this)
@@ -446,13 +672,17 @@ class MovieCard extends Component {
 	// }
 
 	add(){
-		console.log('add', this.props.data)
-		
-		var id = this.props.data.id
-		var title = this.props.data.title
-		var year = this.props.data.release_date.split('-')[0]
+		// console.log('add', this.props.data)
+
+		// var id = this.props.data.id
+		// var title = this.props.data.title
+		// var year = this.props.data.release_date.split('-')[0]
+		// if(this.props.onTouch){
+		// 	this.props.onTouch(id, title, year)
+		// }
+
 		if(this.props.onTouch){
-			this.props.onTouch(id, title, year)
+			this.props.onTouch(this.props.data)
 		}
 	}
 
@@ -565,7 +795,6 @@ class MovieCard extends Component {
 // 										Lorem ipsum dolor sit amet, atqui deleniti maluisset nec eu. Vim doming eruditi maiestatis ad, his patrioque disputando cu. Eum sale ludus cu, quo cetero atomorum evertitur ea.
 // 									</p>
 // 								</div>
-							
 // 						</div>)
 // 					})}
 // 				</div>
@@ -664,8 +893,8 @@ class Find extends Component {
 		this.socket = props.socket;
 
 		this.socket.on('movies:find', function(result){
-			console.log(JSON.parse(result.data))
-			console.log('go content')
+			// console.log(JSON.parse(result.data))
+			// console.log('go content')
 			if(scope._mounted){
 				var data = JSON.parse(result.data)
 				scope.total_pages = data.total_pages
@@ -696,7 +925,7 @@ class Find extends Component {
 	}
 
 	componentDidUpdate(){
-		console.log('componentDidUpdate')
+		// console.log('componentDidUpdate')
 		if(this.page === 1){
 			// TODO: coincides with the localize scroll. Here we should only create a container of the necessary size
 			let element = ReactDOM.findDOMNode(this);
@@ -715,7 +944,7 @@ class Find extends Component {
 	}
 
 	handleYearChange = function(value){
-		console.log('year', value)
+		// console.log('year', value)
 
 		this.query.year = value
 		this.query.page = 1
@@ -725,7 +954,7 @@ class Find extends Component {
 	}
 
 	handleSortChange = function(value){
-		console.log('change', value)
+		// console.log('change', value)
 		this.query.sort = value
 		this.query.page = 1
 		this.total_pages = -1
@@ -734,7 +963,7 @@ class Find extends Component {
 	}
 
 	handleGenreChange = function(value){
-		console.log('change', value)
+		// console.log('change', value)
 		this.query.genre = value
 		this.query.page = 1
 		this.total_pages = -1
@@ -743,7 +972,7 @@ class Find extends Component {
 	}
 
 	getContent = function(){
-		console.log('getContent', this.query)
+		// console.log('getContent', this.query)
 		this.socket.emit('movies:find', this.query)
 	}
 
@@ -775,14 +1004,26 @@ class Find extends Component {
 		this.props.history.push(route)
 	}
 
-	addItem = function(id, title, year){
-		console.log('addItem', id, title, year)
+	addItem = function(data){
+		// console.log('addItem', data)
 
 		this.socket.emit('movies:track', {
-			mid: id,
-			mtitle: title,
-			myear: year,
-			track: true
+			action: 'add',
+			data:{
+				mid: data.id,
+				mtitle: data.title,
+				myear: data.release_date.split('-')[0],
+				
+				title: data.title,
+				release_date: data.release_date,
+				overview: data.overview,
+				vote_average: data.vote_average,
+				backdrop_path: data.backdrop_path,
+				poster_path: data.poster_path,
+				genre_ids: data.genre_ids,
+				
+				track: true
+			}
 		})
 	}
 
@@ -790,11 +1031,16 @@ class Find extends Component {
 	// 	// NOTE: we really only need this info once ...
 	// 	// console.log('setCardHeight', height)
 	// 	this.card_height = Math.max(this.card_height, height)
-	// 	// console.log('\tresult', this.card_height)
+		// console.log('\tresult', this.card_height)
 	// }
 	render(){
-		console.log('movies', this.movies.length)
+		// console.log('movies', this.movies.length)
 		var scope = this;
+
+		// this.movies.length > 0 ? true : false
+		var hasContent = this.movies.length > 0 ? true : false
+		// console.log('hasContent', hasContent)
+
 		return (
 			<div>
 				<div className='root-container'>
@@ -817,15 +1063,22 @@ class Find extends Component {
 							</Paper>
 						</div>
 
-						<div className='movie-container'>
-						{this.movies.map(function(item, index){
-							return <MovieCard 
-												// getHeight={scope.setCardHeight.bind(scope)} 
-												onTouch={scope.addItem.bind(scope)}
-												key={index} 
-												data={item}/>
-						})}
-					</div>
+						{hasContent && 
+							<div className='movie-container'>
+							{this.movies.map(function(item, index){
+								return <MovieCard 
+													onTouch={scope.addItem.bind(scope)}
+													key={index} 
+													data={item}/>
+							})}
+							</div>
+						}
+
+						{!hasContent && 
+							<div className='Loading'>
+								Loading...
+							</div>
+						}
 				</div>
 				<MBottomNavigation value={1} onRouteChange={this.onRouteChange.bind(this)}/>
 			</div>
@@ -833,36 +1086,36 @@ class Find extends Component {
 	}
 }
 
-class MAppBar extends Component {
-	constructor(props){
-		super(props)
+// class MAppBar extends Component {
+// 	constructor(props){
+// 		super(props)
 
-		this.state = {
-			open: false
-		}
-	}
+// 		this.state = {
+// 			open: false
+// 		}
+// 	}
 
-	// https://stackoverflow.com/questions/37286351/toggle-drawer-from-appbar-lefticon
-	render(){
-		return (
-		<div>
-			<AppBar style ={{position: "fixed"}}
-				title={this.props.title}
-				iconElementRight={
-					<IconMenu
-					iconButtonElement={<IconButton><MoreVertIcon /></IconButton>}
-					anchorOrigin={{horizontal: 'left', vertical: 'top'}}
-					targetOrigin={{horizontal: 'left', vertical: 'top'}}
-					iconStyle={{ fill: 'rgb(0, 0, 0)' }}
-				>
-					<MenuItem primaryText="Refresh" />
-				</IconMenu>
-				}
-			/>
-		</div>
-		)
-	}
-}
+// 	// https://stackoverflow.com/questions/37286351/toggle-drawer-from-appbar-lefticon
+// 	render(){
+// 		return (
+// 		<div>
+// 			<AppBar style ={{position: "fixed"}}
+// 				title={this.props.title}
+// 				iconElementRight={
+// 					<IconMenu
+// 					iconButtonElement={<IconButton><MoreVertIcon /></IconButton>}
+// 					anchorOrigin={{horizontal: 'left', vertical: 'top'}}
+// 					targetOrigin={{horizontal: 'left', vertical: 'top'}}
+// 					iconStyle={{ fill: 'rgb(0, 0, 0)' }}
+// 				>
+// 					<MenuItem primaryText="Refresh" />
+// 				</IconMenu>
+// 				}
+// 			/>
+// 		</div>
+// 		)
+// 	}
+// }
 
 class MBottomNavigation extends Component {
 
@@ -872,7 +1125,7 @@ class MBottomNavigation extends Component {
 
 	render() {
 		return (
-			<Paper zDepth={1} style ={{position: "fixed", bottom: 0}}>
+			<Paper zDepth={1} style={{position: "fixed", bottom: 0}}>
 				<BottomNavigation selectedIndex={this.props.value}>
 					<BottomNavigationItem
 						label="Discover"
@@ -907,12 +1160,12 @@ class Discover extends Component {
 	}
 
 	componentWillUpdate(nextProps, nextState){
-		console.log('componentWillUpdate', nextProps, nextState)
+		// console.log('componentWillUpdate', nextProps, nextState)
 	}
 
 	onRouteChange = function(route){
-		console.log('onRouteChange', route)
-		console.log('this', this)
+		// console.log('onRouteChange', route)
+		// console.log('this', this)
 		this.props.history.push(route)
 	}
 
@@ -951,23 +1204,27 @@ class App extends Component {
 				<Router>
 					<div>
 						<Route exact path="/" render={(props) => (
-							<Home/>
-						)}/>
-					
-						<Route path="/discover" render={(props) => (
 							<Discover {...props} socket={this.socket}/>
 						)}/>
 
-						<Route path="/find" render={(props) => (
+						<Route exact path="/discover" render={(props) => (
+							<Discover {...props} socket={this.socket}/>
+						)}/>
+
+						<Route exact path="/find" render={(props) => (
 							<Find {...props} socket={this.socket}/>
 						)}/>
 
-						<Route path="/track" render={(props) => (
+						<Route exact path="/track" render={(props) => (
 							<Track {...props} socket={this.socket}/>
 						)}/>
 
-						<Route path="/watch" render={(props) => (
+						<Route exact path="/watch" render={(props) => (
 							<Watch {...props} socket={this.socket}/>
+						)}/>
+
+						<Route path="/watch/:title" render={(props) => (
+							<WatchItem {...props} socket={this.socket}/>
 						)}/>
 
 					</div>

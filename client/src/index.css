@@ -153,9 +153,25 @@ body {
 	box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
 }
 
+.watch-item-card-back {
+	float: left;
+}
+
 .watch-item-card-title {
-	padding: 10px;
+	float: left;
+	padding: 13px 0px;
 	font-size: 18px;
+}
+
+.watch-item-card-overview {
+	padding: 0px 10px 20px 10px;
+	font-size: 12px;
+}
+
+.watch-item-card-genres {
+	padding: 14px 10px 6px 10px;
+	font-size: 12px;
+	font-weight: bold;
 }
 
 .track-container {
@@ -166,16 +182,54 @@ body {
 
 .track-item-card {
 	margin-bottom: 10px;
-	height: 40px;
+	height: 138px;
 	background: white;
 	position: relative;
 	border-radius: 2px;
 	box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
 }
 
+.watch-item-card-top {
+	overflow: auto;
+}
+
+.track-item-card-poster {
+	width: 92px;
+	height: 138px;
+	float: left;
+}
+
+.track-item-card-details {
+	width: 294px;
+	float: right;
+}
+
 .track-item-card-title {
-	padding: 10px;
-	font-size: 18px;
+	padding: 6px 4px;
+	font-size: 18px;	
+}
+
+.track-item-card-title a {
+	text-decoration: none;
+	color: black;
+}
+
+.track-item-card-genres {
+	padding: 4px 4px;
+	font-size: 12px;
+	font-weight: bold;
+}
+
+.track-item-card-overview {
+	padding: 4px 20px 4px 4px;
+	font-size: 12px;
+}
+
+.track-item-card-remove {
+	position: absolute;
+	right: 0px;
+	top: 0px;
+	transform: scale(0.8);
 }
 
 .movie-container {
