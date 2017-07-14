@@ -1,9 +1,53 @@
 version: "2"
 services:
   nginx:
-    container_name: nginx-proxy
+    container_name: nginx
     build: ./nginx
     ports:
       - 80:80
     volumes:
-    - /Users/manu/Code/mvs/client/build:/code/mvs
+      - /Users/manu/Code/mvs/client/build:/code/mvs
+  mongo:
+    container_name: mongo
+    image: mongo
+    ports:
+      - "27017:27017"
+    volumes_from:
+      - mongodata
+  mongodata:
+    image: tianon/true
+    volumes:
+      - /Users/manu/Code/mvs/data/mongo-db:/data/db
+  web:
+    container_name: web
+    build: ./server
+    volumes:
+      - /Users/manu/Code/mvs/server/:/app
+    ports:
+      - "3001:3001"
+    links:
+      - mongo
+    environment:
+      - NODE_ENV=development
+  pia:
+    container_name: pia
+    image: derbenni/docker-pia-openvpn
+    devices: 
+      - "/dev/net/tun"
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - USERNAME=p0240708
+      - PASSWORD=Q77U6n9DBY
+    dns:
+      - 209.222.18.222
+      - 209.222.18.218
+  search:
+    container_name: search
+    build: ./search
+    network_mode: container:pia
+    environment:
+        - NODE_ENV=development      
+    volumes:
+      - /Users/manu/Code/mvs/search/:/app
+      - /Users/manu/Code/mvs/data/download/:/download
