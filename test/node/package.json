@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "mongoose": "^4.11.2",
     "q": "^1.5.0",
     "webtorrent": "^0.98.19"
   }

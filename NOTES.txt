@@ -47,3 +47,8 @@ https://stackoverflow.com/questions/7193033/nodejs-ajax-vs-socket-io-pros-and-co
 
 THOUGHTS/ENHANCEMENTS
 It might be better to swipe to the next image. At least this way we have the ability to go back to the previous
+
+
+    environment:
+      - USERNAME=p0240708
+      - PASSWORD=Q77U6n9DBY

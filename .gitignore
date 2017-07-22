@@ -4,6 +4,8 @@ server/node_modules
 player/node_modules
 server/mongo-db
 search/node_modules
+trigger/node_modules
 test/node/download
 test/node/node_modules
-download
+data
+credentials.json

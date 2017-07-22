@@ -1,13 +1,19 @@
 var fs = require("fs"),
     http = require("http"),
     url = require("url"),
-    path = require("path");
+    path = require("path"),
+    express = require('express');
 
-http.createServer(function (req, res) {
+var app = express();
+// var server = http.createServer(app);
+
+app.set('port', 8888);
+
+app.get('/*', function (req, res) {
 	console.log('request', decodeURIComponent(req.url))
 
 	// '/Users/manu/Code/mvs/player/../download/Split\ \(2016\)\ \[YTS.AG\]/Split.2016.720p.BluRay.x264-\[YTS.AG\].mp4'
-	var file = __dirname+'/../download/'+decodeURIComponent(req.url)
+	var file = __dirname+'/../download'+decodeURIComponent(req.url)
     console.log('looking for', file)
     fs.stat(file, function(err, stats) {
       if (err) {
@@ -42,4 +48,11 @@ http.createServer(function (req, res) {
           res.end(err);
         });
     });
-}).listen(8888);
+})
+
+
+app.listen(app.get('port'), function (){
+  console.log('Player Express server listening on port %d in %s mode', app.get('port'), app.get('env'));
+});
+
+module.exports = app;

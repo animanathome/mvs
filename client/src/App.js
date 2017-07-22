@@ -10,6 +10,7 @@ import MenuItem from 'material-ui/MenuItem';
 // import IconMenu from 'material-ui/IconMenu';
 // import Drawer from 'material-ui/Drawer';
 import {BottomNavigation, BottomNavigationItem} from 'material-ui/BottomNavigation';
+import {Tabs, Tab} from 'material-ui/Tabs';
 import Paper from 'material-ui/Paper';
 // import IconLocationOn from 'material-ui/svg-icons/communication/location-on';
 import IconSearch from 'material-ui/svg-icons/action/search';
@@ -277,9 +278,8 @@ class WatchItem extends Component {
 			cast_available: false,
 			data_available: false
 		}
-		this.data = []
 
-		this.getContent()
+		this.data = []
 		socket.on('item:getByName', function(result){
 			if(scope._mounted){
 				// console.log(result)
@@ -287,8 +287,9 @@ class WatchItem extends Component {
 				scope.setState({data_available:true})
 			}
 		})
+		this.getContent()
 
-		// this.cast_available = false;
+		this.cast_player = null;
 		window['__onGCastApiAvailable'] = function(isAvailable){
 			if (isAvailable) {
 				// console.log('Cast is available', window.cast)
@@ -351,24 +352,28 @@ class WatchItem extends Component {
 			}
 		}
 		
-		if(this.state.cast_available && this.state.data_available){
+		if(this.state.cast_available 
+		&& this.state.data_available 
+		&& !this.cast_player){
+			console.log('creating castplayer instance')
 			// console.log('cast', window.cast)
 			// console.log('path', location.protocol+"//"+location.hostname+":8888/"+this.data.movie_path)
 
-
-				// TODO: this needs to be deleted during unmount
-				var cast_player = new CastPlayer();
-				cast_player.mediaContents = [
-					{
-						'description':'a movie',
-						'sources':[location.protocol+"//"+location.hostname+":8888/"+this.data.movie_path],
-						'subtitle': 'By Manu',
-						'thumb': backdrop_path,
-						'title': this.props.match.params.title
-					}
-				]
-				cast_player.initializeUI();
-				cast_player.initializeCastPlayer();
+			// TODO: this needs to be deleted during unmount
+			var cast_player = new CastPlayer();
+			cast_player.mediaContents = [
+				{
+					'description':'a movie',
+					'sources':[location.protocol+"//"+location.hostname+":8888/"+this.data.movie_path],
+					// 'sources':[location.protocol+"//"+location.hostname+":8888/movie.mp4"],
+					'subtitle': 'By Manu',
+					'thumb': backdrop_path,
+					'title': this.props.match.params.title
+				}
+			]
+			cast_player.initializeUI();
+			cast_player.initializeCastPlayer();
+			this.cast_player = cast_player;
 		}
 
 
@@ -619,6 +624,7 @@ class Track extends Component {
 	}
 
 	getContent(){
+		console.log('getContent')
 		this.socket.emit('movies:list')
 	}
 
@@ -1117,10 +1123,49 @@ class Find extends Component {
 // 	}
 // }
 
+class MContentCategory extends Component {
+	
+	constructor(props) {
+		super(props);
+		// this.state = {
+		// 	value: 'movies',
+		// };
+		this.value = 'movies'
+	}
+
+	// onActionChange = (value) => {
+	// 	console.log('onActionChange', value)
+	// 	// this.setState({
+	// 	// 	value: value,
+	// 	// });
+	// 	this.value = value
+	// };	
+
+	handleChange = (value) => {
+		console.log('handleChange', value)
+
+		this.props.onCategoryChange(value)
+	}
+
+	render(){
+		return (
+			<Tabs
+				value={this.value}
+				onChange={this.handleChange}
+			>
+      	<Tab label="Movies" value="movies">
+      	</Tab>
+      	<Tab label="Series" value="series">
+      	</Tab>
+    	</Tabs>
+		)
+	}
+}
+
 class MBottomNavigation extends Component {
 
 	select = function(index){
-		this.props.onRouteChange('/'+['discover', 'find', 'track', 'watch'][index])
+		this.props.onActionChange(['discover', 'find', 'track', 'watch'][index])
 	}
 
 	render() {
@@ -1163,18 +1208,35 @@ class Discover extends Component {
 		// console.log('componentWillUpdate', nextProps, nextState)
 	}
 
-	onRouteChange = function(route){
+	onRouteChange = function(){
 		// console.log('onRouteChange', route)
 		// console.log('this', this)
+		var route = '/'+this.props.route.join('/')
+		console.log('route', route)
 		this.props.history.push(route)
+	}
+
+	onActionChange = function(action){
+		console.log('onActionChange', action)
+		this.props.route[0] = action
+		console.log('route', this.props.route)
+		this.onRouteChange()
+	}
+
+	onCategoryChange = function(category){
+		console.log('onCategoryChange', category)
+		this.props.route[1] = category
+		console.log('route', this.props.route)
+		this.onRouteChange()
 	}
 
 	render(){
 		var scope = this;
 		return (
 				<div>
+					<MContentCategory onCategoryChange={this.onCategoryChange.bind(this)}/>
 					<Select socket={scope.socket}/>
-					<MBottomNavigation value={0} onRouteChange={this.onRouteChange.bind(this)}/>
+					<MBottomNavigation value={0} onActionChange={this.onActionChange.bind(this)}/>
 				</div>
 		)
 	}
@@ -1186,6 +1248,8 @@ class App extends Component {
 
 		var scope = this;
 		this.socket = socket;
+
+		this.route = ['discover','movies']
 
 		socket.on('disconnect', function(){
 			socket.close();
@@ -1204,27 +1268,27 @@ class App extends Component {
 				<Router>
 					<div>
 						<Route exact path="/" render={(props) => (
-							<Discover {...props} socket={this.socket}/>
+							<Discover {...props} route={this.route} socket={this.socket}/>
 						)}/>
 
 						<Route exact path="/discover" render={(props) => (
-							<Discover {...props} socket={this.socket}/>
+							<Discover {...props} route={this.route} socket={this.socket}/>
 						)}/>
 
 						<Route exact path="/find" render={(props) => (
-							<Find {...props} socket={this.socket}/>
+							<Find {...props} route={this.route} socket={this.socket}/>
 						)}/>
 
 						<Route exact path="/track" render={(props) => (
-							<Track {...props} socket={this.socket}/>
+							<Track {...props} route={this.route} socket={this.socket}/>
 						)}/>
 
 						<Route exact path="/watch" render={(props) => (
-							<Watch {...props} socket={this.socket}/>
+							<Watch {...props} route={this.route} socket={this.socket}/>
 						)}/>
 
 						<Route path="/watch/:title" render={(props) => (
-							<WatchItem {...props} socket={this.socket}/>
+							<WatchItem {...props} route={this.route} socket={this.socket}/>
 						)}/>
 
 					</div>

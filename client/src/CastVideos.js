@@ -787,7 +787,9 @@ CastPlayer.prototype.initializeCastPlayer = function() {
     // Set the receiver application ID to your own (created in the
     // Google Cast Developer Console), or optionally
     // use the chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID
-    options.receiverApplicationId = '4F8B3483';
+    // options.receiverApplicationId = '4F8B3483';
+    // Look at credentials.json for more details
+    options.receiverApplicationId = '0E55055D';
 
     // Auto join policy can be one of the following three:
     // ORIGIN_SCOPED - Auto connect from same appId and page origin
@@ -821,7 +823,43 @@ CastPlayer.prototype.switchPlayer = function() {
             return;
         }
     }
-    // this.setupLocalPlayer();
+    this.setupLocalPlayer();
+};
+
+/**
+ * Makes human-readable message from chrome.cast.Error
+ * @param {chrome.cast.Error} error
+ * @return {string} error message
+ */
+CastPlayer.getErrorMessage = function(error) {
+    // var cast = window.cast;
+    var chrome = window.chrome;
+    switch (error.code) {
+        case chrome.cast.ErrorCode.API_NOT_INITIALIZED:
+            return 'The API is not initialized.' +
+                (error.description ? ' :' + error.description : '');
+        case chrome.cast.ErrorCode.CANCEL:
+            return 'The operation was canceled by the user' +
+                (error.description ? ' :' + error.description : '');
+        case chrome.cast.ErrorCode.CHANNEL_ERROR:
+            return 'A channel to the receiver is not available.' +
+                (error.description ? ' :' + error.description : '');
+        case chrome.cast.ErrorCode.EXTENSION_MISSING:
+            return 'The Cast extension is not available.' +
+                (error.description ? ' :' + error.description : '');
+        case chrome.cast.ErrorCode.INVALID_PARAMETER:
+            return 'The parameters to the operation were not valid.' +
+                (error.description ? ' :' + error.description : '');
+        case chrome.cast.ErrorCode.RECEIVER_UNAVAILABLE:
+            return 'No receiver was compatible with the session request.' +
+                (error.description ? ' :' + error.description : '');
+        case chrome.cast.ErrorCode.SESSION_ERROR:
+            return 'A session could not be created, or a session was invalid.' +
+                (error.description ? ' :' + error.description : '');
+        case chrome.cast.ErrorCode.TIMEOUT:
+            return 'The operation timed out.' +
+                (error.description ? ' :' + error.description : '');
+    }
 };
 
 export default CastPlayer

@@ -15,6 +15,8 @@ module.exports = function (socket) {
 	});
 
 	socket.on('item:getByName', function(data){
+		console.log('item:getByName', data)
+
 		movie.findOne({
 			mtitle:data.title
 		}, {
@@ -23,7 +25,10 @@ module.exports = function (socket) {
 			genre_ids:1, 
 			backdrop_path:1
 		}, function(err, result){
-			if(err) return console.error(err);
+			
+			if(err){
+				console.error(err);
+			}
 
 			console.log('details:', result)
 
@@ -41,7 +46,8 @@ module.exports = function (socket) {
 		}, {
 			$set:data.update
 		}, function(err, result){
-			console.log(err, result)
+			// console.log(err, result)
+			
 			if(err){
 				console.error(err)
 			}
@@ -50,6 +56,8 @@ module.exports = function (socket) {
 
 	// list of movies which are available
 	socket.on('movies:watch', function(){
+		console.log('movies:watch')
+
 		movie.find({
 			track:true, 
 			available:true
@@ -60,7 +68,10 @@ module.exports = function (socket) {
 			overview:1, 
 			genre_ids:1
 		}, function(err, movies){
-			if(err) return console.error(err);
+			
+			if(err){
+				console.error(err);
+			}
 
 			console.log(movies)
 
@@ -84,6 +95,13 @@ module.exports = function (socket) {
 
 	// list of movies we're currently tracking
 	socket.on('movies:list', function(){
+		console.log('movies:list')
+		// console.log('movie', movie)
+
+		movie.count({}, function(err, result){
+      		console.log('Count is '+result)
+    	})
+
 		movie.find({
 			track:true, 
 			available:false
@@ -94,7 +112,11 @@ module.exports = function (socket) {
 			overview:1, 
 			genre_ids:1
 		}, function(err, movies){
-			if(err) return console.error(err);
+			console.log(err, movies)
+
+			if(err){
+				console.error(err);
+			}
 
 			console.log(movies)
 
@@ -114,42 +136,53 @@ module.exports = function (socket) {
 				'data': data
 			})
 		})
+
+		console.log('done')
 	});
 
 	// add the given to the track list
 	socket.on('movies:track', function(input){
-		console.log(input)
+		console.log('movies:track', input)
 
 		if(input.action === 'remove'){
 			console.log('removing', input.data.id, 'from track list')
 
 			movie.findOneAndRemove({ _id: input.data.id }, function(err, other){
 				
-				if(err) return console.error(err);
+				if(err){
+					console.error(err);
+				}
 				
 				console.log('done deleting', other)
 			})
 		}
 
 		if(input.action === 'add'){
-			console.log('adding', input.data.mtitle, 'to track list')
+			console.log('adding', input.data.mtitle, 'to track list')			
 
 			movie.findOne({ mid: input.data.mid }, function(err, result){
 				// console.log('findOne')
 				// console.log(err, result)
 				// console.log('------')
+				if(err){
+					console.error(err);
+				}
 
 				// only add a given entry if it doesn't exist
 				if(result === null){
 					var m = new movie(input.data)
 					m.save(function(err){
-						console.error(err)
-						// console.log('id', m.id)
-						// console.log('mid', m.mid)
-						console.log('done adding', m.myear, m.mtitle)
+						if(err){
+							console.error('error', err)
+						}else{
+							console.log('Added', m.mtitle+'('+m.myear+')', 'to watch list.')
+							movie.count({}, function(err, result){
+								console.log('Count is '+result)
+							})	
+						}
 					})
 				}else{
-					console.log(input.mtitle, 'is already processed')
+					console.log(input.data.mtitle, 'is already on the list')
 				}
 			});
 		}

@@ -145,7 +145,7 @@ var yts = (function(){
 		var client = new WebTorrent()
 		client.add(magnetURI, { path: getDownloadDir() }, function (torrent) {
 			torrent.on('done', onDone)
-			var interval = setInterval(onProgress, 500)
+			var interval = setInterval(onProgress, 5000)
 			// onProgress()
 
 			// console.log('path', torrent.files.path)
@@ -164,7 +164,7 @@ var yts = (function(){
 
 			function onProgress(){
 				var percent = Math.round(torrent.progress * 100 * 100) / 100;
-				console.log('\tprogress', percent)
+				console.log('\t', item.title, '| progress', percent+'%')
 			}
 
 			function onDone(){

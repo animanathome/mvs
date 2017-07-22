@@ -3,22 +3,36 @@ var http = require('http');
 var socket = require('./routes/socket.js');
 var mongoose = require('mongoose');
 
-// Movie = require('./models/movies.js')
+movie = require('./models/movies.js')
 
 // https://scotch.io/tutorials/using-mongoosejs-in-node-js-and-mongodb-applications
-mongoose.connect('mongodb://localhost/mvs');
+// mongoose.connect('mongodb://localhost/mvs');
+mongoose.connect('mongodb://mongo:27017/mvs', function(err){	
+	if(err){
+		console.error(err)
+	}else{
+		console.log('successfully connected to mongo database')
+		console.log('connection status:', mongoose.connection.readyState);
+		
+		console.log('getting number of movies:')
+		movie.count({}, function(err, result){
+			console.log('error', err)
+      		console.log('count is '+result)
+    	})
+	}
+});
 
 var app = express();
 var server = http.createServer(app);
 
 /* Configuration */
-app.set('views', __dirname + '/views');
-app.use(express.static(__dirname + '/public'));
+// app.set('views', __dirname + '/views');
+// app.use(express.static(__dirname + '/public'));
 app.set('port', 3001);
 
-if (process.env.NODE_ENV === 'development') {
+// if (process.env.NODE_ENV === 'development') {
 	app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
-}
+// }
 
 /* Socket.io Communication */
 var io = require('socket.io').listen(server);
