@@ -7,7 +7,7 @@ services:
     ports:
       - 80:80
     volumes:
-      - /Users/manu/Code/mvs/client/build:/code/mvs
+      - $PROJ_DIR/mvs/client/build:/code/mvs
   mongo:
     container_name: mongo
     image: mongo
@@ -20,12 +20,12 @@ services:
   mongodata:
     image: tianon/true
     volumes:
-      - /Users/manu/Code/mvs/data/mongo-db:/data/db
+      - $PROJ_DIR/mvs/data/mongo-db:/data/db
   web:
     container_name: web
     build: ./server
     volumes:
-      - /Users/manu/Code/mvs/server/:/app
+      - $PROJ_DIR/mvs/server/:/app
     ports:
       - "3001:3001"
     # links:
@@ -44,6 +44,9 @@ services:
       - 209.222.18.218
     networks:
       - vpn
+    environment:
+      - USERNAME=$PIA_USR
+      - PASSWORD=$PIA_PAS
   search:
     container_name: search
     depends_on: 
@@ -53,8 +56,8 @@ services:
     environment:
         - NODE_ENV=development      
     volumes:
-      - /Users/manu/Code/mvs/search/:/app
-      - /Users/manu/Code/mvs/data/download/:/download
+      - $PROJ_DIR/mvs/search/:/app
+      - $PROJ_DIR/mvs/data/download/:/download
   trigger:
     container_name: trigger
     build: ./trigger
@@ -64,7 +67,7 @@ services:
     environment:
         - NODE_ENV=development      
     volumes:
-      - /Users/manu/Code/mvs/trigger/:/app
+      - $PROJ_DIR/mvs/trigger/:/app
   player:
     container_name: player
     build: ./player
@@ -73,8 +76,8 @@ services:
     environment:
       - NODE_ENV=development
     volumes:
-      - /Users/manu/Code/mvs/player/:/app
-      - /Users/manu/Code/mvs/data/download/:/download
+      - $PROJ_DIR/mvs/player/:/app
+      - $PROJ_DIR/mvs/data/download/:/download
     ports:
       - "8888:8888"
 
