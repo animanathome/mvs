@@ -1123,49 +1123,10 @@ class Find extends Component {
 // 	}
 // }
 
-class MContentCategory extends Component {
-	
-	constructor(props) {
-		super(props);
-		// this.state = {
-		// 	value: 'movies',
-		// };
-		this.value = 'movies'
-	}
-
-	// onActionChange = (value) => {
-	// 	console.log('onActionChange', value)
-	// 	// this.setState({
-	// 	// 	value: value,
-	// 	// });
-	// 	this.value = value
-	// };	
-
-	handleChange = (value) => {
-		console.log('handleChange', value)
-
-		this.props.onCategoryChange(value)
-	}
-
-	render(){
-		return (
-			<Tabs
-				value={this.value}
-				onChange={this.handleChange}
-			>
-      	<Tab label="Movies" value="movies">
-      	</Tab>
-      	<Tab label="Series" value="series">
-      	</Tab>
-    	</Tabs>
-		)
-	}
-}
-
 class MBottomNavigation extends Component {
 
 	select = function(index){
-		this.props.onActionChange(['discover', 'find', 'track', 'watch'][index])
+		this.props.onRouteChange(['discover', 'find', 'track', 'watch'][index])
 	}
 
 	render() {
@@ -1208,35 +1169,19 @@ class Discover extends Component {
 		// console.log('componentWillUpdate', nextProps, nextState)
 	}
 
-	onRouteChange = function(){
+	onRouteChange = function(route){
 		// console.log('onRouteChange', route)
-		// console.log('this', this)
-		var route = '/'+this.props.route.join('/')
+		// console.log('this', this)		
 		console.log('route', route)
 		this.props.history.push(route)
-	}
-
-	onActionChange = function(action){
-		console.log('onActionChange', action)
-		this.props.route[0] = action
-		console.log('route', this.props.route)
-		this.onRouteChange()
-	}
-
-	onCategoryChange = function(category){
-		console.log('onCategoryChange', category)
-		this.props.route[1] = category
-		console.log('route', this.props.route)
-		this.onRouteChange()
 	}
 
 	render(){
 		var scope = this;
 		return (
 				<div>
-					<MContentCategory onCategoryChange={this.onCategoryChange.bind(this)}/>
 					<Select socket={scope.socket}/>
-					<MBottomNavigation value={0} onActionChange={this.onActionChange.bind(this)}/>
+					<MBottomNavigation value={0} onRouteChange={this.onRouteChange.bind(this)}/>
 				</div>
 		)
 	}
