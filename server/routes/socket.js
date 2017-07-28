@@ -1,4 +1,5 @@
-var tmdb = require('../controls/tmdb.js')
+var tmdbm = require('../controls/tmdbm.js')
+var tmdbs = require('../controls/tmdbs.js')
 var movie = require('../models/movies.js')
 
 module.exports = function (socket) {
@@ -189,18 +190,36 @@ module.exports = function (socket) {
 
 	});
 
-	// list of movies we want to discover
-	socket.on('movies:find', function(input){
-		tmdb.find(input)
+	// FIND
+	// list of series we want to discover
+	socket.on('series:find', function(input){
+		tmdbs.find(input)
 		.then(function(data){
 			console.log(data)
-			// remove the list of movies we're already tracking or have
-			// remove movies that don't have a poster
-			// remove horror + erotica movies
-			// remove B movies???
-			// remove documentaries
-			// add title + actors + score
+			socket.emit('series:find', {
+				'data':data
+			})
+		})
+	})
+
+	// list of movies we want to discover
+	socket.on('movies:find', function(input){
+		tmdbm.find(input)
+		.then(function(data){
+			console.log(data)
 			socket.emit('movies:find', {
+				'data':data
+			})
+		})
+	})
+
+	// DISCOVER
+	// list of series we want to discover
+	socket.on('series:discover', function(input){
+		tmdbs.discover(input)
+		.then(function(data){
+			console.log(data)
+			socket.emit('series:discover', {
 				'data':data
 			})
 		})
@@ -208,24 +227,31 @@ module.exports = function (socket) {
 
 	// list of movies we want to discover
 	socket.on('movies:discover', function(input){
-		tmdb.discover(input)
+		tmdbm.discover(input)
 		.then(function(data){
 			console.log(data)
-			// remove the list of movies we're already tracking or have
-			// remove movies that don't have a poster
-			// remove horror + erotica movies
-			// remove B movies???
-			// remove documentaries
-			// add title + actors + score
 			socket.emit('movies:discover', {
 				'data':data
 			})
 		})
 	})
 
+	// UPCOMING
 	// list of upcoming movies
+	socket.on('series:upcoming', function(input){
+		tmdbm.upcoming(input)
+		.then(function(data){
+			// remove movies which are already being tracked
+
+			// console.log('result', data)
+			socket.emit('series:upcoming', {
+				'data':data
+			})
+		})
+	})
+
 	socket.on('movies:upcoming', function(input){
-		tmdb.upcoming(input)
+		tmdbm.upcoming(input)
 		.then(function(data){
 			// remove movies which are already being tracked
 

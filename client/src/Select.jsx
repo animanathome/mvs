@@ -25,16 +25,21 @@ class Select extends Component {
 		this.data = {}
 
 		this.socket = props.socket
-		this.socket.on(this.category+':discover', function(result){
+		
+		var setData = function(result){
 			if(scope._mounted){
-				// console.log('result', scope.data)
 				scope.data = JSON.parse(result.data);
+				console.log('result', scope.data)
 				scope.setState({
 					'received': scope.state.received+1
 				})
 			}
-		})
-		this.socket.emit(this.category+':discover', {})
+		}
+
+		this.socket.on('movies:discover', function(res){setData(res)})
+		this.socket.on('series:discover', function(res){setData(res)})
+		
+		this.getContent()
 	}
 
 	getContent(){
@@ -148,13 +153,13 @@ class Select extends Component {
 				var image = 'https://image.tmdb.org/t/p/w500'+entry.poster_path
 				return (
 					<div>
-						<img className='movie-image' src={image} alt={entry.title}></img>
+						<img className='movie-image' src={image} alt={entry.title || entry.name}></img>
 						<div onClick={this.removeItem.bind(this)} className='movie-info'>
 							<div className='movie-title'>
-								{entry.title}
+								{entry.title || entry.name}
 							</div>
 							<div className='movie-overview'>
-								{entry.overview.substring(0,250)+" ..."}
+								{entry.overview.substring(0,220)+" ..."}
 							</div>
 						</div>
 						<div className='movie-add'>

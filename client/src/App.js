@@ -239,7 +239,7 @@ class WatchMovie extends Component {
 			<div>
 				<div className='track-item-card'>
 					<div className='track-item-card-poster'>
-	 					<Link to={`${match.url}/${this.props.data.title}`}>
+						<Link to={`${match.url}/${this.props.data.title}`}>
 							<img src={poster_path} alt="" />
 						</Link>
 					</div>
@@ -311,15 +311,15 @@ class WatchItem extends Component {
 	}
 	
 	handleScriptCreate() {
-	  this.setState({ scriptLoaded: false })
+		this.setState({ scriptLoaded: false })
 	}
 
 	handleScriptError() {
-	  this.setState({ scriptError: true })
+		this.setState({ scriptError: true })
 	}
 
 	handleScriptLoad() {
-	  this.setState({ scriptLoaded: true })
+		this.setState({ scriptLoaded: true })
 	}
 
 	onRouteChange = function(route){
@@ -383,69 +383,69 @@ class WatchItem extends Component {
 						url="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"
 						onCreate={this.handleScriptCreate.bind(this)}
 						onError={this.handleScriptError.bind(this)}
-	    			onLoad={this.handleScriptLoad.bind(this)}
+						onLoad={this.handleScriptLoad.bind(this)}
 				/>
 				
-		 		<div className='watch-item-card'>
-		 			<div className='watch-item-card-top'>
-			 			
-			 			<div className='watch-item-card-back'>
-			 				<Link to="/watch">
-			 					<IconButton>
+				<div className='watch-item-card'>
+					<div className='watch-item-card-top'>
+						
+						<div className='watch-item-card-back'>
+							<Link to="/watch">
+								<IconButton>
 									<ActionBack/>
 								</IconButton>
 							</Link>
 						</div>
-	 					
-	 					<div className='watch-item-card-title'>
+						
+						<div className='watch-item-card-title'>
 							{this.props.match.params.title}
-	 					</div>
-	 					
-	 					<div className='track-item-card-remove'>
+						</div>
+						
+						<div className='track-item-card-remove'>
 							<IconButton>
 									<ActionClear onTouchTap={this.remove.bind(this)}/>
 							</IconButton>
 						</div>
 
 					</div>
- 					
- 					<div id="main_video">
- 						<div className="imageSub">
- 							<div className="blackbg" id="playerstatebg">IDLE</div>
- 							<div className="label" id="playerstate">IDLE</div>
- 							<img src={backdrop_path} id="video_image" alt=""></img>
- 							<div id="video_image_overlay"></div>
- 							<video id="video_element" width="100%"></video>
- 						</div>
+					
+					<div id="main_video">
+						<div className="imageSub">
+							<div className="blackbg" id="playerstatebg">IDLE</div>
+							<div className="label" id="playerstate">IDLE</div>
+							<img src={backdrop_path} id="video_image" alt=""></img>
+							<div id="video_image_overlay"></div>
+							<video id="video_element" width="100%"></video>
+						</div>
 
-	 					<div id="media_control">
-	 						<div id="play"></div>
-	 						<div id="pause"></div>
-	 						<div id="progress_bg"></div>
-	 						<div id="progress"></div>
-	 						<div id="progress_indicator"></div>
-	 						<div id="audio_bg"></div>
-	 						<div id="audio_bg_track"></div>
-	 						<div id="audio_indicator"></div>
-	 						<div id="audio_bg_level"></div>
-	 						<div id="audio_on"></div>
-	 						<div id="audio_off"></div>
-	 						<div id="duration">00:00:00</div>
-	 						<button is="google-cast-button" id="castbutton"></button>
-	 						<div id="fullscreen_expand"></div>
-	 						<div id="fullscreen_collapse"></div>
-	 					</div>
-		 			</div>
+						<div id="media_control">
+							<div id="play"></div>
+							<div id="pause"></div>
+							<div id="progress_bg"></div>
+							<div id="progress"></div>
+							<div id="progress_indicator"></div>
+							<div id="audio_bg"></div>
+							<div id="audio_bg_track"></div>
+							<div id="audio_indicator"></div>
+							<div id="audio_bg_level"></div>
+							<div id="audio_on"></div>
+							<div id="audio_off"></div>
+							<div id="duration">00:00:00</div>
+							<button is="google-cast-button" id="castbutton"></button>
+							<div id="fullscreen_expand"></div>
+							<div id="fullscreen_collapse"></div>
+						</div>
+					</div>
 
-		 			<div className="watch-item-card-genres">
-		 				{genre_string}
-		 			</div>
-		 			<div className="watch-item-card-overview">
-		 				{this.data.overview}
-		 			</div>
+					<div className="watch-item-card-genres">
+						{genre_string}
+					</div>
+					<div className="watch-item-card-overview">
+						{this.data.overview}
+					</div>
 
-		 		</div>
-		 		<MBottomNavigation value={3} onRouteChange={this.onRouteChange.bind(this)}/>
+				</div>
+				<MBottomNavigation value={3} onRouteChange={this.onRouteChange.bind(this)}/>
 			</div>
 		)
 	}
@@ -654,39 +654,78 @@ class Track extends Component {
 	}
 }
 
-// class ListItem extends Component {
-// 	render(){
-// 		// console.log('rendering', this.props.match.params.title)
-// 		var scope = this;
-// 		return (
-// 			<div>
-// 				<h3>{scope.props.match.params.title}</h3>
-// 			</div>
-// 		)
-// 	}
-// }
+class SeriesCard extends Component {
+	constructor(props){
+		super(props)
+		var scope = this;
+		this.socket = props.socket;
+	}
+
+		render(){
+		// console.log(this.props.data.poster_path)
+		var image_path = 'https://image.tmdb.org/t/p/w92'+this.props.data.poster_path
+		if(!this.props.data.poster_path){
+			image_path = 'images/a_poster.jpg'
+		}
+
+		// console.log('props: ', this.props.data)
+		var backdrop_path = 'https://image.tmdb.org/t/p/w300'+this.props.data.backdrop_path
+		if(!this.props.data.backdrop_path){
+			backdrop_path = 'images/a_backdrop.jpg'
+		}
+
+		// title
+		var title = this.props.data.title || this.props.data.name
+		if(title.length > 26){
+			title = title.slice(0, 22)+' ...'
+		}
+
+		// generate genre string
+		var genre_string = ''
+		for(var i = 0; i < this.props.data.genre_ids.length; i++){
+			if(i > 0){
+				genre_string += ', '
+			}
+			genre_string += movie_genres[this.props.data.genre_ids[i]]
+		}
+		if(genre_string.length > 30){
+			genre_string = genre_string.slice(0, 34)+' ...'
+		}
+
+		// popularity
+		var popularity = this.props.data.popularity.toString().slice(0, 3)
+		if(popularity[2] === '.'){
+			popularity = popularity.slice(0, 2)
+		}
+
+		return (
+			<div className='movie-card'>
+				<img className='movie-image' 
+					// style={{opacity:0.7}}  
+					src={backdrop_path} 
+					alt="" />
+				<div className='movie-card-color'></div>
+				<img className='movie-card-poster' src={image_path} alt="" />
+				<div className='movie-card-title'>
+					{title}
+				</div>
+				<div className='movie-card-popularity'>
+					{popularity}
+					 <FontIcon >
+						<IconStar style={{color:'white', position:'absolute', left:'2px', bottom:'-2px', height:'16px', width:'16px'}}/>
+					</FontIcon>
+				</div>
+				<div className='movie-card-genre'>
+					{genre_string}
+				</div>
+			</div>
+		)
+	}
+}
 
 class MovieCard extends Component {
-	// constructor(props){
-	// 	super(props)
-	// }
-
-	// componentDidMount(){
-	// 	const element = ReactDOM.findDOMNode(this)
-	// 	// console.log(element.clientHeight)
-	// 	this.props.getHeight(element.clientHeight)
-	// }
 
 	add(){
-		// console.log('add', this.props.data)
-
-		// var id = this.props.data.id
-		// var title = this.props.data.title
-		// var year = this.props.data.release_date.split('-')[0]
-		// if(this.props.onTouch){
-		// 	this.props.onTouch(id, title, year)
-		// }
-
 		if(this.props.onTouch){
 			this.props.onTouch(this.props.data)
 		}
@@ -706,7 +745,7 @@ class MovieCard extends Component {
 		}
 
 		// title
-		var title = this.props.data.title
+		var title = this.props.data.title || this.props.data.name
 		if(title.length > 26){
 			title = title.slice(0, 22)+' ...'
 		}
@@ -759,62 +798,12 @@ class MovieCard extends Component {
 	}
 }
 
-// class List extends Component {
-// 	constructor(props){
-// 		super(props)
-// 		var scope = this;
-// 		this.state = {
-// 			loaded: false
-// 		}
-// 		this.content = []
-// 		this.socket = props.socket;
-// 		this.socket.emit('movies:list', {})
-// 		this.socket.on('movies:list', function(result){
-// 			console.log(result)
-// 			scope.content = result.data;
-// 			scope.setState({loaded:true})
-// 		})
-// 	}
-
-// 	render(){
-// 		var scope = this;
-// 		var match = this.props.match
-
-// 		console.log('location', this.props.location.pathname)
-
-// 		return (
-// 			<div>
-// 				<h2>Watch List</h2>
-// 				<div className='movie_list'>
-// 					{scope.content.map(function(item, index){
-// 						return (
-// 						<div key={index} className='movie_card'>
-// 								<Link to={`${match.url}/${item.title}`}>
-// 									<div className="image_content">
-// 									</div>
-// 								</Link>
-// 								<div className='movie_info'>
-// 									<div className="movie_title">
-// 										<a>{item.title}</a>
-// 									</div>
-// 									<p className="movie_overview">
-// 										Lorem ipsum dolor sit amet, atqui deleniti maluisset nec eu. Vim doming eruditi maiestatis ad, his patrioque disputando cu. Eum sale ludus cu, quo cetero atomorum evertitur ea.
-// 									</p>
-// 								</div>
-// 						</div>)
-// 					})}
-// 				</div>
-
-// 				<Route path={`${match.url}/:title`}  component={ListItem}/>
-// 			</div>
-// 		)
-// 	}
-// }
-
 class Find extends Component {
 	constructor(props){
+		console.log('Find', props)
+		
 		super(props)
-		var scope = this;		
+		var scope = this;
 		// console.log('genres:', this.genres)
 
 		this.settings = {
@@ -896,11 +885,11 @@ class Find extends Component {
 			page: 1
 		}
 
+		this.parent = props.parent;
 		this.socket = props.socket;
+		this.category = props.parent.route.category || 'movies';
 
-		this.socket.on('movies:find', function(result){
-			// console.log(JSON.parse(result.data))
-			// console.log('go content')
+		var setData = function(result){
 			if(scope._mounted){
 				var data = JSON.parse(result.data)
 				scope.total_pages = data.total_pages
@@ -920,7 +909,10 @@ class Find extends Component {
 					scope.updated_query = false;
 				}
 			}
-		})
+		}
+
+		this.socket.on('movies:find', function(res){setData(res)})
+		this.socket.on('series:find', function(res){setData(res)})
 
 		this.getContent()
 	}
@@ -978,8 +970,11 @@ class Find extends Component {
 	}
 
 	getContent = function(){
-		// console.log('getContent', this.query)
-		this.socket.emit('movies:find', this.query)
+		console.log('getContent', this.category, this.query)
+		// this.socket.emit('movies:find', this.query)
+
+		this.data = {}
+		this.socket.emit(this.category+':find', this.query)
 	}
 
 	handleScroll = function(event) {
@@ -1004,10 +999,29 @@ class Find extends Component {
 		}
 	}
 
-	onRouteChange = function(route){
-		// console.log('onRouteChange', route)
-		// console.log('this', this)
+	componentWillUpdate(nextProps, nextState){
+		console.log('componentWillUpdate', nextProps, nextState)
+
+		if(nextProps.parent && nextProps.parent.route.category !== this.category){
+			this.category = nextProps.parent.route.category;
+			this.getContent()
+		}
+	}
+
+	// onRouteChange = function(route){
+	// 	// console.log('onRouteChange', route)
+	// 	// console.log('this', this)
+	// 	this.props.history.push(route)
+	// }
+
+	onRouteChange(result){
+		// update global state
+		this.parent.route = result
+
+		// change route
+		var route = '/'+result.action+'/'+result.category;
 		this.props.history.push(route)
+		// console.log('\troute', route)
 	}
 
 	addItem = function(data){
@@ -1033,22 +1047,15 @@ class Find extends Component {
 		})
 	}
 
-	// setCardHeight = function(height){
-	// 	// NOTE: we really only need this info once ...
-	// 	// console.log('setCardHeight', height)
-	// 	this.card_height = Math.max(this.card_height, height)
-		// console.log('\tresult', this.card_height)
-	// }
 	render(){
 		// console.log('movies', this.movies.length)
 		var scope = this;
-
-		// this.movies.length > 0 ? true : false
 		var hasContent = this.movies.length > 0 ? true : false
-		// console.log('hasContent', hasContent)
+		var areMovies = this.category ==='movies' ? true: false
 
 		return (
 			<div>
+				<MMainNavigation value={this.parent.route} onChange={this.onRouteChange.bind(this)}/>
 				<div className='root-container'>
 						<div className='find-container'>
 							<Paper>
@@ -1058,7 +1065,7 @@ class Find extends Component {
 										settings={this.settings.year} 
 										onChange={this.handleYearChange.bind(this)}/>
 									<MSelectField 
-										style={{marginTop: '-10px', float:'left', width:'170px'}} 
+										style={{marginTop: '-10px', float:'left', width:'150px'}} 
 										settings={this.settings.sort} 
 										onChange={this.handleSortChange.bind(this)}/>
 									<MSelectField 
@@ -1069,10 +1076,21 @@ class Find extends Component {
 							</Paper>
 						</div>
 
-						{hasContent && 
+						{hasContent && areMovies &&
 							<div className='movie-container'>
 							{this.movies.map(function(item, index){
 								return <MovieCard 
+													onTouch={scope.addItem.bind(scope)}
+													key={index} 
+													data={item}/>
+							})}
+							</div>
+						}
+
+						{hasContent && !areMovies &&
+							<div className='movie-container'>
+							{this.movies.map(function(item, index){
+								return <SeriesCard 
 													onTouch={scope.addItem.bind(scope)}
 													key={index} 
 													data={item}/>
@@ -1086,7 +1104,6 @@ class Find extends Component {
 							</div>
 						}
 				</div>
-				<MBottomNavigation value={1} onRouteChange={this.onRouteChange.bind(this)}/>
 			</div>
 		)
 	}
@@ -1132,7 +1149,7 @@ class MMainNavigation extends Component {
 
 		
 		return (
-			<div>
+			<div className='main-navigation'>
 				<MTopNavigation value={this.value.category} onCategoryChange={this.onCategoryChange.bind(this)}/>
 				<MBottomNavigation value={this.value.action} onActionChange={this.onActionChange.bind(this)}/>
 			</div>
@@ -1144,19 +1161,7 @@ class MTopNavigation extends Component {
 	
 	constructor(props) {
 		super(props);
-		// this.state = {
-		// 	value: 'movies',
-		// };
-		// this.value = 'movies'
-	}
-
-	// onActionChange = (value) => {
-	// 	console.log('onActionChange', value)
-	// 	// this.setState({
-	// 	// 	value: value,
-	// 	// });
-	// 	this.value = value
-	// };	
+	}	
 
 	handleChange = (value) => {
 		console.log('handleChange', value)
@@ -1171,11 +1176,9 @@ class MTopNavigation extends Component {
 				value={this.props.value}
 				onChange={this.handleChange}
 			>
-      	<Tab label="Movies" value="movies">
-      	</Tab>
-      	<Tab label="Series" value="series">
-      	</Tab>
-    	</Tabs>
+				<Tab label="Movies" value="movies"/>
+				<Tab label="Series" value="series"/>
+			</Tabs>
 		)
 	}
 }
