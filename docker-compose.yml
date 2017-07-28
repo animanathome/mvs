@@ -1,13 +1,13 @@
 # https://hub.docker.com/r/derbenni/docker-pia-openvpn/
 version: "2"
 services:
-  nginx:
-    container_name: nginx
-    build: ./nginx
-    ports:
-      - 80:80
-    volumes:
-      - /Users/manu/Code/mvs/client/build:/code/mvs
+  # nginx:
+  #   container_name: nginx
+  #   build: ./nginx
+  #   ports:
+  #     - 80:80
+  #   volumes:
+  #     - /Users/manu/Code/mvs/client/build:/code/mvs
   mongo:
     container_name: mongo
     image: mongo
@@ -32,51 +32,51 @@ services:
     #   - mongo
     environment:
       - NODE_ENV=development
-  pia:
-    container_name: pia
-    image: derbenni/docker-pia-openvpn
-    devices: 
-      - "/dev/net/tun"
-    cap_add:
-      - NET_ADMIN
-    dns:
-      - 209.222.18.222
-      - 209.222.18.218
-    networks:
-      - vpn
-  search:
-    container_name: search
-    depends_on: 
-      - pia
-    build: ./search
-    network_mode: service:pia
-    environment:
-        - NODE_ENV=development      
-    volumes:
-      - /Users/manu/Code/mvs/search/:/app
-      - /Users/manu/Code/mvs/data/download/:/download
-  trigger:
-    container_name: trigger
-    build: ./trigger
-    networks:
-      - default
-      - vpn
-    environment:
-        - NODE_ENV=development      
-    volumes:
-      - /Users/manu/Code/mvs/trigger/:/app
-  player:
-    container_name: player
-    build: ./player
-    networks:
-      - default
-    environment:
-      - NODE_ENV=development
-    volumes:
-      - /Users/manu/Code/mvs/player/:/app
-      - /Users/manu/Code/mvs/data/download/:/download
-    ports:
-      - "8888:8888"
+  # pia:
+  #   container_name: pia
+  #   image: derbenni/docker-pia-openvpn
+  #   devices: 
+  #     - "/dev/net/tun"
+  #   cap_add:
+  #     - NET_ADMIN
+  #   dns:
+  #     - 209.222.18.222
+  #     - 209.222.18.218
+  #   networks:
+  #     - vpn
+  # search:
+  #   container_name: search
+  #   depends_on: 
+  #     - pia
+  #   build: ./search
+  #   network_mode: service:pia
+  #   environment:
+  #       - NODE_ENV=development      
+  #   volumes:
+  #     - /Users/manu/Code/mvs/search/:/app
+  #     - /Users/manu/Code/mvs/data/download/:/download
+  # trigger:
+  #   container_name: trigger
+  #   build: ./trigger
+  #   networks:
+  #     - default
+  #     - vpn
+  #   environment:
+  #       - NODE_ENV=development      
+  #   volumes:
+  #     - /Users/manu/Code/mvs/trigger/:/app
+  # player:
+  #   container_name: player
+  #   build: ./player
+  #   networks:
+  #     - default
+  #   environment:
+  #     - NODE_ENV=development
+  #   volumes:
+  #     - /Users/manu/Code/mvs/player/:/app
+  #     - /Users/manu/Code/mvs/data/download/:/download
+  #   ports:
+  #     - "8888:8888"
 
 networks:
   vpn:

@@ -9,6 +9,8 @@ class Select extends Component {
 	constructor(props){
 		super(props)
 
+		console.log('Select', props)
+
 		var scope = this;
 
 		this.state = {
@@ -17,22 +19,29 @@ class Select extends Component {
 			count: 0,
 			done: false
 		}
+		this.category = this.props.category || 'movies';
+		console.log('\tcategory', this.category)
 		this._mounted = true;
 		this.data = {}
 
 		this.socket = props.socket
-		this.socket.emit('movies:list', {})
-
-		this.socket.on('movies:discover', function(result){
+		this.socket.on(this.category+':discover', function(result){
 			if(scope._mounted){
-				console.log('result', scope.data)
+				// console.log('result', scope.data)
 				scope.data = JSON.parse(result.data);
 				scope.setState({
 					'received': scope.state.received+1
 				})
 			}
 		})
-		this.socket.emit('movies:discover', {})
+		this.socket.emit(this.category+':discover', {})
+	}
+
+	getContent(){
+		console.log('getContent', this.category)
+
+		this.data = {}
+		this.socket.emit(this.category+':discover', {})
 	}
 
 	componentDidMount() { 
@@ -59,7 +68,7 @@ class Select extends Component {
 			var page = this.data.page + 1;
 			if(page <= this.data.total_pages){
 				console.log('query page', page)
-				this.socket.emit('movies:discover', {
+				this.socket.emit(this.category+':discover', {
 					page:page
 				})
 			}else{
@@ -75,7 +84,7 @@ class Select extends Component {
 		console.log('addItem')
 
 		var movie_data = this.data.results[this.state.index]
-		this.socket.emit('movies:track', {
+		this.socket.emit(this.category+':track', {
 			mid: movie_data.id,
 			mtitle: movie_data.title,
 			myear: movie_data.year,
@@ -89,7 +98,7 @@ class Select extends Component {
 		console.log('removeItem')
 		
 		var movie_data = this.data.results[this.state.index]
-		this.socket.emit('movies:track', {
+		this.socket.emit(this.category+':track', {
 			mid: movie_data.id,
 			mtitle: movie_data.title,
 			myear: movie_data.year,
@@ -99,13 +108,24 @@ class Select extends Component {
 		this.setState({'index': this.nextItem()})
 	}
 
+	componentWillUpdate(nextProps, nextState){
+		console.log('componentWillUpdate', nextProps, nextState)
+
+		if(nextProps.category && nextProps.category !== this.props.category){
+			this.category = nextProps.category;
+			this.getContent()
+		}
+	}
+
 	render(){
+		console.log('render', this.props)
+
 		var scope = this;
 		
 		var get_data = function(){
-			console.log('get_data', scope.state.index)
+			// console.log('get_data', scope.state.index)
 			if(scope.data.hasOwnProperty('results')){
-				console.log('\tpage', scope.data.page, '/', scope.data.total_pages)
+				// console.log('\tpage', scope.data.page, '/', scope.data.total_pages)
 				return scope.data.results[scope.state.index]
 			}else{
 				return {}
@@ -113,8 +133,8 @@ class Select extends Component {
 		}		
 		
 		var entry = get_data()
-		console.log('entry', entry)
-		console.log('keys', Object.keys(entry).length)
+		// console.log('entry', entry)
+		// console.log('keys', Object.keys(entry).length)
 
 		if(Object.keys(entry).length !== 0){
 			if(this.state.done){

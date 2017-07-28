@@ -1092,45 +1092,62 @@ class Find extends Component {
 	}
 }
 
-// class MAppBar extends Component {
-// 	constructor(props){
-// 		super(props)
 
-// 		this.state = {
-// 			open: false
-// 		}
-// 	}
 
-// 	// https://stackoverflow.com/questions/37286351/toggle-drawer-from-appbar-lefticon
-// 	render(){
-// 		return (
-// 		<div>
-// 			<AppBar style ={{position: "fixed"}}
-// 				title={this.props.title}
-// 				iconElementRight={
-// 					<IconMenu
-// 					iconButtonElement={<IconButton><MoreVertIcon /></IconButton>}
-// 					anchorOrigin={{horizontal: 'left', vertical: 'top'}}
-// 					targetOrigin={{horizontal: 'left', vertical: 'top'}}
-// 					iconStyle={{ fill: 'rgb(0, 0, 0)' }}
-// 				>
-// 					<MenuItem primaryText="Refresh" />
-// 				</IconMenu>
-// 				}
-// 			/>
-// 		</div>
-// 		)
-// 	}
-// }
+class MMainNavigation extends Component {
 
-class MContentCategory extends Component {
+	constructor(props){
+		console.log('MMainNavigation', props.value)
+		super(props);
+
+		this.value = props.value;
+	}
+
+	onActionChange = function(action){
+		console.log('onActionChange', action)
+
+		this.value = {
+			'action':action, 
+			'category': this.value.category
+		}
+		console.log('\tvalue', this.value)
+
+		this.props.onChange(this.value)
+	}
+
+	onCategoryChange = function(category){
+		console.log('onCategoryChange', category)
+
+		this.value = {
+			'action': this.value.action,
+			'category':category
+		}
+		console.log('\tvalue', this.value)
+
+		this.props.onChange(this.value)
+	}
+
+	render(){
+		console.log('render', this.props)
+
+		
+		return (
+			<div>
+				<MTopNavigation value={this.value.category} onCategoryChange={this.onCategoryChange.bind(this)}/>
+				<MBottomNavigation value={this.value.action} onActionChange={this.onActionChange.bind(this)}/>
+			</div>
+		)
+	}
+}
+
+class MTopNavigation extends Component {
 	
 	constructor(props) {
 		super(props);
 		// this.state = {
 		// 	value: 'movies',
 		// };
-		this.value = 'movies'
+		// this.value = 'movies'
 	}
 
 	// onActionChange = (value) => {
@@ -1148,9 +1165,10 @@ class MContentCategory extends Component {
 	}
 
 	render(){
+		console.log('render', this.props.value)
 		return (
 			<Tabs
-				value={this.value}
+				value={this.props.value}
 				onChange={this.handleChange}
 			>
       	<Tab label="Movies" value="movies">
@@ -1169,9 +1187,12 @@ class MBottomNavigation extends Component {
 	}
 
 	render() {
+		var index = ['discover', 'find', 'track', 'watch'].indexOf(this.props.value)
+		console.log(this.props.value, 'selectedIndex', index)
+
 		return (
 			<Paper zDepth={1} style={{position: "fixed", bottom: 0}}>
-				<BottomNavigation selectedIndex={this.props.value}>
+				<BottomNavigation selectedIndex={index}>
 					<BottomNavigationItem
 						label="Discover"
 						icon={discoverIcon}
@@ -1200,43 +1221,31 @@ class MBottomNavigation extends Component {
 
 class Discover extends Component {
 	constructor(props){
+		console.log('Discover', props)
+
 		super(props)
 		this.socket = props.socket;
+		this.parent = props.parent;
 	}
 
-	componentWillUpdate(nextProps, nextState){
-		// console.log('componentWillUpdate', nextProps, nextState)
-	}
+	onRouteChange(result){
+		// update global state
+		this.parent.route = result
 
-	onRouteChange = function(){
-		// console.log('onRouteChange', route)
-		// console.log('this', this)
-		var route = '/'+this.props.route.join('/')
-		console.log('route', route)
+		// change route
+		var route = '/'+result.action+'/'+result.category;
 		this.props.history.push(route)
-	}
-
-	onActionChange = function(action){
-		console.log('onActionChange', action)
-		this.props.route[0] = action
-		console.log('route', this.props.route)
-		this.onRouteChange()
-	}
-
-	onCategoryChange = function(category){
-		console.log('onCategoryChange', category)
-		this.props.route[1] = category
-		console.log('route', this.props.route)
-		this.onRouteChange()
+		// console.log('\troute', route)
 	}
 
 	render(){
 		var scope = this;
+		console.log('Discover-render', this.parent.route.category)
+
 		return (
 				<div>
-					<MContentCategory onCategoryChange={this.onCategoryChange.bind(this)}/>
-					<Select socket={scope.socket}/>
-					<MBottomNavigation value={0} onActionChange={this.onActionChange.bind(this)}/>
+					<MMainNavigation value={this.parent.route} onChange={this.onRouteChange.bind(this)}/>
+					<Select category={this.parent.route.category} socket={scope.socket}/>
 				</div>
 		)
 	}
@@ -1244,12 +1253,11 @@ class Discover extends Component {
 
 class App extends Component {
 	constructor(props) {
+		console.log('App', props)
 		super(props)
 
 		var scope = this;
 		this.socket = socket;
-
-		this.route = ['discover','movies']
 
 		socket.on('disconnect', function(){
 			socket.close();
@@ -1259,7 +1267,22 @@ class App extends Component {
 			// scope.init()
 		});
 
+		this.route = {
+			action: 'discover',
+			category: 'movies'
+		}
+		this.pathNameToRoute()
+
 		this.cast = undefined
+	}
+
+	pathNameToRoute(){
+		var bd = window.location.pathname.split('/')
+		if(bd.length > 2){
+			this.route.action = bd[1]
+			this.route.category = bd[2]
+		}
+		console.log('route', this.route)
 	}
 
 	render(){
@@ -1268,27 +1291,27 @@ class App extends Component {
 				<Router>
 					<div>
 						<Route exact path="/" render={(props) => (
-							<Discover {...props} route={this.route} socket={this.socket}/>
+							<Discover {...props} parent={this} socket={this.socket}/>
 						)}/>
 
-						<Route exact path="/discover" render={(props) => (
-							<Discover {...props} route={this.route} socket={this.socket}/>
+						<Route exact path="/discover/:category" render={(props) => (
+							<Discover {...props} parent={this} socket={this.socket}/>
 						)}/>
 
-						<Route exact path="/find" render={(props) => (
-							<Find {...props} route={this.route} socket={this.socket}/>
+						<Route exact path="/find/:category" render={(props) => (
+							<Find {...props} parent={this} socket={this.socket}/>
 						)}/>
 
-						<Route exact path="/track" render={(props) => (
-							<Track {...props} route={this.route} socket={this.socket}/>
+						<Route exact path="/track/:category" render={(props) => (
+							<Track {...props} parent={this} socket={this.socket}/>
 						)}/>
 
-						<Route exact path="/watch" render={(props) => (
-							<Watch {...props} route={this.route} socket={this.socket}/>
+						<Route exact path="/watch/:category" render={(props) => (
+							<Watch {...props} parent={this} socket={this.socket}/>
 						)}/>
 
-						<Route path="/watch/:title" render={(props) => (
-							<WatchItem {...props} route={this.route} socket={this.socket}/>
+						<Route path="/watch/:category/:title" render={(props) => (
+							<WatchItem {...props} parent={this} socket={this.socket}/>
 						)}/>
 
 					</div>

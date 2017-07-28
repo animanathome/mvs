@@ -14,8 +14,8 @@ RUN echo "node version "`node -v`
 
 
 RUN mkdir /app
-WORKDIR /app
 COPY package.json /app
+WORKDIR /app
 RUN npm install
 
 COPY . /app
