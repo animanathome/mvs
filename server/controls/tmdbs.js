@@ -72,6 +72,14 @@ var series = (function(){
 		return deferred.promise;
 	}
 
+	var details = function(input){
+		// https://api.themoviedb.org/3/tv/1399?api_key=1a899ad77496510e9c5643b05f17146a&language=en-US
+		var path = '/3/tv/'+input.id
+		path += '?api_key='+api_key
+		path += '&language=en-US'
+		return query(path)
+	}
+
 	var discover = function(input){
 		console.log('discover', input)
 
@@ -138,7 +146,8 @@ var series = (function(){
 		configuration: configuration,
 		upcoming: upcoming,
 		discover: discover,
-		find: discover
+		find: discover,
+		details: details
 	}
 })()
 

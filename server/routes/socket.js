@@ -190,6 +190,17 @@ module.exports = function (socket) {
 
 	});
 
+	// DETAILS
+	socket.on('series:details', function(input){
+		tmdbs.details(input)
+		.then(function(data){
+			console.log(data)
+			socket.emit('series:details', {
+				'data':data
+			})
+		})
+	})
+
 	// FIND
 	// list of series we want to discover
 	socket.on('series:find', function(input){

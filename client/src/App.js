@@ -23,6 +23,7 @@ import FloatingActionButton from 'material-ui/FloatingActionButton';
 // import FlatButton from 'material-ui/FlatButton';
 // import IconButton from 'material-ui/IconButton';
 import ActionAdd from 'material-ui/svg-icons/content/add';
+import ActionAddCircleOutline from 'material-ui/svg-icons/content/add-circle-outline';
 import ActionClear from 'material-ui/svg-icons/content/clear';
 import ActionBack from 'material-ui/svg-icons/hardware/keyboard-backspace';
 
@@ -45,6 +46,7 @@ import { BrowserRouter as Router, Route, Link } from 'react-router-dom'
 
 import Select from './Select.jsx'
 import './App.css';
+// import './media.css';
 import './CastVideos.css';
 import injectTapEventPlugin from 'react-tap-event-plugin';
 injectTapEventPlugin();
@@ -137,13 +139,13 @@ var genres = {
 }
 
 var genresToDict = function(genres_data){
-	// console.log('genresToDict', genres_data, genres_data.length)
+	console.log('genresToDict', genres_data, genres_data.length)
 	var genres = {}
 	for(var i = 0; i < genres_data.length; i++){
 		// console.log(i, genres_data[i])
 		genres[genres_data[i].id] = genres_data[i].name;
 	}
-	// console.log('\toutput', genres)
+	console.log('\toutput', genres)
 	return genres
 }
 
@@ -562,9 +564,11 @@ class TrackItem extends Component {
 
 		return (
 			<div className='track-item-card'>
+				
 				<div className='track-item-card-poster'>
 					<img src={poster_path} alt="" />
 				</div>
+
 				<div className='track-item-card-details'>
 					<div className='track-item-card-title'>
 						{title}
@@ -654,6 +658,185 @@ class Track extends Component {
 	}
 }
 
+class SeasonCard extends Component {
+	
+	add(){
+		this.props.onTouch(this.props.data.season_number)
+	}
+	render(){
+		var poster_path = 'https://image.tmdb.org/t/p/w92'+this.props.data.poster_path
+		if(!this.props.data.poster_path){
+			poster_path = 'images/a_poster.jpg'
+		}
+
+		var title = 'Season '+this.props.data.season_number
+		var release = this.props.data.air_date.split('-')[0]
+		var episodes = this.props.data.episode_count+' episodes'
+
+		console.log(this.props.data)
+		return (
+			<li className='card'>
+				
+				<a className='season-poster'>
+					<img src={poster_path} style={{height:'133px'}} alt="" />
+				</a>
+				<p>
+					<a>{title}</a>
+				</p>
+				<p>
+					{episodes}
+				</p>
+
+				<div className='season-add'>
+					<IconButton>
+						<ActionAddCircleOutline color={'black'} onTouchTap={this.add.bind(this)}/>
+					</IconButton>
+				</div>
+			</li>
+		)
+	}
+}
+
+class SeriesItem extends Component {
+	constructor(props){
+		super(props)
+		// console.log(props)
+		
+		var scope = this;
+		this.socket = props.socket;
+		this.parent = props.parent;
+		this.data = {}
+
+		this.state = {
+			updated: 0
+		}
+
+		this.id = props.match.params.series.split('-')[0]
+		console.log('tv:', this.id)
+
+		this.socket.on('series:details', function(result){
+			var data = JSON.parse(result.data)
+			scope.data = data;
+			scope.setState({update:scope.state.updated+1})
+			console.log(data)
+		})
+		this.getContent()
+	}
+
+	getContent(){
+		console.log('getContent')
+		this.socket.emit('series:details', {id:this.id})
+	}
+
+	onRouteChange(result){
+		// update global state
+		this.parent.route = result
+
+		// change route
+		var route = '/'+result.action+'/'+result.category;
+		this.props.history.push(route)
+		// console.log('\troute', route)
+	}
+
+	addItem(season){
+		console.log('Tracking Series', this.data.name, '- Season', season)
+		console.log('data', this.data)
+
+		var scope = this
+		var payload = {
+			action: 'add',
+			data:{
+				mid: scope.data.id,
+				mtitle: scope.data.name,
+				myear: scope.data.first_air_date.split('-')[0],
+				
+				title: scope.data.name,
+				overview: scope.data.overview,
+				vote_average: scope.data.vote_average,
+				backdrop_path: scope.data.backdrop_path,
+				poster_path: scope.data.poster_path,
+				genre_ids: genresToDict(scope.data.genres),
+				season: season,
+
+				track: true
+			}
+		}
+		console.log('payload:', payload)
+
+		this.socket.emit('series:track', payload)
+	}
+
+	render(){
+		console.log('render', this.data)
+
+		var scope = this;
+		if(Object.keys(this.data).length === 0){
+			return (
+				<div>
+					<div className='Loading'>
+							Loading...
+					</div>
+					<MMainNavigation value={this.parent.route} onChange={this.onRouteChange.bind(this)}/>
+				</div>
+			)
+		}else{
+
+			var backdrop_path = 'https://image.tmdb.org/t/p/w300'+this.data.backdrop_path
+		if(!this.data.backdrop_path){
+			backdrop_path = 'images/a_backdrop.jpg'
+		}
+
+			var poster_path = 'https://image.tmdb.org/t/p/w92'+this.data.poster_path
+			if(!this.data.poster_path){
+				poster_path = 'images/a_poster.jpg'
+			}
+
+			return (
+				<div>
+
+						<div className='series-header'>
+							<Link to="/find/series" className='series-back'>
+								<IconButton>
+									<ActionBack color={'white'}/>
+								</IconButton>
+							</Link>
+							
+							<img className='series-backdrop' src={backdrop_path} alt="" />
+							<img className='series-poster' src={poster_path} alt="" />
+							<div className='series-intro'>
+									<h2>{this.data.name}</h2>
+							</div>
+						</div>
+
+						<div className='series-overview'>
+							<h3>Overview</h3>
+							<div className='overview'>
+								<p>{this.data.overview}</p>
+							</div>
+						</div>
+
+					<div className="white_column">
+						<div>
+							<section className="panel scroller">
+								<h3>Seasons</h3>
+								<ol className="seasons scroller">
+								{this.data.seasons.reverse().map(function(item, index){
+									return <SeasonCard
+														key={index}
+														onTouch={scope.addItem.bind(scope)}
+														data={item}/>
+								})}
+								</ol>
+							</section>
+						</div>
+					</div>
+
+				</div>
+			)
+		}
+	}
+}
+
 class SeriesCard extends Component {
 	constructor(props){
 		super(props)
@@ -661,7 +844,8 @@ class SeriesCard extends Component {
 		this.socket = props.socket;
 	}
 
-		render(){
+	render(){
+		console.log('SeriesCard - render', this.props)
 		// console.log(this.props.data.poster_path)
 		var image_path = 'https://image.tmdb.org/t/p/w92'+this.props.data.poster_path
 		if(!this.props.data.poster_path){
@@ -698,26 +882,35 @@ class SeriesCard extends Component {
 			popularity = popularity.slice(0, 2)
 		}
 
+		if(this.props.data.name === undefined){
+			return null
+		}
+
+		var link = this.props.data.id+'-'+this.props.data.name.split(' ').join('-')
+
+		var match = this.props.match
 		return (
 			<div className='movie-card'>
-				<img className='movie-image' 
-					// style={{opacity:0.7}}  
-					src={backdrop_path} 
-					alt="" />
-				<div className='movie-card-color'></div>
-				<img className='movie-card-poster' src={image_path} alt="" />
-				<div className='movie-card-title'>
-					{title}
-				</div>
-				<div className='movie-card-popularity'>
-					{popularity}
-					 <FontIcon >
-						<IconStar style={{color:'white', position:'absolute', left:'2px', bottom:'-2px', height:'16px', width:'16px'}}/>
-					</FontIcon>
-				</div>
-				<div className='movie-card-genre'>
-					{genre_string}
-				</div>
+				<Link to={`${match.url}/${link}`}>
+					<img className='movie-image' 
+						// style={{opacity:0.7}}  
+						src={backdrop_path} 
+						alt="" />
+					<div className='movie-card-color'></div>
+					<img className='movie-card-poster' src={image_path} alt="" />
+					<div className='movie-card-title'>
+						{title}
+					</div>
+					<div className='movie-card-popularity'>
+						{popularity}
+						 <FontIcon >
+							<IconStar style={{color:'white', position:'absolute', left:'2px', bottom:'-2px', height:'16px', width:'16px'}}/>
+						</FontIcon>
+					</div>
+					<div className='movie-card-genre'>
+						{genre_string}
+					</div>
+				</Link>
 			</div>
 		)
 	}
@@ -941,7 +1134,7 @@ class Find extends Component {
 		window.removeEventListener('scroll', this.handleScroll.bind(this));
 	}
 
-	handleYearChange = function(value){
+	handleYearChange(value){
 		// console.log('year', value)
 
 		this.query.year = value
@@ -951,7 +1144,7 @@ class Find extends Component {
 		this.updated_query = true;
 	}
 
-	handleSortChange = function(value){
+	handleSortChange(value){
 		// console.log('change', value)
 		this.query.sort = value
 		this.query.page = 1
@@ -960,7 +1153,7 @@ class Find extends Component {
 		this.updated_query = true;
 	}
 
-	handleGenreChange = function(value){
+	handleGenreChange(value){
 		// console.log('change', value)
 		this.query.genre = value
 		this.query.page = 1
@@ -969,15 +1162,13 @@ class Find extends Component {
 		this.updated_query = true;
 	}
 
-	getContent = function(){
+	getContent(){
 		console.log('getContent', this.category, this.query)
 		// this.socket.emit('movies:find', this.query)
-
-		this.data = {}
 		this.socket.emit(this.category+':find', this.query)
 	}
 
-	handleScroll = function(event) {
+	handleScroll(event) {
 		if(this.card_height < 0){
 			return
 		}
@@ -993,7 +1184,7 @@ class Find extends Component {
 		// console.log(next_trigger, position)
 		if(next_trigger < position){
 			if(this.query.page < this.total_pages){
-				this.query.page += 1
+				this.query.page += 1;
 				this.getContent()
 			}
 		}
@@ -1003,8 +1194,13 @@ class Find extends Component {
 		console.log('componentWillUpdate', nextProps, nextState)
 
 		if(nextProps.parent && nextProps.parent.route.category !== this.category){
+			document.body.scrollTop	= 0;
 			this.category = nextProps.parent.route.category;
-			this.getContent()
+			this.data = {};
+			this.page = 1;
+			this.query.page = 1;
+			this.total_pages = -1;
+			this.getContent();
 		}
 	}
 
@@ -1024,10 +1220,9 @@ class Find extends Component {
 		// console.log('\troute', route)
 	}
 
-	addItem = function(data){
-		// console.log('addItem', data)
-
-		this.socket.emit('movies:track', {
+	addItem(data){
+		console.log('addItem')
+		var payload = {
 			action: 'add',
 			data:{
 				mid: data.id,
@@ -1044,7 +1239,10 @@ class Find extends Component {
 				
 				track: true
 			}
-		})
+		}
+		console.log('payload:', payload)
+
+		this.socket.emit('movies:track', payload)
 	}
 
 	render(){
@@ -1092,7 +1290,8 @@ class Find extends Component {
 							{this.movies.map(function(item, index){
 								return <SeriesCard 
 													onTouch={scope.addItem.bind(scope)}
-													key={index} 
+													key={index}
+													match={scope.props.match}
 													data={item}/>
 							})}
 							</div>
@@ -1173,11 +1372,22 @@ class MTopNavigation extends Component {
 		console.log('render', this.props.value)
 		return (
 			<Tabs
+				inkBarStyle={{color:'#00bcd4', background:'#00bcd4'}}
+				tabItemContainerStyle={{background:'white'}}
+				style={{color:'#00bcd4', background:'white'}}
 				value={this.props.value}
 				onChange={this.handleChange}
 			>
-				<Tab label="Movies" value="movies"/>
-				<Tab label="Series" value="series"/>
+				<Tab 
+					buttonStyle={{color:'black'}}
+					label="Movies" 
+					value="movies"
+				/>
+				<Tab 
+					buttonStyle={{color:'black'}}
+					label="Series" 
+					value="series"
+				/>
 			</Tabs>
 		)
 	}
@@ -1303,6 +1513,10 @@ class App extends Component {
 
 						<Route exact path="/find/:category" render={(props) => (
 							<Find {...props} parent={this} socket={this.socket}/>
+						)}/>
+
+						<Route exact path="/find/:category/:series" render={(props) => (
+							<SeriesItem {...props} parent={this} socket={this.socket}/>
 						)}/>
 
 						<Route exact path="/track/:category" render={(props) => (
