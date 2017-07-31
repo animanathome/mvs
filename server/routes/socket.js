@@ -1,6 +1,7 @@
 var tmdbm = require('../controls/tmdbm.js')
 var tmdbs = require('../controls/tmdbs.js')
 var movie = require('../models/movies.js')
+var series = require('../models/series.js')
 
 module.exports = function (socket) {
 	socket.emit('init', {
@@ -141,7 +142,21 @@ module.exports = function (socket) {
 		console.log('done')
 	});
 
+	// TRACK
 	// add the given to the track list
+	socket.on('series:track', function(input){
+		console.log('series:track', input)
+
+		if(input.action === 'remove'){
+
+		}
+
+		if(input.action === 'add'){
+			
+		}
+	})
+
+
 	socket.on('movies:track', function(input){
 		console.log('movies:track', input)
 
@@ -190,7 +205,7 @@ module.exports = function (socket) {
 
 	});
 
-	// DETAILS
+	// DETAILS - seasons
 	socket.on('series:details', function(input){
 		tmdbs.details(input)
 		.then(function(data){
