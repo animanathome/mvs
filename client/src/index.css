@@ -349,7 +349,7 @@ ol.seasons {
 
 .series-intro {
 	position: absolute;
-	top: 160px;
+	top: 170px;
 	width: 100%;
 	height: 60px;
 	background: #0b0e10;
@@ -369,6 +369,33 @@ ol.seasons {
 	background: #1a2127;
 	line-height: 1.3em;
 	color: white;
+}
+
+.series-tracking {
+	padding: 10px 20px 20px 20px;
+	background: white;
+}
+
+.season-container {
+	padding: 10px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	height: 20px;
+}
+
+.season-title {
+	float: left;
+	font-weight: 600;
+}
+
+.season-overview {
+	float: right;
+	margin-right: 10px;
+}
+
+.season-clear {
+	float: right;
+	margin-top: -15px;
+	margin-right: -10px;
 }
 
 h3 {
@@ -424,7 +451,7 @@ h3 {
 
 .track-container {
 	padding: 10px;
-	/*padding-top: 80px;*/
+	padding-top: 60px;
 	padding-bottom: 60px;
 }
 
@@ -450,6 +477,7 @@ h3 {
 .track-item-card-details {
 	width: 294px;
 	float: right;
+	color: black;
 }
 
 .track-item-card-title {

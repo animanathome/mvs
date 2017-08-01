@@ -309,7 +309,9 @@ class WatchItem extends Component {
 	}
 	
 	getContent(){
-		this.socket.emit('item:getByName', {title:this.props.match.params.title})
+		this.socket.emit('item:getByName', {
+			title:this.props.match.params.title
+		})
 	}
 	
 	handleScriptCreate() {
@@ -512,6 +514,211 @@ class Watch extends Component {
 	}
 }
 
+class TrackSeriesItemProgress extends Component {
+	remove(){
+
+	}
+
+	render(){
+		console.log('render', this.props.data)
+
+		return (
+			<div className='season-container'>
+				<div className='season-title'>
+					Season {this.props.data.season}
+				</div>
+				<div className='season-clear'>
+					<IconButton>
+						<ActionClear onTouchTap={this.remove.bind(this)}/>
+					</IconButton>
+				</div>
+				<div className='season-overview'>
+					{this.props.data.available}/{this.props.data.track}
+				</div>
+			</div>
+		)
+	}
+}
+
+class TrackSeriesItem extends Component {
+	constructor(props){
+		super(props)
+
+		var scope = this;
+		this.socket = props.socket;
+		this.parent = props.parent;
+		this.data = {}
+
+		this.state = {
+			update: 0
+		}
+		this._mounted = false;
+
+		this.id = props.match.params.series.split('-')[0]
+		console.log('tv:', this.id)
+
+		var payload = {
+			mid: this.id
+		}
+		this.socket.emit('series:list_details', payload)
+		
+		this.socket.on('series:list_details', function(result){
+			if(scope._mounted){
+				console.log(result)
+				// var data = JSON.parse(result.data)
+				scope.data = result.data;
+				scope.setState({update:scope.state.updated+1})
+			}
+		})
+	}
+
+	componentDidMount() { 
+		this._mounted = true;
+	}
+
+	componentWillUnmount() {
+		this._mounted = false;
+	}
+
+	render(){
+
+		var hasContent = Object.keys(this.data).length > 0 ? true : false;
+		console.log('hasContent', hasContent)
+
+		var backdrop_path = 'https://image.tmdb.org/t/p/w300'+this.data.backdrop_path
+		if(!this.data.backdrop_path){
+			backdrop_path = 'images/a_backdrop.jpg'
+		}
+
+		var poster_path = 'https://image.tmdb.org/t/p/w92'+this.data.poster_path
+		if(!this.data.poster_path){
+			poster_path = 'images/a_poster.jpg'
+		}
+
+		return (
+			<div>
+
+				{!hasContent && 
+					<div className='Loading'>
+							Loading...
+					</div>
+				}
+
+				{hasContent && 
+					<div>
+						<div className='series-header'>
+							<Link to="/track/series" className='series-back'>
+								<IconButton>
+									<ActionBack color={'white'}/>
+								</IconButton>
+							</Link>
+							
+							<img className='series-backdrop' src={backdrop_path} alt="" />
+							<img className='series-poster' src={poster_path} alt="" />
+							<div className='series-intro'>
+									<h2>{this.data.name}</h2>
+							</div>
+						</div>
+
+						<div className="series-tracking">
+							{this.data.seasons.reverse().map(function(item, index){
+								return <TrackSeriesItemProgress
+													key={index}
+													data={item}
+											 />
+							})}							
+						</div>
+					</div>
+				}
+
+			</div>
+		)
+	}
+}
+
+class TrackSeries extends Component {
+	constructor(props){
+		super(props)
+		this.socket = this.props.socket;
+	}
+
+	remove(){
+		// console.log('remove', this.props.data)
+
+		var scope = this;
+		this.socket.emit('series:track', {
+			action: 'remove',
+			data: {
+				id: scope.props.data.id
+			}
+		})
+	}
+
+	render(){
+		// console.log('render', this.props.data)
+		
+		var poster_path = 'https://image.tmdb.org/t/p/w92'+this.props.data.poster_path
+		if(!this.props.data.poster_path){
+			poster_path = 'images/a_poster.jpg'
+		}
+
+		// title
+		var title = this.props.data.title
+		if(title.length > 26){
+			title = title.slice(0, 22)+' ...'
+		}
+
+		// overview
+		var overview = this.props.data.overview
+		if(overview.length > 236){
+			overview = overview.slice(0, 230)+' ...'
+		}
+
+		// generate genre string
+		var genre_string = ''
+		for(var i = 0; i < this.props.data.genre_ids.length; i++){
+			if(i > 0){
+				genre_string += ', '
+			}
+			genre_string += movie_genres[this.props.data.genre_ids[i]]
+		}
+		if(genre_string.length > 30){
+			genre_string = genre_string.slice(0, 34)+' ...'
+		}
+
+		var match = this.props.match
+		var link = this.props.data.mid+'-'+this.props.data.title.split(' ').join('-')
+		console.log('link', link)
+
+		return (
+			<div className='track-item-card'>
+				
+				<div className='track-item-card-poster'>
+					<Link to={`${match.url}/${link}`}>
+						<img src={poster_path} alt="" />
+					</Link>
+				</div>
+				<div className='track-item-card-details'>
+					<div className='track-item-card-title'>
+						{title}
+					</div>
+					<div className='track-item-card-genres'>
+						{genre_string}
+					</div>
+					<div className='track-item-card-overview'>
+						{overview}
+					</div>
+					<div className='track-item-card-remove'>
+						<IconButton>
+								<ActionClear onTouchTap={this.remove.bind(this)}/>
+						</IconButton>
+					</div>
+				</div>
+			</div>
+		)
+	}
+}
+
 class TrackItem extends Component {
 	constructor(props){
 		super(props)
@@ -596,27 +803,37 @@ class Track extends Component {
 
 		var scope = this
 		this.socket = props.socket
+		this.parent = props.parent
 		this.state = {
 			updated: 0
 		}
+		this.category = props.parent.route.category || 'movies';
 		this._mounted = false;
 
 		this.data = []
-		this.socket.on('movies:list', function(result){
+
+		var setData = function(result){
 			if(scope._mounted){
 				// console.log('got', result.data)
 				scope.data = result.data
 				scope.setState({updated:scope.state.updated+1})
 			}
-		})
+		}
+
+		this.socket.on('movies:list', function(res){setData(res)})
+		this.socket.on('series:list', function(res){setData(res)})
 
 		this.getContent()
 	}
 
-	onRouteChange = function(route){
-		// console.log('onRouteChange', route)
-		// console.log('this', this)
+	onRouteChange(result){
+		// update global state
+		this.parent.route = result
+
+		// change route
+		var route = '/'+result.action+'/'+result.category;
 		this.props.history.push(route)
+		// console.log('\troute', route)
 	}
 
 	componentDidMount() { 
@@ -627,34 +844,58 @@ class Track extends Component {
 		this._mounted = false;
 	}
 
+	componentWillUpdate(nextProps, nextState){
+		console.log('componentWillUpdate', nextProps, nextState)
+		if(nextProps.parent && nextProps.parent.route.category !== this.category){
+			this.category = nextProps.parent.route.category;
+			this.data = {};
+			this.getContent();
+		}
+	}
+
 	getContent(){
-		console.log('getContent')
-		this.socket.emit('movies:list')
+		console.log('getContent', this.category)
+		this.socket.emit(this.category+':list')
 	}
 
 	render(){
 		var scope = this;
-		if(this.data.length === 0){
-			return (
-				<div>
-					<div className='Loading'>
-						Nothing to track for now
+		var hasContent = this.data.length > 0 ? true : false;
+		var areMovies = this.category ==='movies' ? true: false;
+
+		return (
+			<div>
+				<MMainNavigation value={this.parent.route} onChange={this.onRouteChange.bind(this)}/>
+				{!hasContent &&
+					<div>
+						<div className='Loading'>
+							Nothing to track for now
+						</div>	
 					</div>
-					<MBottomNavigation value={2} onRouteChange={this.onRouteChange.bind(this)}/>
-				</div>
-			)		
-		}else{
-			return (
-				<div>
+				}
+
+				{hasContent && areMovies &&
 					<div className='track-container'>
-					{this.data.map(function(item, index){
-						return <TrackItem key={index} data={item} socket={scope.socket}/>
-					})}
+						{this.data.map(function(item, index){
+							return <TrackItem key={index} data={item} socket={scope.socket}/>
+						})}
 					</div>
-					<MBottomNavigation value={2} onRouteChange={this.onRouteChange.bind(this)}/>
-				</div>
-			)
-		}
+				}
+
+				{hasContent && !areMovies && 
+					<div className='track-container'>
+						{this.data.map(function(item, index){
+							return <TrackSeries 
+												key={index} 
+												data={item} 
+												match={scope.props.match}
+												socket={scope.socket}/>
+						})}
+					</div>
+				}
+
+			</div>
+		)
 	}
 }
 
@@ -782,9 +1023,9 @@ class SeriesItem extends Component {
 		}else{
 
 			var backdrop_path = 'https://image.tmdb.org/t/p/w300'+this.data.backdrop_path
-		if(!this.data.backdrop_path){
-			backdrop_path = 'images/a_backdrop.jpg'
-		}
+			if(!this.data.backdrop_path){
+				backdrop_path = 'images/a_backdrop.jpg'
+			}
 
 			var poster_path = 'https://image.tmdb.org/t/p/w92'+this.data.poster_path
 			if(!this.data.poster_path){
@@ -824,7 +1065,8 @@ class SeriesItem extends Component {
 									return <SeasonCard
 														key={index}
 														onTouch={scope.addItem.bind(scope)}
-														data={item}/>
+														data={item}
+												 />
 								})}
 								</ol>
 							</section>
@@ -886,9 +1128,9 @@ class SeriesCard extends Component {
 			return null
 		}
 
+		var match = this.props.match;
 		var link = this.props.data.id+'-'+this.props.data.name.split(' ').join('-')
 
-		var match = this.props.match
 		return (
 			<div className='movie-card'>
 				<Link to={`${match.url}/${link}`}>
@@ -1521,6 +1763,10 @@ class App extends Component {
 
 						<Route exact path="/track/:category" render={(props) => (
 							<Track {...props} parent={this} socket={this.socket}/>
+						)}/>
+
+						<Route exact path="/track/:category/:series" render={(props) => (
+							<TrackSeriesItem {...props} parent={this} socket={this.socket}/>
 						)}/>
 
 						<Route exact path="/watch/:category" render={(props) => (

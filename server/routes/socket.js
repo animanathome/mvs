@@ -98,6 +98,82 @@ module.exports = function (socket) {
 		})
 	});
 
+	// LIST
+	socket.on('series:list_details', function(input){
+		console.log('input:', input)
+
+		series.findOne({'mid':input.mid}, function(err, res){
+			if(err){
+				console.error(err)
+			}
+
+			console.log('result', res)
+
+			var data = {
+				backdrop_path: res.backdrop_path,
+				poster_path: res.poster_path,
+				name: res.title,
+				seasons:[]
+			}
+			
+			var i;
+			for(i = 0; i < res.seasons.length; i++){
+				var info = {}
+				info.season = res.seasons[i].season
+				info.available = res.seasons[i].episodes.length
+				info.track = res.seasons[i].episode_count
+				data.seasons.push(info)
+			}
+			// console.log(data)
+
+			socket.emit('series:list_details', {
+				'data': data
+			})
+		})
+	})
+
+	socket.on('series:list', function(){
+		console.log('series:list')
+
+		series.find({
+			track:true, 
+			available:false
+		}, {
+			mid:1,
+			myear:1, 
+			mtitle:1, 
+			poster_path:1, 
+			overview:1, 
+			genre_ids:1
+		}, function(err, result){
+
+			if(err){
+				console.error(err);
+			}
+
+			console.log(result)
+
+			var data = []
+			for(var i = 0; i < result.length; i++){
+				data.push({
+					id: result[i]._id,
+					mid: result[i].mid,
+					year: result[i].myear,
+					title: result[i].mtitle,
+					poster_path: result[i].poster_path,
+					overview: result[i].overview,
+					genre_ids: result[i].genre_ids
+				})
+			}
+
+			socket.emit('series:list', {
+				'data': data
+			})
+
+		})
+	})
+
+
 	// list of movies we're currently tracking
 	socket.on('movies:list', function(){
 		console.log('movies:list')
