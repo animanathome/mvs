@@ -1,7 +1,10 @@
 var tmdbm = require('../controls/tmdbm.js')
 var tmdbs = require('../controls/tmdbs.js')
+
 var movie = require('../models/movies.js')
 var series = require('../models/series.js')
+var season = require('../models/season.js')
+var episode = require('../models/episode.js')
 
 module.exports = function (socket) {
 	socket.emit('init', {
@@ -143,16 +146,77 @@ module.exports = function (socket) {
 	});
 
 	// TRACK
-	// add the given to the track list
+	// add given to track list
 	socket.on('series:track', function(input){
 		console.log('series:track', input)
 
 		if(input.action === 'remove'){
+			console.log('removing', input.data.id, 'from track list')
 
+			series.findOneAndRemove({ _id: input.data.id }, function(err, other){
+				
+				if(err){
+					console.error(err);
+				}
+				
+				console.log('done deleting', other)
+			})
+		}
+
+		var addSeason = function(series, data){
+			console.log('adding season', data.season)
+			var ses = new season({
+				season:data.season, 
+				episode_count:data.episode_count
+			})
+			series.seasons.push(ses)
+			series.save()
 		}
 
 		if(input.action === 'add'){
-			
+			series.findOne({ mid: input.data.mid }, function(err, result){
+				console.log(err, result)
+
+				if(err){
+					console.error(err);
+				}
+
+				if(result === null){
+					var s = new series(input.data)
+					s.save(function(err, item){
+						if(err){
+							console.error('error', err)
+						}else{
+							console.log('item', item)
+							
+							addSeason(item, input.data)
+
+							console.log('Added', s.mtitle+'('+s.myear+')', 'to watch list.')
+							series.count({}, function(err, result){
+								console.log('Count is '+result)
+							})	
+						}
+					})
+				}else{
+					console.log('Series already exists.')
+					
+					var i = 0;
+					var season_exists = false;
+					for(i = 0; i < result.seasons.length; i++){
+						if(result.seasons[i].season === input.data.season){
+							season_exists = true;
+						}
+					}
+
+					// console.log(result)
+					if(!season_exists){
+						addSeason(result, input.data)
+					}else{
+						console.log('Season', input.data.season, 'already exists.')
+					}
+				}
+
+			})
 		}
 	})
 
@@ -174,7 +238,7 @@ module.exports = function (socket) {
 		}
 
 		if(input.action === 'add'){
-			console.log('adding', input.data.mtitle, 'to track list')			
+			console.log('adding', input.data.mtitle, 'to track list')
 
 			movie.findOne({ mid: input.data.mid }, function(err, result){
 				// console.log('findOne')

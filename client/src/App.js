@@ -661,7 +661,7 @@ class Track extends Component {
 class SeasonCard extends Component {
 	
 	add(){
-		this.props.onTouch(this.props.data.season_number)
+		this.props.onTouch(this.props.data.season_number, this.props.data.episode_count)
 	}
 	render(){
 		var poster_path = 'https://image.tmdb.org/t/p/w92'+this.props.data.poster_path
@@ -738,7 +738,7 @@ class SeriesItem extends Component {
 		// console.log('\troute', route)
 	}
 
-	addItem(season){
+	addItem(season, episode_count){
 		console.log('Tracking Series', this.data.name, '- Season', season)
 		console.log('data', this.data)
 
@@ -757,7 +757,7 @@ class SeriesItem extends Component {
 				poster_path: scope.data.poster_path,
 				genre_ids: genresToDict(scope.data.genres),
 				season: season,
-
+				episode_count: episode_count,
 				track: true
 			}
 		}
