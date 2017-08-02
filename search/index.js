@@ -3,6 +3,7 @@ var express = require('express')
 	, json = require('json')
 	, http = require('http')
 	, yts = require('./controls/yts.js')
+	, oneom = require('./controls/oneom.js')
 	, getIP = require('external-ip')();
  
 
@@ -32,16 +33,47 @@ app.set('port', 3000);
 	// app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
 // }
 
-app.get('/', function(req, res){
-	console.log('hello world')
-	res.send('Hello World');
-})
 
-app.get('/movies', function (req, res) {
-	console.log('get')
-	console.log('returning result for query', req.query)
-	res.json({"foo": "get"});
-	res.send()
+app.post('/series', function(req, res){
+
+	if(!req.body.title || !req.body.season || !req.body.episode){
+		console.error('Missing parameters')
+		
+		res.json({error:'Missing title, season or episode parameter'})
+		res.send()
+		return
+	}
+
+	var title = req.body.title
+	var season = req.body.season
+	var episode = req.body.episode
+
+	console.log('title:', title)
+	console.log('season:', season)
+	console.log('episode:', episode)
+
+	oneom.getMagnetURI(title, season, episode)
+	.then(function(result){
+		// return oneom.downloadTorrent(result)
+	})
+	.then(function(result){
+		console.log('Done downloading:', title, '- season:', season, '- episode:', episode)
+		// update database
+		var message = {
+			title: title,
+			season: season,
+			episode: episode,
+			update: {
+				available:true,
+				movie_path: result.item.path
+			}
+		}
+		console.log('Sending update', message)
+		// conn.emit('item:update', message)
+		// res.send('searching movies')
+		res.json(message);
+		res.send()
+	})
 })
 
 app.post('/movies', function(req, res){

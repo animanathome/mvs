@@ -10,7 +10,9 @@
   "license": "ISC",
   "dependencies": {
     "mongoose": "^4.11.2",
+    "node-fetch": "^1.7.1",
     "q": "^1.5.0",
+    "request": "^2.81.0",
     "webtorrent": "^0.98.19"
   }
 }

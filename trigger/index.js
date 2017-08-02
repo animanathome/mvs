@@ -66,6 +66,56 @@ var search_requests = function(movie){
 	return deferred.promise;
 }
 
+var query_series_requests = function(){
+	console.log('\tQuery_series_requests')
+	let socket = io(host)
+	// check if you have any content to look for
+	socket.on('connect', function(){
+		console.log('connect')
+		socket.emit('series:list')
+	});
+
+
+	// if we do, pass each item to search
+	var i = 0;
+	var data = [];
+	var query_series = function(){
+		console.log('--------------------------')
+		console.log('query_series')
+		console.log('\tindex:', i)
+		console.log('\tlength:', data.length)
+		console.log('\tmid:', data[i].mid)
+
+		socket.emit('series:list_details', {mid:data[i].mid})
+		
+		socket.once('series:list_details', function(result){
+			
+			console.log('--------------------------')
+			console.log('list_details')
+			console.log(i, result)
+
+			var j = 0; 
+			for(j = 0; j < result.length; j++){
+				console.log('\t', j, result[j])
+			}
+
+			if(i < data.length-1){
+				i += 1;
+				query_series()
+			}
+		})
+	}
+
+	socket.once('series:list', function(result){
+		console.log('got', result.data)
+
+		if(result.data.length > 0){
+			data = result.data;
+			query_series()
+		}	
+	})
+}
+
 // request the content we need to look for
 var query_requests = function(){
 	console.log('\tQuery_requests')
@@ -130,7 +180,8 @@ var job_run_count = 1;
 var job = cron.scheduleJob('*/2 * * * *', function(){
 	console.log('-------------------------------------------------')
 	console.log('Running cron job for the', job_run_count++, 'time');
-	query_requests();
+	// query_requests();
+	query_series_requests()
 });
 
 module.exports = app;
