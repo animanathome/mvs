@@ -45,7 +45,19 @@ module.exports = function (socket) {
 
 	// update a given entry
 	socket.on('item:update', function(data){
-		console.log('item:update', {_id:data.id}, {$set:data.update})
+		console.warn('Deprecated, use series or movies instead.')
+	})
+
+	socket.on('series:update', function(data){
+		series.findOne({_id:data.id}, function(err, result){
+			if(err){
+				console.error(err);
+			}
+		})
+	})
+
+	socket.on('movie:update', function(data){
+		console.log('movie:update', {_id:data.id}, {$set:data.update})
 		movie.findOneAndUpdate({
 			_id:data.id
 		}, {
@@ -110,6 +122,7 @@ module.exports = function (socket) {
 			console.log('result', res)
 
 			var data = {
+				_id: res._id,
 				backdrop_path: res.backdrop_path,
 				poster_path: res.poster_path,
 				name: res.title,

@@ -1,12 +1,14 @@
 var fetch = require('node-fetch');
 var Q = require("q");
 var WebTorrent = require('webtorrent')
+var fs = require('fs')
 
 var oneom = (function(){
 
-	getMagnetURI = function(title, season, episode){
-	
-		title = encodeURIComponent(title)
+	getMagnetURI = function(name, season, episode){
+		var deferred = Q.defer();
+
+		title = encodeURIComponent(name)
 		season = ('00'+season).substring(season.length)
 		episode = ('00'+episode).substring(episode.length)
 
@@ -20,7 +22,7 @@ var oneom = (function(){
 		})
 		.then(function(data){
 			if(data.serials.length !== 1){
-				return Promise.reject("Unable to find result for", title);
+				return Promise.reject("Unable to find result for", name);
 			}
 			console.log('tv id:', data.serials[0].id)
 			return fetch(qiuri+data.serials[0].id, headers)
@@ -39,35 +41,81 @@ var oneom = (function(){
 
 					// get the torrent with the most amount of seeders
 					var max_seed = 0;
-					var torrent;
+					var torrent = null;
 
 					for(j = 0; j < ep[i].torrent.length; j++){
 
-						if(ep[i].torrent[j].seed > max_seed){
-							max_seed = ep[i].torrent[j].seed;
-							torrent = ep[i].torrent[j]
+						// make sure we're dealing with a MP4 file
+						if(ep[i].torrent[j].title.match('x264') !== null
+						|| ep[i].torrent[j].title.match('x265') !== null
+						|| ep[i].torrent[j].title.match('h264') !== null
+						|| ep[i].torrent[j].title.match('h265') !== null
+						){
+							if(ep[i].torrent[j].seed > max_seed){
+								max_seed = ep[i].torrent[j].seed;
+								torrent = ep[i].torrent[j]
+							}
 						}
 					}
-					console.log('magnetic link:', torrent.value)
-					return torrent.value
+
+					if(torrent === null){
+						deferred.reject('Unable to find torrent which contains an MP4')
+					}else{
+						// console.log('magnetic link:', torrent.value)
+						deferred.resolve({
+							name:name,
+							season:season,
+							episode:episode,
+							magnetURI:torrent.value
+						})
+					}
 				}
 			}
+			deferred.reject('No match found for', name)
 		})
+
+		return deferred.promise;
 	}
 
-	getDownloadDir = function(){
+	getDownloadDir = function(sub_folders){
+		console.log('getDownloadDir')
+
+		// root download directory
 		var download_dir = __dirname+'/../../download'
 		if (!fs.existsSync(download_dir)){
 			fs.mkdirSync(download_dir);
 		}
+
+		// create any given sub folders if necessary
+		var i;
+		for(i in sub_folders){
+			download_dir += '/'+sub_folders[i]
+			if (!fs.existsSync(download_dir)){
+				fs.mkdirSync(download_dir);
+			}
+		}
+
+		console.log('\tresult:', download_dir)
 		return download_dir;
 	}
 
-	downloadTorrent = function(magnetURI){
+	downloadTorrent = function(result){
+		console.log('downloadTorrent', result)
 		var deferred = Q.defer();
 
+		var item = {
+			name:result.name,
+			season:result.season,
+			episode:result.episode
+		}
+		var magnetURI = result.magnetURI
+
 		var client = new WebTorrent()
-		client.add(magnetURI, { path: getDownloadDir() }, function (torrent) {
+		client.add(magnetURI, { 
+			path: getDownloadDir(['series', result.name, result.season])
+		}, function(torrent){
+			console.log('torrent')
+
 			torrent.on('done', onDone)
 			var interval = setInterval(onProgress, 5000)
 			// onProgress()
@@ -88,7 +136,7 @@ var oneom = (function(){
 
 			function onProgress(){
 				var percent = Math.round(torrent.progress * 100 * 100) / 100;
-				console.log('\t', item.title, '| progress', percent+'%')
+				console.log('\t', item.name, '| progress', percent+'%')
 			}
 
 			function onDone(){

@@ -35,31 +35,31 @@ app.set('port', 3000);
 
 
 app.post('/series', function(req, res){
+	console.log('POST - series', req.body)
 
-	if(!req.body.title || !req.body.season || !req.body.episode){
+	if(!req.body.name || !req.body.season 
+	|| !req.body.episode || !req.body._id){
 		console.error('Missing parameters')
 		
-		res.json({error:'Missing title, season or episode parameter'})
+		res.json({error:'Missing title, season, episode or _id parameter'})
 		res.send()
 		return
 	}
 
-	var title = req.body.title
+	var _id = req.body._id
+	var title = req.body.name
 	var season = req.body.season
 	var episode = req.body.episode
 
-	console.log('title:', title)
-	console.log('season:', season)
-	console.log('episode:', episode)
-
 	oneom.getMagnetURI(title, season, episode)
 	.then(function(result){
-		// return oneom.downloadTorrent(result)
+		return oneom.downloadTorrent(result)
 	})
 	.then(function(result){
 		console.log('Done downloading:', title, '- season:', season, '- episode:', episode)
 		// update database
 		var message = {
+			_id: _id,
 			title: title,
 			season: season,
 			episode: episode,

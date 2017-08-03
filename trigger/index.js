@@ -37,13 +37,53 @@ server.listen(app.get('port'), function (){
 });
 
 // look for the given item
-var search_requests = function(movie){
-	console.log('\tSearch_requests', movie)
+// movie 
+// {
+// 	id:2323,
+// 	title:Aliens
+// 	year:2017
+// }
+var search_movie_requests = function(movie){
+	console.log('\tSearch_movie_requests', movie)	
 
 	var deferred = q.defer();
 
 	request
 	.post('http://pia:3000/movies', {form:movie})
+	.on('response', function(response){
+		console.log(response)
+
+		var result = ''
+		response.on('data', function (chunk) {
+	    	// console.log('BODY: ' + chunk)
+	    	result+=chunk
+	  	});
+
+	  	response.on('end', function(){
+	  		// console.log('done')
+	  		result=JSON.parse(result)
+	  		deferred.resolve(result);
+	  	})  	
+	})
+	.on('error', function(err){
+		console.log('Error', err)
+	})
+
+	return deferred.promise;
+}
+
+// series
+// {
+//	name: 'Game of Thrones',
+//	season: 7, 
+//	episode: 10
+// }
+var search_series_requests = function(series){
+
+	var deferred = q.defer();
+
+	request
+	.post('http://pia:3000/series', {form:series})
 	.on('response', function(response){
 		console.log(response)
 
@@ -76,17 +116,19 @@ var query_series_requests = function(){
 	});
 
 
-	// if we do, pass each item to search
+	// get series details, determine season and episodes to find
 	var i = 0;
 	var data = [];
 	var query_series = function(){
-		console.log('--------------------------')
-		console.log('query_series')
-		console.log('\tindex:', i)
-		console.log('\tlength:', data.length)
-		console.log('\tmid:', data[i].mid)
+		// console.log('--------------------------')
+		// console.log('query_series')
+		// console.log('\tindex:', i)
+		// console.log('\tlength:', data.length)
+		// console.log('\tmid:', data[i].mid)
 
-		socket.emit('series:list_details', {mid:data[i].mid})
+		socket.emit('series:list_details', { 
+			mid:data[i].mid 
+		})
 		
 		socket.once('series:list_details', function(result){
 			
@@ -94,9 +136,32 @@ var query_series_requests = function(){
 			console.log('list_details')
 			console.log(i, result)
 
-			var j = 0; 
-			for(j = 0; j < result.length; j++){
-				console.log('\t', j, result[j])
+			// console.log('seasons', result.data.seasons)
+
+			var j, k, season, episodes, name, id;
+			
+			name = result.data.name;
+			id = result.data._id;
+			for(j = 0; j < result.data.seasons.length; j++){
+				season = result.data.seasons[j].season;
+				episodes = result.data.seasons[j].track;
+
+				for(k = 0; k < 1; k++){
+				// for(k = 0; k < episodes; k++){
+					// console.log('series:', name, '- season:', season, '- episode', k+1)
+					search_series_requests({
+						id: id,
+						name: name,
+						season: season,
+						episode: k+1
+					})
+					.then(function(result){
+						console.log(result)
+						if(result.update){
+							socket.emit('series:update', result)
+						}
+					})
+				}
 			}
 
 			if(i < data.length-1){
@@ -106,9 +171,11 @@ var query_series_requests = function(){
 		})
 	}
 
+	// get a list of series we're looking for
 	socket.once('series:list', function(result){
 		console.log('got', result.data)
 
+		// look for each series, one at a time
 		if(result.data.length > 0){
 			data = result.data;
 			query_series()
@@ -145,7 +212,7 @@ var query_requests = function(){
 			return setInterval(function(){
 				console.log('\tSearching for', result.data[i].title+'('+result.data[i].year+')')	
 				
-				search_requests({
+				search_movie_requests({
 					id:result.data[i].id,
 					title:result.data[i].title,
 					year:result.data[i].year
@@ -153,7 +220,7 @@ var query_requests = function(){
 				.then(function(result){
 					// update database
 					if(result.update){
-						socket.emit('item:update', result)
+						socket.emit('movies:update', result)
 					}
 				})
 				.fail(function(err){
@@ -173,7 +240,7 @@ var query_requests = function(){
 }
 
 // query_requests();
-
+query_series_requests()
 var job_run_count = 1;
 
 // search for new content every *
