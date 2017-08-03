@@ -54,7 +54,7 @@ var SeriesSchema = new Schema({
   available: {
   	type: Boolean,
     default: false
-  },  
+  },
   view: {
     type: Boolean,
     default: false

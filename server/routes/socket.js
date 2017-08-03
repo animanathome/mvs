@@ -1,10 +1,11 @@
 var tmdbm = require('../controls/tmdbm.js')
 var tmdbs = require('../controls/tmdbs.js')
+var _series = require('../controls/series.js')
 
 var movie = require('../models/movies.js')
-var series = require('../models/series.js')
-var season = require('../models/season.js')
-var episode = require('../models/episode.js')
+// var series = require('../models/series.js')
+// var Season = require('../models/season.js')
+// var Episode = require('../models/episode.js')
 
 module.exports = function (socket) {
 	socket.emit('init', {
@@ -48,12 +49,30 @@ module.exports = function (socket) {
 		console.warn('Deprecated, use series or movies instead.')
 	})
 
-	socket.on('series:update', function(data){
-		series.findOne({_id:data.id}, function(err, result){
-			if(err){
-				console.error(err);
-			}
-		})
+	socket.on('series:update', function(input){
+
+		console.log('series:update', input)
+		
+		if(input.action === 'addSeason'){
+			_series.addSeason(input.data)
+		}
+
+		if(input.action === 'removeSeason'){
+			// var data = input.data
+			_series.removeSeason(input.data)
+		}
+
+		if(input.action === 'addEpisode'){
+			_series.addEpisode(input.data)
+		}
+
+		if(input.action === 'removeEpisode'){
+			_series.removeEpisode(input.data)
+		}
+
+		if(input.action === 'updateEpisode'){
+			_series.updateEpisode(input.data)
+		}
 	})
 
 	socket.on('movie:update', function(data){
@@ -111,78 +130,33 @@ module.exports = function (socket) {
 	});
 
 	// LIST
-	socket.on('series:list_details', function(input){
-		console.log('input:', input)
-
-		series.findOne({'mid':input.mid}, function(err, res){
-			if(err){
-				console.error(err)
-			}
-
-			console.log('result', res)
-
-			var data = {
-				_id: res._id,
-				backdrop_path: res.backdrop_path,
-				poster_path: res.poster_path,
-				name: res.title,
-				seasons:[]
-			}
-			
-			var i;
-			for(i = 0; i < res.seasons.length; i++){
-				var info = {}
-				info.season = res.seasons[i].season
-				info.available = res.seasons[i].episodes.length
-				info.track = res.seasons[i].episode_count
-				data.seasons.push(info)
-			}
-			// console.log(data)
-
-			socket.emit('series:list_details', {
+	socket.on('series:list_episodes', function(input){
+		_series.listEpisodes(input)
+		.then(function(data){
+			console.log(data)
+			socket.emit('series:list_episodes', {
 				'data': data
 			})
+		})
+	})
+
+	socket.on('series:list_details', function(input){
+		_series.details(input)
+		.then(function(data){
+			socket.emit('series:list_details', {
+				'data': data
+			})	
 		})
 	})
 
 	socket.on('series:list', function(){
 		console.log('series:list')
 
-		series.find({
-			track:true, 
-			available:false
-		}, {
-			mid:1,
-			myear:1, 
-			mtitle:1, 
-			poster_path:1, 
-			overview:1, 
-			genre_ids:1
-		}, function(err, result){
-
-			if(err){
-				console.error(err);
-			}
-
-			console.log(result)
-
-			var data = []
-			for(var i = 0; i < result.length; i++){
-				data.push({
-					id: result[i]._id,
-					mid: result[i].mid,
-					year: result[i].myear,
-					title: result[i].mtitle,
-					poster_path: result[i].poster_path,
-					overview: result[i].overview,
-					genre_ids: result[i].genre_ids
-				})
-			}
-
+		_series.list()
+		.then(function(data){
 			socket.emit('series:list', {
 				'data': data
 			})
-
 		})
 	})
 
@@ -240,72 +214,11 @@ module.exports = function (socket) {
 		console.log('series:track', input)
 
 		if(input.action === 'remove'){
-			console.log('removing', input.data.id, 'from track list')
-
-			series.findOneAndRemove({ _id: input.data.id }, function(err, other){
-				
-				if(err){
-					console.error(err);
-				}
-				
-				console.log('done deleting', other)
-			})
-		}
-
-		var addSeason = function(series, data){
-			console.log('adding season', data.season)
-			var ses = new season({
-				season:data.season, 
-				episode_count:data.episode_count
-			})
-			series.seasons.push(ses)
-			series.save()
+			_series.remove(input.data)
 		}
 
 		if(input.action === 'add'){
-			series.findOne({ mid: input.data.mid }, function(err, result){
-				console.log(err, result)
-
-				if(err){
-					console.error(err);
-				}
-
-				if(result === null){
-					var s = new series(input.data)
-					s.save(function(err, item){
-						if(err){
-							console.error('error', err)
-						}else{
-							console.log('item', item)
-							
-							addSeason(item, input.data)
-
-							console.log('Added', s.mtitle+'('+s.myear+')', 'to watch list.')
-							series.count({}, function(err, result){
-								console.log('Count is '+result)
-							})	
-						}
-					})
-				}else{
-					console.log('Series already exists.')
-					
-					var i = 0;
-					var season_exists = false;
-					for(i = 0; i < result.seasons.length; i++){
-						if(result.seasons[i].season === input.data.season){
-							season_exists = true;
-						}
-					}
-
-					// console.log(result)
-					if(!season_exists){
-						addSeason(result, input.data)
-					}else{
-						console.log('Season', input.data.season, 'already exists.')
-					}
-				}
-
-			})
+			_series.add(input.data)
 		}
 	})
 

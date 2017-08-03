@@ -43,24 +43,7 @@ var SeasonSchema = new Schema({
   episode_count:{
     type: Number
   },
-  episodes: [EpisodeSchema.schema],
-  // internal status 
-  track: {
-    type: Boolean,
-    default: false
-  },
-  progress: {
-    type: Number,
-    default: 0
-  },
-  available: {
-    type: Boolean,
-    default: false
-  },  
-  view: {
-    type: Boolean,
-    default: false
-  }
+  episodes: [EpisodeSchema.schema]
 },{_id: false})
 
 module.exports = mongoose.model('Season', SeasonSchema)
