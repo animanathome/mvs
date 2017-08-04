@@ -13,7 +13,9 @@ getIP((err, ip) => {
         // every service in the list has failed 
         throw err;
     }
-    console.log('Public ip', ip);
+    console.log('---------------')
+    console.log('REQUEST - Public ip', ip);
+    console.log('---------------')
 });
 
 
@@ -51,7 +53,8 @@ var search_movie_requests = function(movie){
 	request
 	.post('http://pia:3000/movies', {form:movie})
 	.on('response', function(response){
-		console.log(response)
+		console.log('got result back')
+		// console.log(response)
 
 		var result = ''
 		response.on('data', function (chunk) {
@@ -106,136 +109,99 @@ var search_series_requests = function(series){
 	return deferred.promise;
 }
 
-var query_series_requests = function(){
-	console.log('\tQuery_series_requests')
-	let socket = io(host)
-	// check if you have any content to look for
-	socket.on('connect', function(){
-		console.log('connect')
-		socket.emit('series:list')
-	});
+let socket = io(host, {
+  'reconnection': true,
+  'reconnectionDelay': 500,
+  'reconnectionAttempts': 10
+})
+
+socket.on('connect', function(){
+	console.log('connect')
+});
+
+socket.on('disconnect', function () {
+	console.log('disconnect');
+});
+
+var query_movies_requests = function(){
+	console.log('query_movies_requests')
 
 
-	// get series details, determine season and episodes to find
-	var i = 0;
-	var data = [];
-	var query_series = function(){
-		// console.log('--------------------------')
-		// console.log('query_series')
-		// console.log('\tindex:', i)
-		// console.log('\tlength:', data.length)
-		// console.log('\tmid:', data[i].mid)
-
-		socket.emit('series:list_details', { 
-			mid:data[i].mid 
-		})
-		
-		socket.once('series:list_details', function(result){
-			
-			console.log('--------------------------')
-			console.log('list_details')
-			console.log(i, result)
-
-			// console.log('seasons', result.data.seasons)
-
-			var j, k, season, episodes, name, id;
-			
-			name = result.data.name;
-			id = result.data._id;
-			for(j = 0; j < result.data.seasons.length; j++){
-				season = result.data.seasons[j].season;
-				episodes = result.data.seasons[j].track;
-
-				for(k = 0; k < 1; k++){
-				// for(k = 0; k < episodes; k++){
-					// console.log('series:', name, '- season:', season, '- episode', k+1)
-					search_series_requests({
-						id: id,
-						name: name,
-						season: season,
-						episode: k+1
-					})
-					.then(function(result){
-						console.log(result)
-						if(result.update){
-							socket.emit('series:update', result)
-						}
-					})
-				}
-			}
-
-			if(i < data.length-1){
-				i += 1;
-				query_series()
-			}
-		})
+	if(!socket.connected){
+		console.error('Unable to send request. Socket is not connected')
 	}
 
-	// get a list of series we're looking for
-	socket.once('series:list', function(result){
-		console.log('got', result.data)
-
-		// look for each series, one at a time
-		if(result.data.length > 0){
-			data = result.data;
-			query_series()
-		}	
-	})
-}
-
-// request the content we need to look for
-var query_requests = function(){
-	console.log('\tQuery_requests')
-	
-	let socket = io(host)
-	// check if you have any content to look for
-	socket.on('connect', function(){
-		console.log('connect')
+	// socket.on('connect', function(){
+	// 	console.log('connect')
 		socket.emit('movies:list')
-	});
+	// });
+
+	// socket.on('disconnect', function () {
+	// 	console.log('disconnect');
+	// });
 
 	// if we do, pass each item to search
 	socket.once('movies:list', function(result){
-		console.log('got', result.data)
+		console.log('result', result)
 
-		var id,
-			i = 0,
-			ds = result.data.length,
-			delay = 100;
+		// socket.disconnect();
 
-		// make sure we have content to go over
-		if(ds == 0){
-			return
-		}
+		var i;
+		for(i = 0; i < result.data.length; i++){
+			console.log('Sending download request for', result.data[i])
+			search_movie_requests({
+				id:result.data[i].id,
+				title:result.data[i].title,
+				year:result.data[i].year,
+			})
+			.then(function(data){
+				console.log('done downloading')
+				console.log('result', data)
 
-		function run_send(){
-			return setInterval(function(){
-				console.log('\tSearching for', result.data[i].title+'('+result.data[i].year+')')	
-				
-				search_movie_requests({
-					id:result.data[i].id,
-					title:result.data[i].title,
-					year:result.data[i].year
-				})
-				.then(function(result){
-					// update database
-					if(result.update){
-						socket.emit('movies:update', result)
+				var payload = {
+					id:data.item.id,
+					update:{
+						movie_path:data.item.path,
+						downloadTime:data.item.downloadTime,
+						track: false,
+						available: true
 					}
-				})
-				.fail(function(err){
-					console.error(err)
-				})
-
-				i+=1
-				if(i >= ds){
-					console.log('done')
-					clearInterval(id)
 				}
-			}, delay)
+				console.log('sending payload', payload)
+				socket.emit('movies:update', payload)
+			})
 		}
-		id = run_send();
+	})
+}
 
+var query_series_requests = function(){
+	console.log('query_series_requests')
+
+	let socket = io(host)
+	
+	socket.on('connect', function(){
+		console.log('connect')
+		socket.emit('series:list_episodes', {track:true, available:false})
+	});
+
+	socket.on('disconnect', function () {
+		console.log('disconnect');
+	});
+
+	socket.once('series:list_episodes', function(result){
+		console.log('result', result)
+
+		socket.disconnect();
+
+		var i;
+		for(i = 0; i < result.data.length; i++){
+			console.log('Sending download request for', result.data[i])
+			search_series_requests(result.data[i])
+			.then(function(data){
+				console.log('done downloading')
+				console.log(data)
+			})
+		}
 	})
 }
 
@@ -248,7 +214,8 @@ var job = cron.scheduleJob('*/2 * * * *', function(){
 	console.log('-------------------------------------------------')
 	console.log('Running cron job for the', job_run_count++, 'time');
 	// query_requests();
-	query_series_requests()
+	// query_series_requests()
+	query_movies_requests()
 });
 
 module.exports = app;

@@ -5,12 +5,10 @@ var fs = require('fs')
 
 var oneom = (function(){
 
-	getMagnetURI = function(name, season, episode){
-		var deferred = Q.defer();
+	var getMagnetURI = function(name, season, episode){
+		console.log('oneom - getMagnetURI', name, season, episode)
 
-		title = encodeURIComponent(name)
-		season = ('00'+season).substring(season.length)
-		episode = ('00'+episode).substring(episode.length)
+		var deferred = Q.defer();
 
 		qsuri = "https://oneom.tk/search/serial?limit=1&title="
 		qiuri = "https://oneom.tk/serial/"
@@ -77,8 +75,8 @@ var oneom = (function(){
 		return deferred.promise;
 	}
 
-	getDownloadDir = function(sub_folders){
-		console.log('getDownloadDir')
+	var getDownloadDir = function(sub_folders){
+		console.log('oneom - getDownloadDir')
 
 		// root download directory
 		var download_dir = __dirname+'/../../download'
@@ -99,9 +97,16 @@ var oneom = (function(){
 		return download_dir;
 	}
 
-	downloadTorrent = function(result){
-		console.log('downloadTorrent', result)
+	var downloadTorrent = function(result){
+		console.log('oneom - downloadTorrent', result)		
+
 		var deferred = Q.defer();
+		
+		if(result === undefined){
+			setTimeout(function(){
+				deferred.reject('Invalid input')
+			})	
+		}
 
 		var item = {
 			name:result.name,

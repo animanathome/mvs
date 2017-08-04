@@ -1,4 +1,5 @@
 var express = require('express')
+	, Q = require("q")
 	, bodyParser = require('body-parser')
 	, json = require('json')
 	, http = require('http')
@@ -12,7 +13,9 @@ getIP((err, ip) => {
         // every service in the list has failed 
         throw err;
     }
-    console.log('Public ip', ip);
+    console.log('---------------')
+    console.log('DOWNLOAD - Public ip', ip);
+    console.log('---------------')
 });
 
 console.log('running')
@@ -28,29 +31,106 @@ var server = http.createServer(app);
 var queue = kue.createQueue();
 
 queue.process('download series', 1, function(job, done){
-	console.log('download series', job.data)
+	var data = job.data;
+	console.log('Download series', data)
+	
+	var start = Date.now()
 
-	download.series(job.data)
+	download.series(data)
 	.then(function(result){
-		done(result)
+		result.item.downloadTime = Date.now() - start;
+		console.log('\tdone', result)
+		done(null, result)
+	})
+	.fail(function(err){
+		console.log('\tfailed', err)
+		done(err)
 	})
 })
 
 queue.process('download movie', 1, function(job, done){
-	console.log('download movie', job.data)
+	var data = job.data;
+	console.log('Download movie', data)
 
-	download.movie(job.data)
+	var start = Date.now()
+	download.movie(data)
 	.then(function(result){
-		done(result)
+		result.item.downloadTime = Date.now() - start;
+		console.log('\tdone', result)
+		done(null, result)
+	})
+	.fail(function(err){
+		console.log('\tfailed', err)
+		done(err)
 	})
 })
 
+queue.on('job enqueue', function(id, type){
+  console.log( 'Job %s got queued of type %s', id, type );
+}).on('job complete', function(id, result){
+  kue.Job.get(id, function(err, job){
+    if (err) return;
+    job.remove(function(err){
+      if (err) throw err;
+      console.log('removed completed job #%d', job.id);
+    });
+  });
+}).on( 'error', function( err ) {
+	console.log( 'Oops... ', err );
+});
+
+reset_queue = function(){
+	console.log('reset_queue')
+
+	var remove_active = function(){
+		// Remove all active jobs
+		queue.active(function(err, ids){
+			console.log(ids.length, 'active jobs')
+			ids.forEach( function( id ) {
+				kue.Job.get( id, function( err, job ) {
+					if(job === undefined){
+						return
+					}
+					job.inactive(function(){
+						job.remove( function(){
+			      			console.log( '\tremoved active job', job.id );
+			    		});
+					})
+				});
+			});
+		})
+	}
+
+	var remove_inactive = function(){
+		// Remove all inactive jobs
+		queue.inactive(function(err, ids){
+			console.log(ids.length, 'inactive jobs')
+			ids.forEach( function( id ) {
+				kue.Job.get( id, function( err, job ) {
+					if(job === undefined){
+						return
+					}
+
+					job.remove( function(){
+		      			console.log( '\tremoved inactive job', job.id );
+		    		});
+				});
+			});
+		})
+	}
+
+	remove_active()
+	remove_inactive()
+}
+
+reset_queue()
+
 app.post('/series', function(req, res){
-	console.log('POST - series', req.body)
+	console.log('Creating series download job for', req.body)
 
 	var job = queue.create('download series', req.body)
-	job.save()
-	job.on('complete', function(result){
+	job.removeOnComplete( true ).save()
+	.on('complete', function(result){
 	  	console.log('Job completed with data ', result);
 	  	res.json(result);
 		res.send()
@@ -62,10 +142,11 @@ app.post('/series', function(req, res){
 app.post('/movies', function(req, res){
 	// console.log('post')
 	// console.log('searching for', req)
+	console.log('Creating movie download job for', req.body)
 
 	var job = queue.create('download movie', req.body)
-	job.save()
-	job.on('complete', function(result){
+	job.removeOnComplete( true ).save()
+	.on('complete', function(result){
 	  	console.log('Job completed with data ', result);
 	  	res.json(result);
 		res.send()

@@ -18,7 +18,12 @@ var series = (function(){
 	// list all episodes
 	var listEpisodes = function(data){
 		console.log('listEpisodes', data)
+
 		var deferred = Q.defer();
+		
+		if(data === undefined){
+			data = {}
+		}
 
 		matchesQuery = function(item, data){
 			var keys = Object.keys(data)

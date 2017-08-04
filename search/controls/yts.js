@@ -17,8 +17,8 @@ var yts = (function(){
 		"tracker.leechers-paradise.org:6969"
 	]
 
-	getTorrent = function(item){
-		console.log('getTorrent', item)
+	var getTorrent = function(item){
+		console.log('yts - getTorrent', item)
 		var title = item.title;
 		var year = item.year
 
@@ -63,18 +63,33 @@ var yts = (function(){
 		return deferred.promise;
 	}	
 
-	getDownloadDir = function(){
+	var getDownloadDir = function(sub_folders){
+		console.log('yts - getDownloadDir')
+
+		// root download directory
 		var download_dir = __dirname+'/../../download'
 		if (!fs.existsSync(download_dir)){
 			fs.mkdirSync(download_dir);
 		}
+
+		// create any given sub folders if necessary
+		var i;
+		for(i in sub_folders){
+			download_dir += '/'+sub_folders[i]
+			if (!fs.existsSync(download_dir)){
+				fs.mkdirSync(download_dir);
+			}
+		}
+
+		console.log('\tresult:', download_dir)
 		return download_dir;
 	}
 
-	getMagnetURI = function(d, item){
-		console.log('getMagnetURI')
-		console.log('\tdata', d)
-		console.log('\titem', item)
+	var getMagnetURI = function(d, item){
+		console.log('yts - getMagnetURI')
+		// console.trace()
+		// console.log('\tdata', d)
+		// console.log('\titem', item)
 
 		if(d.movie_count > 1){
 			console.log('More then one result. Downloading first one "'+d.movies[0].title_long+'"')
@@ -126,8 +141,8 @@ var yts = (function(){
 		return url
 	}
 
-	downloadTorrent = function(result){
-		console.log('downloadTorrent', result)
+	var downloadTorrent = function(result){
+		console.log('yts - downloadTorrent', result)
 
 		var deferred = Q.defer();
 
@@ -143,7 +158,7 @@ var yts = (function(){
 		}
 
 		var client = new WebTorrent()
-		client.add(magnetURI, { path: getDownloadDir() }, function (torrent) {
+		client.add(magnetURI, { path: getDownloadDir(['movies']) }, function (torrent) {
 			torrent.on('done', onDone)
 			var interval = setInterval(onProgress, 5000)
 			// onProgress()
