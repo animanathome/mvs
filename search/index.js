@@ -2,9 +2,9 @@ var express = require('express')
 	, bodyParser = require('body-parser')
 	, json = require('json')
 	, http = require('http')
-	, yts = require('./controls/yts.js')
-	, oneom = require('./controls/oneom.js')
-	, getIP = require('external-ip')();
+	, download = require('./controls/download.js')
+	, kue = require('kue')
+	, getIP = require('external-ip')()
  
 
 getIP((err, ip) => {
@@ -21,120 +21,57 @@ var DOWNLOAD = false
 
 var app = express();
 app.use(express.bodyParser());
-var server = http.createServer(app);
-
-
-/* Configuration */
-// app.set('views', __dirname + '/views');
-// app.use(express.static(__dirname + '/public'));
+app.use(kue.app)
 app.set('port', 3000);
 
-// if (process.env.NODE_ENV === 'development') {
-	// app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
-// }
+var server = http.createServer(app);
+var queue = kue.createQueue();
 
+queue.process('download series', 1, function(job, done){
+	console.log('download series', job.data)
+
+	download.series(job.data)
+	.then(function(result){
+		done(result)
+	})
+})
+
+queue.process('download movie', 1, function(job, done){
+	console.log('download movie', job.data)
+
+	download.movie(job.data)
+	.then(function(result){
+		done(result)
+	})
+})
 
 app.post('/series', function(req, res){
 	console.log('POST - series', req.body)
 
-	if(!req.body.name || !req.body.season 
-	|| !req.body.episode || !req.body._id){
-		console.error('Missing parameters')
-		
-		res.json({error:'Missing title, season, episode or _id parameter'})
+	var job = queue.create('download series', req.body)
+	job.save()
+	job.on('complete', function(result){
+	  	console.log('Job completed with data ', result);
+	  	res.json(result);
 		res.send()
-		return
-	}
-
-	var _id = req.body._id
-	var title = req.body.name
-	var season = req.body.season
-	var episode = req.body.episode
-
-	oneom.getMagnetURI(title, season, episode)
-	.then(function(result){
-		return oneom.downloadTorrent(result)
-	})
-	.then(function(result){
-		console.log('Done downloading:', title, '- season:', season, '- episode:', episode)
-		// update database
-		var message = {
-			_id: _id,
-			title: title,
-			season: season,
-			episode: episode,
-			update: {
-				available:true,
-				movie_path: result.item.path
-			}
-		}
-		console.log('Sending update', message)
-		// conn.emit('item:update', message)
-		// res.send('searching movies')
-		res.json(message);
-		res.send()
-	})
+	}).on('failed', function(err){
+  		console.log('Job failed', err);
+  	});
 })
 
 app.post('/movies', function(req, res){
 	// console.log('post')
 	// console.log('searching for', req)
 
-	if(!req.body.title || !req.body.year){
-		console.error('Missing parameters')
-		
-		res.json({error:'Missing title or year parameter'})
+	var job = queue.create('download movie', req.body)
+	job.save()
+	job.on('complete', function(result){
+	  	console.log('Job completed with data ', result);
+	  	res.json(result);
 		res.send()
-		return
-	}
-
-	console.log('Searching for', req.body.title+' ('+req.body.year+')')
-
-	yts.getTorrent(req.body)
-		.fail(function(err){
-			console.error('ERROR:', err)
-		})
-		.then(function(result){
-			// console.log('result', result.item.title)
-			
-			if(result !== undefined 
-			&& result.data 
-			&& result.data.movie_count > 0){
-				console.log('Found torrent for', result.item.title+' ('+result.item.year+')')
-				if(DOWNLOAD){
-					return yts.downloadTorrent(result)
-				}else{
-					console.error('Download is disabled. Unable to download', result.item.title+' ('+result.item.year+')')
-					return 
-				}
-			}else{
-				// console.log('--------')
-				// console.log(result)
-				// console.log('--------')
-				console.error('No torrent available yet for', req.body.title+' ('+req.body.year+')')
-				return
-			}
-		})
-		.fail(function(err){
-			console.error('ERROR:', err)
-		})
-		.then(function(result){
-			console.log('Done downloading', result.item.title+' ('+result.item.year+')')
-			// update database
-			var message = {
-				id:result.item.id,
-				update: {
-					available:true,
-					movie_path: result.item.path
-				}
-			}
-			console.log('Sending update', message)
-			// conn.emit('item:update', message)
-			// res.send('searching movies')
-			res.json(message);
-			res.send()
-		})
-
+	}).on('failed', function(err){
+  		console.log('Job failed', err);
+  	});
 })
 
 /* Start server */

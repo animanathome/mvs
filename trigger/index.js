@@ -85,7 +85,7 @@ var search_series_requests = function(series){
 	request
 	.post('http://pia:3000/series', {form:series})
 	.on('response', function(response){
-		console.log(response)
+		// console.log(response)
 
 		var result = ''
 		response.on('data', function (chunk) {
@@ -240,7 +240,7 @@ var query_requests = function(){
 }
 
 // query_requests();
-query_series_requests()
+// query_series_requests()
 var job_run_count = 1;
 
 // search for new content every *
