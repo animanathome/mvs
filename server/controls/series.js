@@ -118,6 +118,8 @@ var series = (function(){
 
 	// get series details
 	var details = function(data){
+		console.log('details', data)
+
 		var deferred = Q.defer();
 
 		Series.findOne({'mid':data.mid}, function(err, res){
@@ -140,10 +142,12 @@ var series = (function(){
 			for(i = 0; i < res.seasons.length; i++){
 				var info = {}
 				info.season = res.seasons[i].season
+				console.log('season:', info.season)
 				
 				var available_count = 0;
 				var available = []
-				for(j = 0; j < res.seasons[i].episodes[j].length; j++){
+				for(j = 0; j < res.seasons[i].episodes.length; j++){
+					// console.log(j, res.seasons[i].episodes[j])
 					if(res.seasons[i].episodes[j].available){
 						available_count += 1;
 						available.push(res.seasons[i].episodes[j].episode)
@@ -155,7 +159,7 @@ var series = (function(){
 				info.track = res.seasons[i].episode_count
 				data.seasons.push(info)
 			}
-			// console.log(data)
+			console.log(data)
 			deferred.resolve(data);
 		})
 		return deferred.promise;
@@ -163,65 +167,67 @@ var series = (function(){
 
 	// add series
 	var add = function(data){
-			Series.findOne({ mid: data.mid }, function(err, result){
-				console.log(err, result)
+		console.log('add', data)
 
-				if(err){
-					console.error(err);
-				}
+		Series.findOne({ mid: data.mid }, function(err, result){
+			console.log(err, result)
 
-				var addSeason = function(item){
-					if(data.season && data.episode_count){
+			if(err){
+				console.error(err);
+			}
 
-						var i,
-								season_exists = false;
-						for(i = 0; i < item.seasons.length; i++){
-							if(+item.seasons.season === +data.season){
-								season_exists = true;
-							}
-						}
-						
-						if(!season_exists){
-							// create season
-							var season = new Season({
-								season:data.season, 
-								episode_count:data.episode_count
-							})
+			var addSeason = function(item){
+				if(data.season && data.episode_count){
 
-							// create episodes
-							for(i = 0; i < data.episode_count; i++){
-								var episode = new Episode({
-									episode:i+1,
-									track: true
-								})
-								episode.save()
-								season.episodes.push(episode)
-							}
-							item.seasons.push(season)
-							season.save()
-							item.save()
-							console.log('Adding season', data.season)
-						}else{
-							console.log('Season', data.season, 'already exists')
+					var i;
+					var season_exists = false;
+					for(i = 0; i < item.seasons.length; i++){
+						if(+item.seasons[i].season === +data.season){
+							season_exists = true;
 						}
 					}
-				}
+					
+					if(!season_exists){
+						// create season
+						var season = new Season({
+							season:data.season, 
+							episode_count:data.episode_count
+						})
 
-				if(result === null){
-					var s = new Series(data)
-					s.save(function(err, item){
-						if(err){
-							console.error('error', err)
-						}else{
-							// console.log('item', item)
-							addSeason(item)
+						// create episodes
+						for(i = 0; i < data.episode_count; i++){
+							var episode = new Episode({
+								episode:i+1,
+								track: true
+							})
+							episode.save()
+							season.episodes.push(episode)
 						}
-					})
-				}else{
-					// console.log('Nothing to add. Series already exists.')
-					addSeason(result)
+						item.seasons.push(season)
+						season.save()
+						item.save()
+						console.log('Adding season', data.season)
+					}else{
+						console.log('Season', data.season, 'already exists')
+					}
 				}
-			})
+			}
+
+			if(result === null){
+				var s = new Series(data)
+				s.save(function(err, item){
+					if(err){
+						console.error('error', err)
+					}else{
+						// console.log('item', item)
+						addSeason(item)
+					}
+				})
+			}else{
+				// console.log('Nothing to add. Series already exists.')
+				addSeason(result)
+			}
+		})
 	}
 
 	// remove series
@@ -259,6 +265,8 @@ var series = (function(){
 			var i = 0;
 			var season_exists = false;
 			for(i = 0; i < result.seasons.length; i++){
+				console.log(+result.seasons[i].season, '->', +data.season)
+				
 				if(+result.seasons[i].season === +data.season){
 					season_exists = true;
 				}

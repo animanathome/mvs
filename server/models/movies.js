@@ -13,10 +13,10 @@ var MovieSchema = new Schema({
   myear: {
   	type: Number
   },
-  downloadSize: {
+  download_size: {
     type: Number
   },
-  downloadTime: {
+  download_time: {
     type: Number
   },
   // user details

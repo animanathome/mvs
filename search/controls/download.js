@@ -10,31 +10,33 @@ var download = (function(){
 		var deferred = Q.defer();
 
 		var _id = request._id || request.id
-		var title = encodeURIComponent(request.name)
+		var name = request.name
 		var season = ('00'+request.season).substring(request.season.length)
 		var episode = ('00'+request.episode).substring(request.episode.length)
 
-		oneom.getMagnetURI(title, season, episode)
+		oneom.getMagnetURI(name, season, episode)
 		.fail(function(err){
 			console.error('ERROR:', err)
 			deferred.reject(err)
 		})
 		.then(function(result){
-			return oneom.downloadTorrent(result)
+			if(result === undefined){
+				deferred.reject('Unable to find episode')
+			}else{
+				return oneom.downloadTorrent(result)
+			}
 		})
 		.fail(function(err){
 			console.error('ERROR:', err)
 			deferred.reject(err)
 		})
 		.then(function(result){
-			console.log('Done downloading:', title, '- season:', season, '- episode:', episode)
-			deferred.resolve({
-				_id: _id,
-				title: title,
-				season: season,
-				episode: episode,
-				movie_path: result.item.path
-			})
+			console.log('Done downloading:', name, '- season:', season, '- episode:', episode)
+			console.log('result', result)
+			
+			result.item._id = _id;
+
+			deferred.resolve(result)
 		})
 		return deferred.promise;
 	}

@@ -3,11 +3,11 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var EpisodeSchema = new Schema({
-  downloadSize: {
+  download_size: {
   	type: Number
   },
   // how long did it take to download the given file
-  downloadTime: {
+  download_time: {
   	type: Number
   },
   // can be 720, 1080 or 4000
@@ -18,7 +18,7 @@ var EpisodeSchema = new Schema({
     type: Number
   },
   // path to file
-  path: {
+  movie_path: {
     type: String
   },
   // are we actively tracking 

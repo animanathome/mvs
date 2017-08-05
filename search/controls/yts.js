@@ -158,7 +158,8 @@ var yts = (function(){
 		}
 
 		var client = new WebTorrent()
-		client.add(magnetURI, { path: getDownloadDir(['movies']) }, function (torrent) {
+		var sub_folders = ['movies']
+		client.add(magnetURI, { path: getDownloadDir(sub_folders) }, function (torrent) {
 			torrent.on('done', onDone)
 			var interval = setInterval(onProgress, 5000)
 			// onProgress()
@@ -170,7 +171,7 @@ var yts = (function(){
 			for(var i = 0; i < torrent.files.length; i++){
 				if(torrent.files[i].path.endsWith('.mp4')){
 					// console.log('path', torrent.files[i].path)
-					path = torrent.files[i].path
+					path = sub_folders.join('/')+'/'+torrent.files[i].path
 					break;
 				}
 			}

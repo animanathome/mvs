@@ -548,6 +548,7 @@ class TrackSeriesItem extends Component {
 		this.socket = props.socket;
 		this.parent = props.parent;
 		this.data = {}
+		console.log('data', this.data)
 
 		this.state = {
 			update: 0
@@ -563,8 +564,8 @@ class TrackSeriesItem extends Component {
 		this.socket.emit('series:list_details', payload)
 		
 		this.socket.on('series:list_details', function(result){
-			if(scope._mounted){
-				console.log(result)
+			if(scope._mounted){				
+				console.log('result:', result)
 				// var data = JSON.parse(result.data)
 				scope.data = result.data;
 				scope.setState({update:scope.state.updated+1})
@@ -578,6 +579,10 @@ class TrackSeriesItem extends Component {
 
 	componentWillUnmount() {
 		this._mounted = false;
+	}
+
+	removeSeason(){
+		console.log('removeSeason')
 	}
 
 	render(){

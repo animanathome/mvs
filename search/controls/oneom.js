@@ -10,6 +10,7 @@ var oneom = (function(){
 
 		var deferred = Q.defer();
 
+		title = encodeURIComponent(name)
 		qsuri = "https://oneom.tk/search/serial?limit=1&title="
 		qiuri = "https://oneom.tk/serial/"
 		headers = {headers:{'Accept': 'application/json'}}
@@ -98,7 +99,7 @@ var oneom = (function(){
 	}
 
 	var downloadTorrent = function(result){
-		console.log('oneom - downloadTorrent', result)		
+		console.log('oneom - downloadTorrent', result)
 
 		var deferred = Q.defer();
 		
@@ -115,9 +116,11 @@ var oneom = (function(){
 		}
 		var magnetURI = result.magnetURI
 
+		var sub_folders = ['series', result.name, result.season]
+
 		var client = new WebTorrent()
 		client.add(magnetURI, { 
-			path: getDownloadDir(['series', result.name, result.season])
+			path: getDownloadDir(sub_folders)
 		}, function(torrent){
 			console.log('torrent')
 
@@ -128,14 +131,22 @@ var oneom = (function(){
 			// console.log('path', torrent.files.path)
 			// console.log('files', torrent.files)
 			// get file path
-			var path;
+			var path = null;
 			for(var i = 0; i < torrent.files.length; i++){
-				if(torrent.files[i].path.endsWith('.mp4')){
+				if(torrent.files[i].path.endsWith('.mp4') 
+				|| torrent.files[i].path.endsWith('.mkv')){
 					console.log('path', torrent.files[i].path)
-					path = torrent.files[i].path
+					path = sub_folders.join('/')+'/'+torrent.files[i].path
 					break;
 				}
 			}
+
+			if(path === null){
+				deferred.reject('Unable to find movie file.')
+			}else{
+				console.log('path:', path)
+			}
+
 			// extend item
 			item.path = path;
 

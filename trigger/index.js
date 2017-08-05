@@ -82,6 +82,7 @@ var search_movie_requests = function(movie){
 //	episode: 10
 // }
 var search_series_requests = function(series){
+	console.log('search_series_requests', series)
 
 	var deferred = q.defer();
 
@@ -131,38 +132,30 @@ var query_movies_requests = function(){
 		console.error('Unable to send request. Socket is not connected')
 	}
 
-	// socket.on('connect', function(){
-	// 	console.log('connect')
-		socket.emit('movies:list')
-	// });
-
-	// socket.on('disconnect', function () {
-	// 	console.log('disconnect');
-	// });
+	socket.emit('movies:list')
 
 	// if we do, pass each item to search
 	socket.once('movies:list', function(result){
-		console.log('result', result)
-
-		// socket.disconnect();
+		// console.log('result', result)
 
 		var i;
 		for(i = 0; i < result.data.length; i++){
-			console.log('Sending download request for', result.data[i])
+			console.log('Sending movie download request for', result.data[i])
+			
 			search_movie_requests({
 				id:result.data[i].id,
 				title:result.data[i].title,
 				year:result.data[i].year,
 			})
 			.then(function(data){
-				console.log('done downloading')
-				console.log('result', data)
+				// console.log('done downloading')
+				// console.log('result', data)
 
 				var payload = {
 					id:data.item.id,
 					update:{
 						movie_path:data.item.path,
-						downloadTime:data.item.downloadTime,
+						download_time:data.item.download_time,
 						track: false,
 						available: true
 					}
@@ -177,45 +170,54 @@ var query_movies_requests = function(){
 var query_series_requests = function(){
 	console.log('query_series_requests')
 
-	let socket = io(host)
+	if(!socket.connected){
+		console.error('Unable to send request. Socket is not connected')
+	}
 	
-	socket.on('connect', function(){
-		console.log('connect')
-		socket.emit('series:list_episodes', {track:true, available:false})
-	});
-
-	socket.on('disconnect', function () {
-		console.log('disconnect');
-	});
+	socket.emit('series:list_episodes', {
+		track:true, 
+		available:false
+	})
 
 	socket.once('series:list_episodes', function(result){
 		console.log('result', result)
 
-		socket.disconnect();
-
 		var i;
 		for(i = 0; i < result.data.length; i++){
-			console.log('Sending download request for', result.data[i])
+			console.log('Sending series download request for', result.data[i])
 			search_series_requests(result.data[i])
 			.then(function(data){
-				console.log('done downloading')
-				console.log(data)
+				// console.log('done downloading')
+				// console.log(data)
+				var payload = {
+					action:'updateEpisode',
+					data:{
+						_id:data.item._id,
+						season:data.item.season,
+						episode:data.item.episode,
+						update:{
+							movie_path:data.item.path,
+							download_time:data.item.download_time,
+							track: false,
+							available: true
+						}
+					}
+				}
+				socket.emit('series:update', payload)
 			})
 		}
 	})
 }
 
-// query_requests();
-// query_series_requests()
 var job_run_count = 1;
 
 // search for new content every *
-var job = cron.scheduleJob('*/2 * * * *', function(){
-	console.log('-------------------------------------------------')
-	console.log('Running cron job for the', job_run_count++, 'time');
-	// query_requests();
-	// query_series_requests()
-	query_movies_requests()
-});
+// var job = cron.scheduleJob('*/2 * * * *', function(){
+// 	console.log('-------------------------------------------------')
+// 	console.log('Running cron job for the', job_run_count++, 'time');
+
+// 	query_series_requests()
+// 	query_movies_requests()
+// });
 
 module.exports = app;
