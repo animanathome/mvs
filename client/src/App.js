@@ -202,6 +202,7 @@ class WatchMovie extends Component {
 
 	remove(){
 		// console.log('remove')
+		this.props.remove(this.props.data)
 	}
 
 	render(){
@@ -515,6 +516,27 @@ class Watch extends Component {
 		console.log('\troute', route)
 	}
 	
+	remove(result){
+		console.log('remove', result)
+
+		switch(this.category){
+			case "movies":
+				var payload = {
+					action:'remove',
+					data:{
+						id:result.id
+					}
+				}
+				console.log('payload:', this.category+':track', payload)
+				this.socket.emit(this.category+':track', payload)
+			break;
+
+			default:
+				console.error('Unsupported category:', this.category)
+			break;
+		}
+	}
+
 	render(){
 		var scope = this;
 		var match = this.props.match
@@ -528,7 +550,12 @@ class Watch extends Component {
 					{hasContent &&
 						<div className='watch-container'>
 						{this.data.map(function(item, index){
-							return <WatchMovie key={index} data={item} match={match}/>
+							return <WatchMovie 
+												key={index} 
+												data={item} 
+												match={match}
+												remove={scope.remove.bind(scope)}
+											/>
 						})}
 						</div>
 					}
@@ -545,7 +572,7 @@ class Watch extends Component {
 
 class TrackSeriesItemProgress extends Component {
 	remove(){
-
+		this.props.remove(this.props.data)
 	}
 
 	render(){
@@ -588,17 +615,28 @@ class TrackSeriesItem extends Component {
 		console.log('tv:', this.id)
 
 		var payload = {
-			mid: this.id
+			action:'list_details',
+			data:{
+				mid: this.id
+			}
 		}
-		this.socket.emit('series:list_details', payload)
+		this.socket.emit('series:track', payload)
 		
-		this.socket.on('series:list_details', function(result){
-			if(scope._mounted){				
+		this.socket.on('series:track', function(result){
+			
+			if(scope._mounted && result.action === 'list_details'){
 				console.log('result:', result)
 				// var data = JSON.parse(result.data)
 				scope.data = result.data;
 				scope.setState({update:scope.state.updated+1})
 			}
+
+			if(scope._mounted && result.action === 'redirect'){
+				console.warn(result.err)
+				var route = '/track/series'
+				scope.props.history.push(route)
+			}
+
 		})
 	}
 
@@ -610,12 +648,25 @@ class TrackSeriesItem extends Component {
 		this._mounted = false;
 	}
 
-	removeSeason(){
-		console.log('removeSeason')
+	remove(input){
+		// console.log('remove', input)
+		// console.log('\tdata:', this.data)
+
+		var payload = {
+			action:'removeSeason',
+			data:{
+				mid:this.id, // series id
+				id:this.data._id,
+				season:input.season
+			}
+		}
+		console.log('payload', 'series:track', payload)
+		this.socket.emit('series:track', payload)
 	}
 
 	render(){
 
+		var scope = this;
 		var hasContent = Object.keys(this.data).length > 0 ? true : false;
 		console.log('hasContent', hasContent)
 
@@ -659,6 +710,7 @@ class TrackSeriesItem extends Component {
 								return <TrackSeriesItemProgress
 													key={index}
 													data={item}
+													remove={scope.remove.bind(scope)}
 											 />
 							})}							
 						</div>
@@ -677,13 +729,13 @@ class TrackSeries extends Component {
 	}
 
 	remove(){
-		// console.log('remove', this.props.data)
+		console.log('remove', this.props.data)
 
 		var scope = this;
 		this.socket.emit('series:track', {
 			action: 'remove',
 			data: {
-				id: scope.props.data.id
+				id: scope.props.data._id
 			}
 		})
 	}
@@ -847,15 +899,15 @@ class Track extends Component {
 		this.data = []
 
 		var setData = function(result){
-			if(scope._mounted){
+			if(scope._mounted && result.action === 'list'){
 				// console.log('got', result.data)
 				scope.data = result.data
 				scope.setState({updated:scope.state.updated+1})
 			}
 		}
 
-		this.socket.on('movies:list', function(res){setData(res)})
-		this.socket.on('series:list', function(res){setData(res)})
+		this.socket.on('movies:track', function(res){setData(res)})
+		this.socket.on('series:track', function(res){setData(res)})
 
 		this.getContent()
 	}
@@ -889,7 +941,7 @@ class Track extends Component {
 
 	getContent(){
 		console.log('getContent', this.category)
-		this.socket.emit(this.category+':list')
+		this.socket.emit(this.category+':track', {action:'list'})
 	}
 
 	render(){

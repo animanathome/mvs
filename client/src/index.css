@@ -343,13 +343,13 @@ ol.seasons {
 .series-poster {
 	position: absolute;
 	left: 20px;
-	top: 80px;
+	top: 84px;
 	z-index: 10;
 }
 
 .series-intro {
 	position: absolute;
-	top: 170px;
+	top: 178px;
 	width: 100%;
 	height: 60px;
 	background: #0b0e10;
@@ -529,13 +529,15 @@ h3 {
 	right: 0px;
 	top: 160px;
 	bottom: -2px;
-	background: gray;
-	opacity: .9;
+	/*background: gray;*/
+	/*opacity: .9;*/
+	background: #0b0e10;
 }
 
 .movie-card-title {	
 	/*padding: 5px;*/
 	font-size: 18px;
+	font-weight: 700;
 	position: absolute;
 	color: white;
 	/*text-shadow: 1px 1px 0 #000;*/

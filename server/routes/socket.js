@@ -43,13 +43,29 @@ module.exports = function (socket) {
 
 		console.log('series:update', input)
 		
+		var mid = input.data.mid;
+
 		if(input.action === 'addSeason'){
 			_series.addSeason(input.data)
+			.then(function(){
+				return _series.details(input.data)
+			})
+			.then(function(data){
+				socket.emit('series:list_details', {
+				'data': data})
+			})
 		}
 
 		if(input.action === 'removeSeason'){
-			// var data = input.data
+			// TODO: when we remove the last season, we also need to remove the actual series
 			_series.removeSeason(input.data)
+			.then(function(){
+				return _series.details(input.data)
+			})
+			.then(function(data){
+				socket.emit('series:list_details', {
+				'data': data})
+			})
 		}
 
 		if(input.action === 'addEpisode'){
@@ -63,6 +79,20 @@ module.exports = function (socket) {
 		if(input.action === 'updateEpisode'){
 			_series.updateEpisode(input.data)
 		}
+	})
+
+	socket.on('series:watch', function(){
+		console.log('series:watch')
+
+		_series.list({
+			track:true,
+			available:true
+		})
+		.then(function(data){
+			socket.emit('series:watch', {
+				'data': data
+			})
+		})
 	})
 	
 	socket.on('series:list_episodes', function(input){
@@ -100,12 +130,69 @@ module.exports = function (socket) {
 	socket.on('series:track', function(input){
 		console.log('series:track', input)
 
+		if(input.action === 'list'){
+			_series.list()
+			.then(function(data){
+				socket.emit('series:track', {
+					action:'list', 
+					data: data
+				})
+			})
+		}
+
+		if(input.action === 'list_details'){
+			_series.details(input.data)
+			.then(function(data){
+				socket.emit('series:track', {
+					action:'list_details',
+					data: data
+				})	
+			})
+			.fail(function(err){
+				socket.emit('series:track', {
+					action:'redirect',
+					err:err
+				})
+			})
+		}
+
 		if(input.action === 'remove'){
 			_series.remove(input.data)
+			.then(function(){
+				return _series.list()
+			})
+			.then(function(data){
+				socket.emit('series:track', {
+					action:'list', 
+					data: data
+				})
+			})
+		}
+
+		if(input.action === 'removeSeason'){
+			_series.removeSeason(input.data)
+			.then(function(){
+				return _series.details(input.data)
+			})
+			.then(function(data){
+				socket.emit('series:track', {
+					action:'list_details',
+					data: data
+				})
+			})
 		}
 
 		if(input.action === 'add'){
 			_series.add(input.data)
+			.then(function(){
+				return _series.list()
+			})
+			.then(function(data){
+				socket.emit('series:track', {
+					action:'list',
+					'data': data
+				})
+			})
 		}
 	})
 
@@ -200,15 +287,38 @@ module.exports = function (socket) {
 	socket.on('movies:track', function(input){
 		console.log('movies:track', input)
 
+		if(input.action === 'list'){
+			_movies.list({
+				track:true, 
+				available:false
+			})
+			.then(function(result){
+				socket.emit('movies:track', {
+					action: 'list',
+					data: result
+				})
+			})
+		}
+
 		if(input.action === 'remove'){
 			console.log('removing', input.data.id, 'from track list')
 
 			_movies.remove(input)
-			.then(function(){
-				console.log('finished removing movie', input.data.id)
-			})
 			.fail(function(err){
 				console.error(err)
+			})
+			.then(function(){
+				console.log('finished removing movie', input.data.id)
+				return _movies.list({
+					track:true, 
+					available:false
+				})
+			})
+			.then(function(result){
+				socket.emit('movies:track', {
+					action: 'list',
+					data: result
+				})
 			})
 		}
 
@@ -216,11 +326,21 @@ module.exports = function (socket) {
 			console.log('adding', input.data.mtitle, 'to track list')
 
 			_movies.add(input)
-			.then(function(){
-				console.log('finished adding movie', input.data.mtitle)
-			})
 			.fail(function(err){
 				console.error(err)
+			})
+			.then(function(){
+				console.log('finished adding movie', input.data.id)
+				return _movies.list({
+					track:true, 
+					available:false
+				})
+			})
+			.then(function(result){
+				socket.emit('movies:track', {
+					action:'list',
+					data: result
+				})
 			})
 		}
 

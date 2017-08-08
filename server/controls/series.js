@@ -126,41 +126,44 @@ var series = (function(){
 			if(err){
 				// console.error(err)
 				deferred.reject(err);
-			}
-
-			// console.log('result', res)
-
-			var data = {
-				_id: res._id,
-				backdrop_path: res.backdrop_path,
-				poster_path: res.poster_path,
-				name: res.title,
-				seasons:[]
-			}
-			
-			var i, j;
-			for(i = 0; i < res.seasons.length; i++){
-				var info = {}
-				info.season = res.seasons[i].season
-				console.log('season:', info.season)
-				
-				var available_count = 0;
-				var available = []
-				for(j = 0; j < res.seasons[i].episodes.length; j++){
-					// console.log(j, res.seasons[i].episodes[j])
-					if(res.seasons[i].episodes[j].available){
-						available_count += 1;
-						available.push(res.seasons[i].episodes[j].episode)
+			}else{
+				if(res === null){
+					console.log('Unable to find series')
+					deferred.reject('Unable to find series');
+				}else{
+					var data = {
+						_id: res._id,
+						backdrop_path: res.backdrop_path,
+						poster_path: res.poster_path,
+						name: res.title,
+						seasons:[]
 					}
+					
+					var i, j;
+					for(i = 0; i < res.seasons.length; i++){
+						var info = {}
+						info.season = res.seasons[i].season
+						console.log('season:', info.season)
+						
+						var available_count = 0;
+						var available = []
+						for(j = 0; j < res.seasons[i].episodes.length; j++){
+							// console.log(j, res.seasons[i].episodes[j])
+							if(res.seasons[i].episodes[j].available){
+								available_count += 1;
+								available.push(res.seasons[i].episodes[j].episode)
+							}
+						}
+						info.available = available_count
+						info.available_episodes = available
+						
+						info.track = res.seasons[i].episode_count
+						data.seasons.push(info)
+					}
+					console.log(data)
+					deferred.resolve(data);
 				}
-				info.available = available_count
-				info.available_episodes = available
-				
-				info.track = res.seasons[i].episode_count
-				data.seasons.push(info)
 			}
-			console.log(data)
-			deferred.resolve(data);
 		})
 		return deferred.promise;
 	}
@@ -168,17 +171,20 @@ var series = (function(){
 	// add series
 	var add = function(data){
 		console.log('add', data)
+		var deferred = Q.defer();
 
 		Series.findOne({ mid: data.mid }, function(err, result){
 			console.log(err, result)
 
 			if(err){
-				console.error(err);
+				// console.error(err); 
+				deferred.reject(err);
 			}
 
 			var addSeason = function(item){
-				if(data.season && data.episode_count){
+				var deferred = Q.defer();
 
+				if(data.season && data.episode_count){
 					var i;
 					var season_exists = false;
 					for(i = 0; i < item.seasons.length; i++){
@@ -205,12 +211,20 @@ var series = (function(){
 						}
 						item.seasons.push(season)
 						season.save()
-						item.save()
+						item.save(function(err, product, numAffected){
+							deferred.resolve();
+						})
 						console.log('Adding season', data.season)
 					}else{
 						console.log('Season', data.season, 'already exists')
+						deferred.resolve();
 					}
+				}else{
+					setTimeout(function(){
+						deferred.resolve();
+					})
 				}
+				return deferred.promise;
 			}
 
 			if(result === null){
@@ -218,47 +232,65 @@ var series = (function(){
 				s.save(function(err, item){
 					if(err){
 						console.error('error', err)
+						deferred.reject(err);
 					}else{
 						// console.log('item', item)
 						addSeason(item)
+						.then(function(){
+							deferred.resolve();
+						})
 					}
 				})
 			}else{
 				// console.log('Nothing to add. Series already exists.')
 				addSeason(result)
+				.then(function(){
+					deferred.resolve();
+				})
 			}
 		})
+		return deferred.promise;
 	}
 
 	// remove series
 	var remove = function(data){
+		var deferred = Q.defer();
+
 		Series.findOneAndRemove({ _id: data.id }, function(err, other){
 			
 			if(err){
-				console.error(err);
+				// console.error(err);
+				deferred.reject(err)
 			}
 			
 			console.log('Done removing series')
+			deferred.resolve();
 		})
+
+		return deferred.promise;
 	}
 
 	// add season
 	var addSeason = function(data){
 		console.log('------------------------------')
 		console.log('addSeason', data)
+		var deferred = Q.defer();
 
 		if(!data.hasOwnProperty('id')){
-			console.log('Missing id parameter')
-			return
+			// console.log('Missing id parameter')
+			// return
+			deferred.reject('Missing id parameter')
 		}
 
 		Series.findOne({_id:data.id}, function(err, result){
 			if(err){
-				console.error(err)
+				// console.error(err)
+				deferred.reject(err)
 			}
 			if(result === null){
 				console.log('Series'+data+'does not exist')
-				return
+				// return
+				deferred.reject('Series'+data+'does not exist')
 			}
 
 			// console.log('result', result)
@@ -291,63 +323,89 @@ var series = (function(){
 
 				result.seasons.push(season)
 				result.save()
+				deferred.resolve();
 			}else{
 				console.log('Season', data.season, 'already exists.')
+				deferred.resolve();
 			}
 			
 		})
+		return deferred.promise;
 	}
 
 	// remove season
 	var removeSeason = function(data){
 		console.log('removeSeason', data)
+		var deferred = Q.defer();
 		
 		if(!data.hasOwnProperty('id')){
-			console.log('Missing id parameter')
-			return
+			// console.log('Missing id parameter')
+			setTimeout(function(){
+				deferred.reject('Missing id parameter')
+			})
 		}
 
 		Series.findOne({_id:data.id}, function(err, result){
 			if(err){
-				console.error(err);
-				return
+				// console.error(err);
+				deferred.reject(err);
+				// return
 			}
 			
 			if(result === null){
 				console.log("Unable to find entry with id", data.id)
-				return
+				deferred.reject("Unable to find entry with id");
+				// return
 			}
 
 			console.log('Found series with matching id')
-			var i;
-			for(i = 0; i < result.seasons.length; i++){
+			var i, ns = result.seasons.length;
+			for(i = 0; i < ns; i++){
 				if(+result.seasons[i].season === +data.season){
 					// console.log('Found matching season:', result.seasons[i])
 					result.seasons.pull(result.seasons[i])
 					result.save()
+
+					if(ns === 1){
+						result.remove(function(err, removed){
+							console.log('Done removing season + series')
+							deferred.resolve();
+						})
+					}else{
+						console.log('Done removing season')
+						deferred.resolve();
+					}
 				}
 			}
 			
 		})
+		return deferred.promise;
 	}
 
 	var addEpisode = function(data){
 		console.log('addEpisode', data)
+		
+		var deferred = Q.defer();
 
 		if(!data.hasOwnProperty('id')){
 			console.log('Missing id parameter')
-			return
+			// return
+			setTimeout(function(){
+				deferred.reject('Missing id parameter')
+			})
 		}
 
 		Series.findOne({_id:data.id}, function(err, result){
 			if(err){
-				console.error(err);
-				return
+				// console.error(err);
+				deferred.reject(err)
+				// return
 			}
 			
 			if(result === null){
-				console.log('Unable to find entry with id', data.id)
-				return
+				// console.log('Unable to find entry with id', data.id)
+				// return
+				deferred.reject('Unable to find entry with id')
 			}
 
 			console.log('Found', result)
@@ -376,13 +434,17 @@ var series = (function(){
 						result.seasons[i].episodes.push(episode)
 						result.seasons[i].save()
 						result.save()
+						deferred.resolve();
 					}else{
 						console.log('Episode already exists')
+						deferred.resolve();
 					}
 				}
 			}
 			
 		})
+
+		return deferred.promise;
 	}
 
 	var updateEpisode = function(data){
