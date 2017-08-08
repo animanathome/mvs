@@ -394,7 +394,7 @@ class WatchItem extends Component {
 					<div className='watch-item-card-top'>
 						
 						<div className='watch-item-card-back'>
-							<Link to="/watch">
+							<Link to="/watch/movies">
 								<IconButton>
 									<ActionBack/>
 								</IconButton>
@@ -460,30 +460,26 @@ class Watch extends Component {
 		super(props)
 
 		var scope = this
-		this.socket = props.socket
+		this.socket = props.socket;
+		this.parent = props.parent;
 		this.state = {
-			updated: 0			
+			updated: 0
 		}
 		this._mounted = false;
+		this.category = props.parent.route.category || 'movies';
 
 		this.data = []
-		this.socket.on('movies:watch', function(result){
+		var setData = function(result){
 			if(scope._mounted){
-				// console.log('got', result.data)
+				console.log('got', result.data)
 				scope.data = result.data
 				scope.setState({updated:scope.state.updated+1})
 			}
-		})
+		}
+		this.socket.on('movies:watch', function(res){setData(res)})
+		this.socket.on('series:watch', function(res){setData(res)})
 
 		this.getContent()
-
-		var scope = this;		
-	}
-
-	onRouteChange = function(route){
-		// console.log('onRouteChange', route)
-		// console.log('this', this)
-		this.props.history.push(route)
 	}
 
 	componentDidMount() { 
@@ -495,20 +491,53 @@ class Watch extends Component {
 	}
 
 	getContent(){
-		this.socket.emit('movies:watch')
+		this.socket.emit(this.category+':watch')
+	}
+
+	componentWillUpdate(nextProps, nextState){
+		console.log('componentWillUpdate', nextProps, nextState)
+
+		if(nextProps.parent && nextProps.parent.route.category !== this.category){
+			this.category = nextProps.parent.route.category;
+			this.data = []
+			this.getContent();
+		}
+	}
+
+	onRouteChange(result){
+		console.log('onRouteChange', result)
+		// update global state
+		this.parent.route = result
+
+		// change route
+		var route = '/'+result.action+'/'+result.category;
+		this.props.history.push(route)
+		console.log('\troute', route)
 	}
 	
 	render(){
 		var scope = this;
 		var match = this.props.match
+		var hasContent = this.data.length > 0 ? true : false
+		var areMovies = this.category ==='movies' ? true: false
+		
 		return (
-				<div>					
-					<div className='watch-container'>
-					{this.data.map(function(item, index){
-						return <WatchMovie key={index} data={item} match={match}/>
-					})}
-					</div>
-					<MBottomNavigation value={3} onRouteChange={this.onRouteChange.bind(this)}/>
+				<div>
+					<MMainNavigation value={this.parent.route} onChange={this.onRouteChange.bind(this)}/>
+
+					{hasContent &&
+						<div className='watch-container'>
+						{this.data.map(function(item, index){
+							return <WatchMovie key={index} data={item} match={match}/>
+						})}
+						</div>
+					}
+
+					{!hasContent && 
+							<div className='Loading'>
+								Loading...
+							</div>
+						}
 				</div>
 		)
 	}
@@ -1450,12 +1479,6 @@ class Find extends Component {
 			this.getContent();
 		}
 	}
-
-	// onRouteChange = function(route){
-	// 	// console.log('onRouteChange', route)
-	// 	// console.log('this', this)
-	// 	this.props.history.push(route)
-	// }
 
 	onRouteChange(result){
 		// update global state
