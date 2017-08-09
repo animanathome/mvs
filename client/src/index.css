@@ -107,14 +107,15 @@ body {
 	position: fixed;
 	height: 150px;
 	bottom: 56px;
-	background: gray;
+	/*background: gray;*/
 	width: 100%;
-	opacity: .9;
+	/*opacity: .9;*/
+	background: #1a2127;
 }
 
 .movie-title {
-	font-weight: 100;
-	font-size: 24px;
+	font-weight: 700;
+	font-size: 20px;
 	margin-top: 4px;
 	line-height: 2;
 	padding-left: 25px;
@@ -157,7 +158,6 @@ div.white_column {
 	flex-wrap: wrap;
 	display: flex;
 }
-
 
 div.header_poster_wrapper {
     min-height: auto;

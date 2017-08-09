@@ -27,7 +27,8 @@ class Select extends Component {
 		this.socket = props.socket
 		
 		var setData = function(result){
-			if(scope._mounted){
+			
+			if(scope._mounted && result.action === 'list'){
 				scope.data = JSON.parse(result.data);
 				console.log('result', scope.data)
 				scope.setState({
@@ -46,7 +47,10 @@ class Select extends Component {
 		console.log('getContent', this.category)
 
 		this.data = {}
-		this.socket.emit(this.category+':discover', {})
+		this.socket.emit(this.category+':discover', {
+			action:'list',
+			data:{}
+		})
 	}
 
 	componentDidMount() { 
@@ -74,7 +78,10 @@ class Select extends Component {
 			if(page <= this.data.total_pages){
 				console.log('query page', page)
 				this.socket.emit(this.category+':discover', {
-					page:page
+					action:'list',
+					data:{
+						page:page
+					}
 				})
 			}else{
 				// seen all content... what do we do now?
@@ -90,10 +97,13 @@ class Select extends Component {
 
 		var movie_data = this.data.results[this.state.index]
 		this.socket.emit(this.category+':track', {
-			mid: movie_data.id,
-			mtitle: movie_data.title,
-			myear: movie_data.year,
-			track: true
+			action:'add',
+			data:{
+				mid: movie_data.id,
+				mtitle: movie_data.title,
+				myear: movie_data.year,
+				track: true
+			}
 		})
 
 		this.setState({'index': this.nextItem()})
@@ -104,10 +114,13 @@ class Select extends Component {
 		
 		var movie_data = this.data.results[this.state.index]
 		this.socket.emit(this.category+':track', {
-			mid: movie_data.id,
-			mtitle: movie_data.title,
-			myear: movie_data.year,
-			track: false
+			action:'remove',
+			data:{
+				mid: movie_data.id,
+				mtitle: movie_data.title,
+				myear: movie_data.year,
+				track: false
+			}
 		})
 
 		this.setState({'index': this.nextItem()})

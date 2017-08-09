@@ -1,6 +1,7 @@
 var express = require('express')
 	, http = require('http')
 	, cron = require('node-schedule')
+	, bodyParser = require('body-parser')
 	, io = require('socket.io-client')
 	, request = require('request')
 	, q = require("q")
@@ -20,9 +21,10 @@ getIP((err, ip) => {
 
 
 var app = express();
+app.use(express.bodyParser());
 var server = http.createServer(app);
 
-var host = 'http://web:3001'
+// var host = 'http://web:3001'
 
 /* Configuration */
 // app.set('views', __dirname + '/views');
@@ -110,20 +112,6 @@ var search_series_requests = function(series){
 	return deferred.promise;
 }
 
-let socket = io(host, {
-  'reconnection': true,
-  'reconnectionDelay': 500,
-  'reconnectionAttempts': 10
-})
-
-socket.on('connect', function(){
-	console.log('connect')
-});
-
-socket.on('disconnect', function () {
-	console.log('disconnect');
-});
-
 var query_movies_requests = function(){
 	console.log('query_movies_requests')
 
@@ -152,49 +140,9 @@ var query_movies_requests = function(){
 				// console.log('result', data)
 
 				var payload = {
-					id:data.item.id,
-					update:{
-						movie_path:data.item.path,
-						download_time:data.item.download_time,
-						track: false,
-						available: true
-					}
-				}
-				console.log('sending payload', payload)
-				socket.emit('movies:update', payload)
-			})
-		}
-	})
-}
-
-var query_series_requests = function(){
-	console.log('query_series_requests')
-
-	if(!socket.connected){
-		console.error('Unable to send request. Socket is not connected')
-	}
-	
-	socket.emit('series:list_episodes', {
-		track:true, 
-		available:false
-	})
-
-	socket.once('series:list_episodes', function(result){
-		console.log('result', result)
-
-		var i;
-		for(i = 0; i < result.data.length; i++){
-			console.log('Sending series download request for', result.data[i])
-			search_series_requests(result.data[i])
-			.then(function(data){
-				// console.log('done downloading')
-				// console.log(data)
-				var payload = {
-					action:'updateEpisode',
+					action:'update',
 					data:{
-						_id:data.item._id,
-						season:data.item.season,
-						episode:data.item.episode,
+						id:data.item.id,
 						update:{
 							movie_path:data.item.path,
 							download_time:data.item.download_time,
@@ -203,21 +151,100 @@ var query_series_requests = function(){
 						}
 					}
 				}
-				socket.emit('series:update', payload)
+				console.log('sending payload', payload)
+				socket.emit('movies:track', payload)
 			})
 		}
 	})
 }
 
+var query_series_requests = function(){
+	console.log('query_series_requests')
+
+	var deferred = q.defer();
+
+	// get
+	request
+	.get({
+		url:'http://web:3001/series',
+		json:{
+			'action':'list_episodes'
+		}
+	})
+	.on('error', function(err){
+		console.log('Error', err)
+	})
+	.on('response', function(response){
+		// console.log(response)
+		var result = ''
+		response.on('data', function (chunk) {
+	    	// console.log('BODY: ' + chunk)
+	    	result+=chunk
+	  	});
+
+	  	response.on('end', function(){
+	  		// console.log('done')
+	  		result=JSON.parse(result)
+	  		deferred.resolve(result);
+	  		
+	  	})
+	})
+
+	return deferred.promise;
+}
+
+app.post('/series', function(req, res){
+	console.log('Finished downloading series', req.body)
+	
+	var data = req.body;
+	var payload = {
+		'action':'update_episode',
+		'data': {
+			_id:data.item._id,
+			season:data.item.season,
+			episode:data.item.episode,
+			update:{
+				movie_path:data.item.path,
+				download_time:data.item.download_time,
+				track: false,
+				available: true
+			}
+		}
+	}
+
+	// set
+	request.post({
+		url:'http://web:3001/series',
+		json:payload
+	})
+})
+
+
+
+// TODO:
+// 1. setup restfull API between trigger and search
+// 		trigger -> search to request a search
+// 		search -> trigger to return the result of a search 
+// 2. launch a initial search the moment the item is added
+//    if not found, add to the queue every night at midnight
+
 var job_run_count = 1;
 
 // search for new content every *
-// var job = cron.scheduleJob('*/2 * * * *', function(){
-// 	console.log('-------------------------------------------------')
-// 	console.log('Running cron job for the', job_run_count++, 'time');
+var job = cron.scheduleJob('*/1 * * * *', function(){
+	console.log('-------------------------------------------------')
+	console.log('Running cron job for the', job_run_count++, 'time');
 
-// 	query_series_requests()
+	query_series_requests()
+	.then(function(result){
+		// console.log(result)
+		var i = 0;
+		// for(i = 0; i < result.length; i++){
+		for(i = 0; i < 1; i++){
+			search_series_requests(result[i])
+		}
+	})
 // 	query_movies_requests()
-// });
+});
 
 module.exports = app;

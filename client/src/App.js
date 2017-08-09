@@ -471,7 +471,7 @@ class Watch extends Component {
 
 		this.data = []
 		var setData = function(result){
-			if(scope._mounted){
+			if(scope._mounted && result.action === 'list'){
 				console.log('got', result.data)
 				scope.data = result.data
 				scope.setState({updated:scope.state.updated+1})
@@ -492,7 +492,7 @@ class Watch extends Component {
 	}
 
 	getContent(){
-		this.socket.emit(this.category+':watch')
+		this.socket.emit(this.category+':watch', {action:'list'})
 	}
 
 	componentWillUpdate(nextProps, nextState){
@@ -1027,13 +1027,13 @@ class SeasonCard extends Component {
 class SeriesItem extends Component {
 	constructor(props){
 		super(props)
-		// console.log(props)
+		console.log(props)
 		
 		var scope = this;
 		this.socket = props.socket;
 		this.parent = props.parent;
 		this.data = {}
-
+		this._mounted = false;
 		this.state = {
 			updated: 0
 		}
@@ -1041,18 +1041,40 @@ class SeriesItem extends Component {
 		this.id = props.match.params.series.split('-')[0]
 		console.log('tv:', this.id)
 
-		this.socket.on('series:details', function(result){
-			var data = JSON.parse(result.data)
-			scope.data = data;
-			scope.setState({update:scope.state.updated+1})
-			console.log(data)
+		this.socket.on('series:find', function(result){
+			
+			if(scope._mounted && result.action === 'list_details'){
+				var data = JSON.parse(result.data)
+				scope.data = data;
+				scope.setState({update:scope.state.updated+1})
+				console.log(data)
+			}
+
+			if(scope._mounted && result.action === 'redirect'){
+				console.warn(result.err)
+				var route = '/find/series'
+				scope.props.history.push(route)
+			}
 		})
 		this.getContent()
 	}
 
+	componentDidMount() { 
+		this._mounted = true;
+	}
+
+	componentWillUnmount() {
+		this._mounted = false;
+	}
+
 	getContent(){
 		console.log('getContent')
-		this.socket.emit('series:details', {id:this.id})
+		this.socket.emit('series:find', {
+			action:'list_details',
+			data:{
+				id:this.id
+			}
+		})
 	}
 
 	onRouteChange(result){
@@ -1411,7 +1433,8 @@ class Find extends Component {
 		this.category = props.parent.route.category || 'movies';
 
 		var setData = function(result){
-			if(scope._mounted){
+			
+			if(scope._mounted && result.action === 'list'){
 				var data = JSON.parse(result.data)
 				scope.total_pages = data.total_pages
 				scope.page = data.page
@@ -1492,8 +1515,13 @@ class Find extends Component {
 
 	getContent(){
 		console.log('getContent', this.category, this.query)
+		var scope = this;
 		// this.socket.emit('movies:find', this.query)
-		this.socket.emit(this.category+':find', this.query)
+		var payload = {
+			action:'list',
+			data: scope.query
+		}
+		this.socket.emit(this.category+':find', payload)
 	}
 
 	handleScroll(event) {
@@ -1667,7 +1695,6 @@ class MMainNavigation extends Component {
 
 	render(){
 		console.log('render', this.props)
-
 		
 		return (
 			<div className='main-navigation'>

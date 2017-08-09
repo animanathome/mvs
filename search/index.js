@@ -1,6 +1,7 @@
 var express = require('express')
 	, Q = require("q")
 	, bodyParser = require('body-parser')
+	, request = require('request')
 	, json = require('json')
 	, http = require('http')
 	, download = require('./controls/download.js')
@@ -125,6 +126,30 @@ reset_queue = function(){
 
 reset_queue()
 
+
+var update_series = function(data){
+	console.log('update_series', data)
+
+	request
+	.post('http://trigger:3000/series', {form:data})
+	.on('response', function(response){
+		console.log('got result back')
+		// console.log(response)
+
+		var result = ''
+		response.on('data', function (chunk) {
+	    	// console.log('BODY: ' + chunk)
+	    	result+=chunk
+	  	});
+
+	  	response.on('end', function(){
+	  		// console.log('done')
+	  		result=JSON.parse(result)
+	  		console.log(result)
+	  	})  
+	})
+}
+
 app.post('/series', function(req, res){
 	console.log('Creating series download job for', req.body)
 
@@ -132,11 +157,13 @@ app.post('/series', function(req, res){
 	job.removeOnComplete( true ).save()
 	.on('complete', function(result){
 	  	console.log('Job completed with data ', result);
-	  	res.json(result);
-		res.send()
+	  	update_series(result)
 	}).on('failed', function(err){
   		console.log('Job failed', err);
   	});
+  	
+  	res.json({message:'Job added'});
+	res.send()
 })
 
 app.post('/movies', function(req, res){
@@ -148,11 +175,12 @@ app.post('/movies', function(req, res){
 	job.removeOnComplete( true ).save()
 	.on('complete', function(result){
 	  	console.log('Job completed with data ', result);
-	  	res.json(result);
-		res.send()
 	}).on('failed', function(err){
   		console.log('Job failed', err);
   	});
+  	
+  	res.json({message:'Job added'});
+	res.send()
 })
 
 /* Start server */

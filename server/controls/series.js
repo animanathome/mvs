@@ -350,34 +350,33 @@ var series = (function(){
 				// console.error(err);
 				deferred.reject(err);
 				// return
-			}
-			
-			if(result === null){
-				console.log("Unable to find entry with id", data.id)
-				deferred.reject("Unable to find entry with id");
-				// return
-			}
+			}else{
+				if(result === null){
+					console.log("Unable to find entry with id", data.id)
+					deferred.reject("Unable to find entry with id");
+					// return
+				}else{
+					console.log('Found series with matching id')
+					var i, ns = result.seasons.length;
+					for(i = 0; i < ns; i++){
+						if(+result.seasons[i].season === +data.season){
+							// console.log('Found matching season:', result.seasons[i])
+							result.seasons.pull(result.seasons[i])
+							result.save()
 
-			console.log('Found series with matching id')
-			var i, ns = result.seasons.length;
-			for(i = 0; i < ns; i++){
-				if(+result.seasons[i].season === +data.season){
-					// console.log('Found matching season:', result.seasons[i])
-					result.seasons.pull(result.seasons[i])
-					result.save()
-
-					if(ns === 1){
-						result.remove(function(err, removed){
-							console.log('Done removing season + series')
-							deferred.resolve();
-						})
-					}else{
-						console.log('Done removing season')
-						deferred.resolve();
+							if(ns === 1){
+								result.remove(function(err, removed){
+									console.log('Done removing season + series')
+									deferred.resolve();
+								})
+							}else{
+								console.log('Done removing season')
+								deferred.resolve();
+							}
+						}
 					}
 				}
 			}
-			
 		})
 		return deferred.promise;
 	}
@@ -484,6 +483,7 @@ var series = (function(){
 							result.seasons[i].episodes[j].set(data.update)
 							
 							result.seasons[i].save()
+							result.set({'update':{'available':true}})
 							result.save()
 						}
 					}
