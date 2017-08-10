@@ -77,6 +77,43 @@ var search_movie_requests = function(movie){
 	return deferred.promise;
 }
 
+
+
+var query_movies_requests = function(){
+	console.log('query_movies_requests')
+
+	var deferred = q.defer();
+
+	// get
+	request
+	.get({
+		url:'http://web:3001/movies',
+		json:{
+			'action':'list'
+		}
+	})
+	.on('error', function(err){
+		console.log('Error', err)
+	})
+	.on('response', function(response){
+		// console.log(response)
+		var result = ''
+		response.on('data', function (chunk) {
+	    	// console.log('BODY: ' + chunk)
+	    	result+=chunk
+	  	});
+
+	  	response.on('end', function(){
+	  		// console.log('done')
+	  		result=JSON.parse(result)
+	  		deferred.resolve(result);
+	  		
+	  	})
+	})
+
+	return deferred.promise;
+}
+
 // series
 // {
 //	name: 'Game of Thrones',
@@ -110,52 +147,6 @@ var search_series_requests = function(series){
 	})
 
 	return deferred.promise;
-}
-
-var query_movies_requests = function(){
-	console.log('query_movies_requests')
-
-
-	if(!socket.connected){
-		console.error('Unable to send request. Socket is not connected')
-	}
-
-	socket.emit('movies:list')
-
-	// if we do, pass each item to search
-	socket.once('movies:list', function(result){
-		// console.log('result', result)
-
-		var i;
-		for(i = 0; i < result.data.length; i++){
-			console.log('Sending movie download request for', result.data[i])
-			
-			search_movie_requests({
-				id:result.data[i].id,
-				title:result.data[i].title,
-				year:result.data[i].year,
-			})
-			.then(function(data){
-				// console.log('done downloading')
-				// console.log('result', data)
-
-				var payload = {
-					action:'update',
-					data:{
-						id:data.item.id,
-						update:{
-							movie_path:data.item.path,
-							download_time:data.item.download_time,
-							track: false,
-							available: true
-						}
-					}
-				}
-				console.log('sending payload', payload)
-				socket.emit('movies:track', payload)
-			})
-		}
-	})
 }
 
 var query_series_requests = function(){
@@ -219,7 +210,29 @@ app.post('/series', function(req, res){
 	})
 })
 
+app.post('/movies', function(req, res){
+	console.log('Finished downloading movie', req.body)
 
+	var data = req.body;
+	var payload = {
+		action:'update',
+		data:{
+			id:data.item.id,
+			update:{
+				movie_path:data.item.path,
+				download_time:data.item.download_time,
+				track: false,
+				available: true
+			}
+		}
+	}
+
+	// set
+	request.post({
+		url:'http://web:3001/movies',
+		json:payload
+	})
+})
 
 // TODO:
 // 1. setup restfull API between trigger and search
@@ -235,16 +248,30 @@ var job = cron.scheduleJob('*/1 * * * *', function(){
 	console.log('-------------------------------------------------')
 	console.log('Running cron job for the', job_run_count++, 'time');
 
+	// series
 	query_series_requests()
 	.then(function(result){
 		// console.log(result)
 		var i = 0;
-		// for(i = 0; i < result.length; i++){
-		for(i = 0; i < 1; i++){
+		for(i = 0; i < result.length; i++){
 			search_series_requests(result[i])
 		}
 	})
-// 	query_movies_requests()
+
+	// movies
+	query_movies_requests()
+	.then(function(result){
+		console.log(result)
+		var i;
+		for(i = 0; i < result.length; i++){
+			search_movie_requests({
+				id:result[i].id,
+				title:result[i].title,
+				year:result[i].year
+			})
+		}
+	})
+
 });
 
 module.exports = app;

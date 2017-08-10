@@ -70,19 +70,41 @@ app.post('/series', function(req, res){
 
 	routes.setSeries(req.body)
 	.then(function(result){
+		console.log('successfully completed request')
 		console.log(result)
 	})
 	.fail(function(err){
+		console.log('failed to complete request')
 		console.warn(err)
 	})
 })
 
 // get data
 app.get('/movies', function(req, res){
-	console.log('movies get request', req.params)
+	console.log('movies get request', req.body)
+
+	routes.getMovies(req.body)
+	.then(function(result){
+		console.log(result)
+		res.json(result);
+		res.send()
+	})
+	.fail(function(err){
+		console.warn(err)
+	})
 })
 
 // set data
 app.post('/movies', function(req, res){
 	console.log('movies set request', req.body)
+
+	routes.setMovies(req.body)
+	.then(function(result){
+		console.log('successfully completed request')
+		console.log(result)
+	})
+	.fail(function(err){
+		console.log('failed to complete request')
+		console.warn(err)
+	})
 })

@@ -4,6 +4,8 @@ var movie = require('../models/movies.js')
 var movies = (function(){
 
 	var list = function(data){
+		console.log('list', data)
+
 		var deferred = Q.defer();
 
 		if(data === undefined){
@@ -22,7 +24,7 @@ var movies = (function(){
 		}, function(err, movies){
 			
 			if(err){
-				// console.error(err);
+				console.error(err);
 				deferred.reject(err);
 			}else{
 				// console.log(movies)
@@ -38,6 +40,7 @@ var movies = (function(){
 						movie_path: movies[i].movie_path
 					})
 				}
+				console.log('data', data)
 				deferred.resolve(data);
 			}
 		})

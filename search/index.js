@@ -150,6 +150,29 @@ var update_series = function(data){
 	})
 }
 
+var update_movies = function(data){
+	console.log('update_movies', data)
+
+	request
+	.post('http://trigger:3000/movies', {form:data})
+	.on('response', function(response){
+		console.log('got result back')
+		// console.log(response)
+
+		var result = ''
+		response.on('data', function (chunk) {
+	    	// console.log('BODY: ' + chunk)
+	    	result+=chunk
+	  	});
+
+	  	response.on('end', function(){
+	  		// console.log('done')
+	  		result=JSON.parse(result)
+	  		console.log(result)
+	  	})  
+	})
+}
+
 app.post('/series', function(req, res){
 	console.log('Creating series download job for', req.body)
 
@@ -175,6 +198,7 @@ app.post('/movies', function(req, res){
 	job.removeOnComplete( true ).save()
 	.on('complete', function(result){
 	  	console.log('Job completed with data ', result);
+	  	update_movies(result)
 	}).on('failed', function(err){
   		console.log('Job failed', err);
   	});

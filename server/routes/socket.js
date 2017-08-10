@@ -87,7 +87,7 @@ module.exports = function (socket) {
 		if(input.action === 'list'){
 			_series.list({
 				track:true,
-				available:true
+				available:false
 			})
 			.then(function(data){
 				socket.emit('series:watch', {
@@ -284,8 +284,23 @@ module.exports = function (socket) {
 
 		if(input.action === 'list'){
 			_movies.list({
-				track:true, 
+				track:false, 
 				available:true
+			})
+			.then(function(result){
+				socket.emit('movies:watch', {
+					action:'list',
+					data: result
+				})
+			})
+		}
+
+		if(input.action === 'remove'){
+			_movies.remove(input)
+			.then(function(){
+				return _movies.list({
+					track:false, 
+					available:true})
 			})
 			.then(function(result){
 				socket.emit('movies:watch', {

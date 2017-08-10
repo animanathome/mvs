@@ -527,8 +527,8 @@ class Watch extends Component {
 						id:result.id
 					}
 				}
-				console.log('payload:', this.category+':track', payload)
-				this.socket.emit(this.category+':track', payload)
+				console.log('payload:', this.category+':watch', payload)
+				this.socket.emit(this.category+':watch', payload)
 			break;
 
 			default:
