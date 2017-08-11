@@ -1,3 +1,10 @@
+TODO:
+- watch series
+- control when we send our movie and series requests
+
+
+
+
 process
 
 = 1. Pick =

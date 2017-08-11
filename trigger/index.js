@@ -77,8 +77,6 @@ var search_movie_requests = function(movie){
 	return deferred.promise;
 }
 
-
-
 var query_movies_requests = function(){
 	console.log('query_movies_requests')
 
@@ -244,7 +242,7 @@ app.post('/movies', function(req, res){
 var job_run_count = 1;
 
 // search for new content every *
-var job = cron.scheduleJob('*/1 * * * *', function(){
+var job = cron.scheduleJob('* */1 * * *', function(){
 	console.log('-------------------------------------------------')
 	console.log('Running cron job for the', job_run_count++, 'time');
 

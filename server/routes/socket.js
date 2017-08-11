@@ -84,6 +84,26 @@ module.exports = function (socket) {
 	socket.on('series:watch', function(input){
 		console.log('series:watch', input)
 
+		if(input.action === 'list_details'){
+			_series.details(input.data)
+			.then(function(data){
+				socket.emit('series:watch', {
+					action:'list_details',
+					data: data
+				})	
+			})
+			.fail(function(err){
+				socket.emit('series:watch', {
+					action:'redirect',
+					err:err
+				})
+			})
+		}
+
+		if(input.action === 'episode'){
+			
+		}
+
 		if(input.action === 'list'){
 			_series.list({
 				track:true,

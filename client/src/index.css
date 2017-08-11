@@ -576,3 +576,40 @@ h3 {
 	left: 10px;
 	bottom: 10px;
 }
+
+.season-watch-container {
+	padding: 10px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	overflow: auto;
+}
+
+.season-episodes {
+	padding-top: 36px;
+	width: 100%;
+	font-size: 14px;
+}
+
+.watch-episode {
+	text-decoration: none;
+	background: white;
+	padding: 10px;
+	margin-bottom: 4px;
+	box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
+}
+
+.watch-episode a{
+	text-decoration: none;
+	color: black;
+}
+
+.watch-episode-dark {	
+	background: lightgray;
+	padding: 10px;
+	margin-bottom: 4px;
+	box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;	
+}
+
+.watch-episode-dark a{
+	text-decoration: none;
+	color: black;
+}

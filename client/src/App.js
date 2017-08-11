@@ -189,11 +189,460 @@ class MSelectField extends Component {
 	}
 }
 
-// const Home = () => (
-// 	<div>
-// 		<h2>Home</h2>
-// 	</div>
-// )
+class WatchSeriesEpisodeItem extends Component {
+	constructor(props){
+		super(props)
+
+		var scope = this;
+		this.socket = props.socket
+		this._mounted = false
+		this.state = {
+			cast_available: false,
+			data_available: false
+		}
+
+		this.data = []
+		socket.on('item:getByName', function(result){
+			if(scope._mounted){
+				// console.log(result)
+				scope.data = result.data
+				scope.setState({data_available:true})
+			}
+		})
+		this.getContent()
+
+		this.cast_player = null;
+		window['__onGCastApiAvailable'] = function(isAvailable){
+			if (isAvailable) {
+				// console.log('Cast is available', window.cast)
+				scope.setState({cast_available:true})
+			}
+		};
+	}
+	
+	componentDidMount() { 
+		this._mounted = true;
+	}
+
+	componentWillUnmount() {
+		this._mounted = false;
+	}	
+
+	getContent(){
+		this.socket.emit('item:getByName', {
+			title:this.props.match.params.title
+		})
+	}
+	
+	handleScriptCreate() {
+		this.setState({ scriptLoaded: false })
+	}
+
+	handleScriptError() {
+		this.setState({ scriptError: true })
+	}
+
+	handleScriptLoad() {
+		this.setState({ scriptLoaded: true })
+	}
+
+	onRouteChange = function(route){
+		// console.log('onRouteChange', route)
+		// console.log('this', this)
+		this.props.history.push(route)
+	}
+
+	remove(){
+		// console.log('remove')
+	}
+
+	render(){
+		// console.log('render', this.props)
+
+		var backdrop_path = '/images/a_backdrop.jpg'
+		if(this.data && this.data.backdrop_path){
+			backdrop_path = 'https://image.tmdb.org/t/p/w300'+this.data.backdrop_path
+		}
+		// console.log('backdrop_path', backdrop_path)
+		
+		// generate genre string
+		var genre_string = ''
+		if(this.data && this.data.genre_ids){
+			for(var i = 0; i < this.data.genre_ids.length; i++){
+				if(i > 0){
+					genre_string += ', '
+				}
+				genre_string += movie_genres[this.data.genre_ids[i]]
+			}
+		}
+		
+		if(this.state.cast_available 
+		&& this.state.data_available 
+		&& !this.cast_player){
+			console.log('creating castplayer instance')
+			// console.log('cast', window.cast)
+			// console.log('path', location.protocol+"//"+location.hostname+":8888/"+this.data.movie_path)
+
+			// TODO: this needs to be deleted during unmount
+			var cast_player = new CastPlayer();
+			cast_player.mediaContents = [
+				{
+					'description':'a series',
+					'sources':[location.protocol+"//"+location.hostname+":8888/"+this.data.movie_path],
+					// 'sources':[location.protocol+"//"+location.hostname+":8888/movie.mp4"],
+					'subtitle': 'By Manu',
+					'thumb': backdrop_path,
+					'title': this.props.match.params.title
+				}
+			]
+			cast_player.initializeUI();
+			cast_player.initializeCastPlayer();
+			this.cast_player = cast_player;
+		}
+
+		// console.log('match', this.props.match)
+
+		var back_link = '/watch/series/'+this.props.match.params['series']
+		console.log('back_link', back_link)
+
+		return (
+			<div>
+				<Script 
+						url="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"
+						onCreate={this.handleScriptCreate.bind(this)}
+						onError={this.handleScriptError.bind(this)}
+						onLoad={this.handleScriptLoad.bind(this)}
+				/>
+				
+				<div className='watch-item-card'>
+					<div className='watch-item-card-top'>
+						
+						<div className='watch-item-card-back'>
+							<Link to={back_link}>
+								<IconButton>
+									<ActionBack/>
+								</IconButton>
+							</Link>
+						</div>
+						
+						<div className='watch-item-card-title'>
+							{this.props.match.params.title}
+						</div>
+						
+						<div className='track-item-card-remove'>
+							<IconButton>
+									<ActionClear onTouchTap={this.remove.bind(this)}/>
+							</IconButton>
+						</div>
+
+					</div>
+					
+					<div id="main_video">
+						<div className="imageSub">
+							<div className="blackbg" id="playerstatebg">IDLE</div>
+							<div className="label" id="playerstate">IDLE</div>
+							<img src={backdrop_path} id="video_image" alt=""></img>
+							<div id="video_image_overlay"></div>
+							<video id="video_element" width="100%"></video>
+						</div>
+
+						<div id="media_control">
+							<div id="play"></div>
+							<div id="pause"></div>
+							<div id="progress_bg"></div>
+							<div id="progress"></div>
+							<div id="progress_indicator"></div>
+							<div id="audio_bg"></div>
+							<div id="audio_bg_track"></div>
+							<div id="audio_indicator"></div>
+							<div id="audio_bg_level"></div>
+							<div id="audio_on"></div>
+							<div id="audio_off"></div>
+							<div id="duration">00:00:00</div>
+							<button is="google-cast-button" id="castbutton"></button>
+							<div id="fullscreen_expand"></div>
+							<div id="fullscreen_collapse"></div>
+						</div>
+					</div>
+
+					<div className="watch-item-card-genres">
+						{genre_string}
+					</div>
+					<div className="watch-item-card-overview">
+						{this.data.overview}
+					</div>
+
+				</div>
+				<MBottomNavigation value={3} onRouteChange={this.onRouteChange.bind(this)}/>
+			</div>
+		)
+	}
+}
+
+class WatchSeriesEpisode extends Component {
+	render(){
+		// console.log('render', this.props.data)
+		var className = 'watch-episode';
+		if(!this.props.data.available){
+			className += '-dark'
+		}
+
+		var link = this.props.match.url+'/s'+this.props.data.season+'e'+this.props.data.episode
+
+		return (
+				<div className={className}>
+					<Link to={link}>
+						{"Episode "+this.props.data.episode}
+					</Link>
+				</div>
+		)
+	}
+}
+
+class WatchSeriesSeason extends Component {
+	remove(){
+		this.props.remove(this.props.data)
+	}
+
+	render(){
+		console.log('render', this.props.data)
+
+		var data;
+		var episodes = []
+		for(var i = 0; i < this.props.data.track; i++){
+			data = {
+				season: this.props.data.season,
+				episode: i+1,
+				available : this.props.data.available_episodes.indexOf(i+1) > -1 ? true : false
+			};
+			episodes.push(data);
+		}
+		console.log('episodes', episodes)
+		var match = this.props.match;
+		return (
+			<div className='season-watch-container'>
+				<div className='season-title'>
+					Season {this.props.data.season}
+				</div>
+				<div className='season-clear'>
+					<IconButton>
+						<ActionClear onTouchTap={this.remove.bind(this)}/>
+					</IconButton>
+				</div>
+				<div className='season-overview'>
+					{this.props.data.available}/{this.props.data.track} episodes
+				</div>
+				<div className='season-episodes'>
+						{episodes.map(function(item, index){
+							return <WatchSeriesEpisode
+												data={item}
+												key={index}
+												match={match}
+										/>
+						})}
+					</div>
+			</div>
+		)
+	}
+}
+
+class WatchSeriesItem extends Component {
+	constructor(props){
+		super(props)
+
+		var scope = this;
+		this.socket = props.socket;
+		this.parent = props.parent;
+		this.data = {}
+		console.log('data', this.data)
+
+		this.state = {
+			update: 0
+		}
+		this._mounted = false;
+
+		this.id = props.match.params.series.split('-')[0]
+		console.log('tv:', this.id)
+
+		var payload = {
+			action:'list_details',
+			data:{
+				mid: this.id
+			}
+		}
+		this.socket.emit('series:watch', payload)
+		
+		this.socket.on('series:watch', function(result){
+			
+			if(scope._mounted && result.action === 'list_details'){
+				console.log('result:', result)
+				// var data = JSON.parse(result.data)
+				scope.data = result.data;
+				scope.setState({update:scope.state.updated+1})
+			}
+
+			if(scope._mounted && result.action === 'redirect'){
+				console.warn(result.err)
+				var route = '/watch/series'
+				scope.props.history.push(route)
+			}
+
+		})
+	}
+
+	componentDidMount() { 
+		this._mounted = true;
+	}
+
+	componentWillUnmount() {
+		this._mounted = false;
+	}	
+
+	remove(input){
+		// console.log('remove', input)
+		// console.log('\tdata:', this.data)
+
+		var payload = {
+			action:'removeSeason',
+			data:{
+				mid:this.id, // series id
+				id:this.data._id,
+				season:input.season
+			}
+		}
+		console.log('payload', 'series:watch', payload)
+		this.socket.emit('series:watch', payload)
+	}	
+
+	render(){
+		var scope = this;
+		var hasContent = Object.keys(this.data).length > 0 ? true : false;
+		console.log('hasContent', hasContent)
+
+		var backdrop_path = 'https://image.tmdb.org/t/p/w300'+this.data.backdrop_path
+		if(!this.data.backdrop_path){
+			backdrop_path = 'images/a_backdrop.jpg'
+		}
+
+		var poster_path = 'https://image.tmdb.org/t/p/w92'+this.data.poster_path
+		if(!this.data.poster_path){
+			poster_path = 'images/a_poster.jpg'
+		}
+		
+		var match = this.props.match;
+
+		return (
+			<div>
+				{!hasContent && 
+					<div className='Loading'>
+							Loading...
+					</div>
+				}
+
+				{hasContent && 
+					<div>
+						<div className='series-header'>
+							<Link to="/track/series" className='series-back'>
+								<IconButton>
+									<ActionBack color={'white'}/>
+								</IconButton>
+							</Link>
+							
+							<img className='series-backdrop' src={backdrop_path} alt="" />
+							<img className='series-poster' src={poster_path} alt="" />
+							<div className='series-intro'>
+									<h2>{this.data.name}</h2>
+							</div>
+						</div>
+
+						<div className="series-tracking">
+							{this.data.seasons.reverse().map(function(item, index){
+								return <WatchSeriesSeason
+													key={index}
+													data={item}
+													match={match}
+													remove={scope.remove.bind(scope)}
+											 />
+							})}							
+						</div>
+					</div>
+				}
+			</div>
+		)
+	}
+}
+
+class WatchSeries extends Component {
+	remove(){
+		// console.log('remove')
+		this.props.remove(this.props.data)
+	}
+
+	render(){
+		// console.log('render', this.props)
+
+		var poster_path = 'https://image.tmdb.org/t/p/w92'+this.props.data.poster_path
+		if(!this.props.data.poster_path){
+			poster_path = 'images/a_poster.jpg'
+		}
+
+		// title
+		var title = this.props.data.title
+		if(title.length > 26){
+			title = title.slice(0, 22)+' ...'
+		}
+
+		// overview
+		var overview = this.props.data.overview
+		if(overview.length > 236){
+			overview = overview.slice(0, 230)+' ...'
+		}
+
+		// generate genre string
+		var genre_string = ''
+		for(var i = 0; i < this.props.data.genre_ids.length; i++){
+			if(i > 0){
+				genre_string += ', '
+			}
+			genre_string += movie_genres[this.props.data.genre_ids[i]]
+		}
+		if(genre_string.length > 30){
+			genre_string = genre_string.slice(0, 34)+' ...'
+		}
+
+		var match = this.props.match;
+		var link = this.props.data.mid+'-'+this.props.data.title.split(' ').join('-');
+		return (
+			<div>
+				<div className='track-item-card'>
+					<div className='track-item-card-poster'>
+						<Link to={`${match.url}/${link}`}>
+							<img src={poster_path} alt="" />
+						</Link>
+					</div>
+					<div className='track-item-card-details'>
+						<div className='track-item-card-title'>
+							<Link to={`${match.url}/${this.props.data.title}`}>
+								{title}
+							</Link>
+						</div>
+						<div className='track-item-card-genres'>
+							{genre_string}
+						</div>
+						<div className='track-item-card-overview'>
+							{overview}
+						</div>
+						<div className='track-item-card-remove'>
+							<IconButton>
+									<ActionClear onTouchTap={this.remove.bind(this)}/>
+							</IconButton>
+						</div>
+					</div>
+				</div>
+		</div>
+		)
+	}
+}
 
 class WatchMovie extends Component {
 	// constructor(props){
@@ -547,10 +996,23 @@ class Watch extends Component {
 				<div>
 					<MMainNavigation value={this.parent.route} onChange={this.onRouteChange.bind(this)}/>
 
-					{hasContent &&
+					{hasContent && areMovies &&
 						<div className='watch-container'>
 						{this.data.map(function(item, index){
 							return <WatchMovie 
+												key={index} 
+												data={item} 
+												match={match}
+												remove={scope.remove.bind(scope)}
+											/>
+						})}
+						</div>
+					}
+
+					{hasContent && !areMovies &&
+						<div className="watch-container">
+						{this.data.map(function(item, index){
+							return <WatchSeries 
 												key={index} 
 												data={item} 
 												match={match}
@@ -1880,8 +2342,16 @@ class App extends Component {
 							<Watch {...props} parent={this} socket={this.socket}/>
 						)}/>
 
-						<Route path="/watch/:category/:title" render={(props) => (
+						<Route path="/watch/movies/:title" render={(props) => (
 							<WatchItem {...props} parent={this} socket={this.socket}/>
+						)}/>
+
+						<Route exact path="/watch/series/:series" render={(props) => (
+							<WatchSeriesItem {...props} parent={this} socket={this.socket}/>
+						)}/>
+
+						<Route path="/watch/series/:series/:episode" render={(props) => (
+							<WatchSeriesEpisodeItem {...props} parent={this} socket={this.socket}/>
 						)}/>
 
 					</div>
