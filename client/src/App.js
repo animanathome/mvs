@@ -193,6 +193,8 @@ class WatchSeriesEpisodeItem extends Component {
 	constructor(props){
 		super(props)
 
+		console.log('props', props)
+
 		var scope = this;
 		this.socket = props.socket
 		this._mounted = false
@@ -202,8 +204,8 @@ class WatchSeriesEpisodeItem extends Component {
 		}
 
 		this.data = []
-		socket.on('item:getByName', function(result){
-			if(scope._mounted){
+		socket.on('series:watch', function(result){
+			if(scope._mounted && result.action === 'episode'){
 				// console.log(result)
 				scope.data = result.data
 				scope.setState({data_available:true})
@@ -229,9 +231,23 @@ class WatchSeriesEpisodeItem extends Component {
 	}	
 
 	getContent(){
-		this.socket.emit('item:getByName', {
-			title:this.props.match.params.title
-		})
+
+		if(this.props.match.params.series && this.props.match.params.episode){
+			var series_id = this.props.match.params.series.split('-')[0];
+			var season = this.props.match.params.episode.split('-')[0].substring(1);
+			var episode = this.props.match.params.episode.split('-')[1].substring(1);
+
+			this.socket.emit('series:watch', {
+				action:'episode',
+				data:{
+					id: series_id,
+					season: season,
+					episode: episode
+				}
+			})
+		}else{
+			console.error('Missing parameters. Expecting series and episode.')
+		}
 	}
 	
 	handleScriptCreate() {
@@ -387,7 +403,7 @@ class WatchSeriesEpisode extends Component {
 			className += '-dark'
 		}
 
-		var link = this.props.match.url+'/s'+this.props.data.season+'e'+this.props.data.episode
+		var link = this.props.match.url+'/s'+this.props.data.season+'-e'+this.props.data.episode
 
 		return (
 				<div className={className}>

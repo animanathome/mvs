@@ -1,5 +1,6 @@
 TODO:
 - watch series
+	- make sure we can play a different movie after playing one 
 - control when we send our movie and series requests
 
 

@@ -446,114 +446,166 @@ var series = (function(){
 		return deferred.promise;
 	}
 
+	var detailsEpisode = function(data){
+		console.log('detailsEpisode', data)
+		
+		var deferred = Q.defer();
+
+		Series.findOne({mid:data.id}, function(err, result){
+
+			if(err){
+				deferred.reject(err)
+			}else{
+				var output = {
+					title:result.title,
+					season:data.season,
+					episode:data.episode,
+					backdrop_path:result.backdrop_path,
+					genre_ids:result.genre_ids
+				}
+
+				if(result === null){
+					console.log("Unable to find series with mid "+data.id)
+					deferred.reject("Unable to find series with mid "+data.id)
+				}else{
+					for(i = 0; i < result.seasons.length; i++){
+						if(+result.seasons[i].season === +data.season){
+							// console.log('Found matching season:', result.seasons[i])
+							// console.log('\tepisodes:', result.seasons[i].episodes)
+
+							var j, episode_exists = false;
+							for(j = 0; j < result.seasons[i].episodes.length; j++){
+								if(+result.seasons[i].episodes[j].episode === +data.episode){
+									// console.log(result.seasons[i].episodes[j])
+									output.movie_path = result.seasons[i].episodes[j].movie_path;
+									// console.log('output:', output)
+									deferred.resolve(output)
+								}
+							}
+						}
+					}
+				}
+			}
+
+		})
+
+		return deferred.promise;
+	}
+
 	var updateEpisode = function(data){
 		console.log('updateEpisode', data)
+
+		var deferred = Q.defer();
 
 		var needsParameters = ['_id', 'season', 'episode', 'update']
 		if(!hasParameters(data, needsParameters)){
 			console.log('Missing one of the following parameters', needsParameters)
-			return
-		}
+			deferred.reject('Missing parameters');
+		}else{
+			Series.findOne({_id:data._id}, function(err, result){
+				if(err){
+					// console.error(err);
+					deferred.reject(err);
+				}else{				
+					if(result === null){
+						// console.log('Unable to find entry with id '+data.id)
+						deferred.reject('Unable to find entry with id '+data.id);
+					}else{					
+						console.log('Found series with matching id')
+						var i;
+						for(i = 0; i < result.seasons.length; i++){
+							if(+result.seasons[i].season === +data.season){
+								// console.log('Found matching season:', result.seasons[i])
+								// console.log('\tepisodes:', result.seasons[i].episodes)
 
-		Series.findOne({_id:data._id}, function(err, result){
-			if(err){
-				console.error(err);
-				return
-			}
-			
-			if(result === null){
-				console.log('Unable to find entry with id', data.id)
-				return
-			}
-
-			console.log('Found series with matching id')
-			var i;
-			for(i = 0; i < result.seasons.length; i++){
-				if(+result.seasons[i].season === +data.season){
-					// console.log('Found matching season:', result.seasons[i])
-					// console.log('\tepisodes:', result.seasons[i].episodes)
-
-					var j, 
-						episode_exists = false;
-					for(j = 0; j < result.seasons[i].episodes.length; j++){
-						if(+result.seasons[i].episodes[j].episode === +data.episode){
-							episode_exists = true;
-							console.log('Updating episode', data.episode)
-							
-							result.seasons[i].episodes[j].set(data.update)
-							
-							result.seasons[i].save()
-							result.set({'update':{'available':true}})
-							result.save()
+								var j, 
+									episode_exists = false;
+								for(j = 0; j < result.seasons[i].episodes.length; j++){
+									if(+result.seasons[i].episodes[j].episode === +data.episode){
+										episode_exists = true;
+										console.log('Updating episode', data.episode)
+										
+										result.seasons[i].episodes[j].set(data.update)
+										
+										result.seasons[i].save()
+										result.set({'update':{'available':true}})
+										result.save(function(err){
+											deferred.resolve(data);
+										})
+									}
+								}
+								if(!episode_exists){
+									console.log('No episode do remove')
+								}
+							}
 						}
 					}
-
-					if(!episode_exists){
-						console.log('No episode do remove')
-					}
 				}
-				
-			}
-		})
-
+			})
+		}
+		return deferred.promise;
 	}
 
 	var removeEpisode = function(data){
 		console.log('removeEpisode', data)
 		
+		var deferred = Q.defer();
+
 		var needsParameters = ['id', 'season', 'episode']
 		if(!hasParameters(data, needsParameters)){
 			console.log('Missing one of the following parameters', needsParameters)
-			return
-		}
-
-		Series.findOne({_id:data.id}, function(err, result){
-			if(err){
-				console.error(err);
-				return
-			}
-
-			if(result === null){
-				console.log('Unable to find entry with id', data.id)
-				return 
-			}
-
-			console.log('Found series with matching id')
-			var i;
-			for(i = 0; i < result.seasons.length; i++){
-				if(+result.seasons[i].season === +data.season){
-					// console.log('Found matching season:', result.seasons[i])
-					// console.log('\tepisodes:', result.seasons[i].episodes)
-
-					var j, 
-						episode_exists = false;
-					for(j = 0; j < result.seasons[i].episodes.length; j++){
-						if(+result.seasons[i].episodes[j].episode === +data.episode){
-							episode_exists = true;
-							console.log('Removing episode', data.episode)
-							result.seasons[i].episodes.pull(result.seasons[i].episodes[j])
-							result.seasons[i].save()
-							result.save()
+			deferred.reject('Missing parameters');
+		}else{
+			Series.findOne({_id:data.id}, function(err, result){
+				if(err){
+					deferred.reject(err);
+				}else{					
+					if(result === null){
+						// console.log('Unable to find entry with id', data.id)
+						deferred.reject('Unable to find entry with id '+data.id);
+					}else{
+						console.log('Found series with matching id')
+						var i;
+						for(i = 0; i < result.seasons.length; i++){
+							if(+result.seasons[i].season === +data.season){
+								// console.log('Found matching season:', result.seasons[i])
+								// console.log('\tepisodes:', result.seasons[i].episodes)
+								var j, 
+									episode_exists = false;
+								for(j = 0; j < result.seasons[i].episodes.length; j++){
+									if(+result.seasons[i].episodes[j].episode === +data.episode){
+										episode_exists = true;
+										console.log('Removing episode', data.episode)
+										result.seasons[i].episodes.pull(result.seasons[i].episodes[j])
+										result.seasons[i].save()
+										result.save(function(err){
+											deferred.resolve();
+										})
+									}
+								}
+								if(!episode_exists){
+									console.log('No episode do remove')
+								}
+							}
 						}
 					}
-
-					if(!episode_exists){
-						console.log('No episode do remove')
-					}
 				}
-				
-			}
-		})
+			})
+		}
+		return deferred.promise;
 	}
 
 	return {
 		list: list,
-		listEpisodes: listEpisodes,
 		details: details,
 		add: add,
 		remove: remove,
+		
 		addSeason: addSeason,
 		removeSeason: removeSeason,
+		
+		listEpisodes: listEpisodes,
+		detailsEpisode: detailsEpisode,
 		addEpisode: addEpisode,
 		updateEpisode: updateEpisode,
 		removeEpisode: removeEpisode

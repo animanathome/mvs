@@ -101,7 +101,15 @@ module.exports = function (socket) {
 		}
 
 		if(input.action === 'episode'){
-			
+			_series.detailsEpisode(input.data)
+			.then(function(data){
+				console.log(data)
+				socket.emit('series:watch', {
+					action:'episode',
+					data: data
+				})	
+			})
+
 		}
 
 		if(input.action === 'list'){
