@@ -207,7 +207,8 @@ app.post('/series', function(req, res){
 		json:payload
 	}, function(req, res){
 		console.log('done')
-		res.end();
+		// res.end();
+		res.close()
 	})
 })
 
@@ -234,7 +235,8 @@ app.post('/movies', function(req, res){
 		json:payload
 	}, function(req, res){
 		console.log('done')
-		res.end();
+		// res.end();
+		res.close();
 	})
 })
 
