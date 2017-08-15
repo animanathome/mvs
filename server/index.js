@@ -57,10 +57,11 @@ app.get('/series', function(req, res){
 	.then(function(result){
 		console.log(result)
 		res.json(result);
-		res.send()
+		// res.send()
 	})
 	.fail(function(err){
 		console.warn(err)
+		res.json({err:err})
 	})
 })
 
@@ -71,11 +72,12 @@ app.post('/series', function(req, res){
 	routes.setSeries(req.body)
 	.then(function(result){
 		console.log('successfully completed request')
-		console.log(result)
+		res.json({res:'completed request'})
 	})
 	.fail(function(err){
 		console.log('failed to complete request')
 		console.warn(err)
+		res.json({err:'failed request'})
 	})
 })
 
@@ -87,10 +89,11 @@ app.get('/movies', function(req, res){
 	.then(function(result){
 		console.log(result)
 		res.json(result);
-		res.send()
+		// res.send();
 	})
 	.fail(function(err){
 		console.warn(err)
+		res.json({err:err})
 	})
 })
 
@@ -102,9 +105,11 @@ app.post('/movies', function(req, res){
 	.then(function(result){
 		console.log('successfully completed request')
 		console.log(result)
+		res.json({res:'completed request'})
 	})
 	.fail(function(err){
 		console.log('failed to complete request')
 		console.warn(err)
+		res.json({err:err})
 	})
 })

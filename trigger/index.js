@@ -205,6 +205,9 @@ app.post('/series', function(req, res){
 	request.post({
 		url:'http://web:3001/series',
 		json:payload
+	}, function(req, res){
+		console.log('done')
+		res.end();
 	})
 })
 
@@ -229,6 +232,9 @@ app.post('/movies', function(req, res){
 	request.post({
 		url:'http://web:3001/movies',
 		json:payload
+	}, function(req, res){
+		console.log('done')
+		res.end();
 	})
 })
 
