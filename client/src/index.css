@@ -86,10 +86,6 @@ body {
 	padding-right: 16px;
 }*/
 
-.movie-card {
-	padding-bottom: 10px;
-}
-
 .movie-image {
 	/*margin-top: -5px;*/
 	max-width:100%;
@@ -414,8 +410,8 @@ h3 {
 }
 
 .watch-container {
-	padding: 10px;
-	padding-top: 60px;
+	/*padding: 10px;*/
+	padding-top: 56px;
 	padding-bottom: 60px;
 }
 
@@ -450,8 +446,8 @@ h3 {
 }
 
 .track-container {
-	padding: 10px;
-	padding-top: 60px;
+	/*padding: 10px;*/
+	padding-top: 56px;
 	padding-bottom: 60px;
 }
 
@@ -509,14 +505,15 @@ h3 {
 }
 
 .movie-container {
-	padding: 10px;
-	padding-top: 80px;
+	padding: 0px;
+	padding-top: 115px;
 	padding-bottom: 60px;
 }
 
 .movie-card {
 	margin-bottom: 10px;
-	height: 210px;
+	height: 225px;
+	padding-bottom: 10px;
 	background: black;
 	position: relative;
 	border-radius: 2px;
@@ -527,8 +524,8 @@ h3 {
 	position: absolute;
 	left: 0px;
 	right: 0px;
-	top: 160px;
-	bottom: -2px;
+	top: 170px;
+	bottom: 0px;
 	/*background: gray;*/
 	/*opacity: .9;*/
 	background: #0b0e10;
@@ -541,15 +538,15 @@ h3 {
 	position: absolute;
 	color: white;
 	/*text-shadow: 1px 1px 0 #000;*/
-	bottom: 32px;
+	bottom: 34px;
 	left: 110px;
 }
 
 .movie-card-popularity {
 	position: absolute;
 	color: white;
-	bottom: 10px;
-	right: 30px;
+	bottom: 14px;
+	right: 20px;
 	font-size: 14px;
 	/*text-shadow: 1px 1px 0 #000;*/
 }
@@ -557,7 +554,7 @@ h3 {
 .movie-card-add {
 	position: absolute;
 	right: 2px;
-	bottom: 32px;
+	bottom: 24px;
 	transform: scale(0.8);
 }
 
@@ -567,14 +564,14 @@ h3 {
 	position: absolute;
 	color: white;
 	/*text-shadow: 1px 1px 0 #000;*/
-	bottom: 10px;
+	bottom: 14px;
 	left: 110px;
 }
 
 .movie-card-poster {
 	position: absolute;
 	left: 10px;
-	bottom: 10px;
+	bottom: 14px;
 }
 
 .season-watch-container {

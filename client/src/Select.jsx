@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 // import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
 import FloatingActionButton from 'material-ui/FloatingActionButton';
 import ActionAdd from 'material-ui/svg-icons/content/add';
+import muiThemeable from 'material-ui/styles/muiThemeable';
 
 class Select extends Component {
 
@@ -136,10 +137,11 @@ class Select extends Component {
 	}
 
 	render(){
-		console.log('render', this.props)
+		console.log('render', this)
 
 		var scope = this;
-		
+		var muiTheme = this.props.muiTheme;
+
 		var get_data = function(){
 			// console.log('get_data', scope.state.index)
 			if(scope.data.hasOwnProperty('results')){
@@ -167,11 +169,19 @@ class Select extends Component {
 				return (
 					<div>
 						<img className='movie-image' src={image} alt={entry.title || entry.name}></img>
-						<div onClick={this.removeItem.bind(this)} className='movie-info'>
-							<div className='movie-title'>
+						<div 
+							onClick={this.removeItem.bind(this)}
+							className='movie-info'
+							style={{background:muiTheme.palette.primary1Color}}
+						>
+							<div
+								style={{color:muiTheme.palette.textColor}}
+								className='movie-title'>
 								{entry.title || entry.name}
 							</div>
-							<div className='movie-overview'>
+							<div className='movie-overview'
+								style={{color:muiTheme.palette.textColor}} 
+							>
 								{entry.overview.substring(0,220)+" ..."}
 							</div>
 						</div>
@@ -194,4 +204,4 @@ class Select extends Component {
 	}
 }
 
-export default Select
+export default muiThemeable()(Select)

@@ -1,18 +1,44 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
-import Script from 'react-load-script'
+import Script from 'react-load-script';
+
+import Colors from 'material-ui/styles/colors';
+import MyTheme from './muiTheme.js';
+import getMuiTheme from 'material-ui/styles/getMuiTheme';
+// import {
+//   cyan500, cyan700,
+//   pinkA200,
+//   grey100, grey300, grey400, grey500,
+//   white, darkBlack, fullBlack,
+// } from 'material-ui/styles/colors';
+
+// const muiTheme = getMuiTheme({
+//   palette: {
+//     textColor: darkBlack,
+//     // accent1Color: "white",
+//     primary1Color: "white",
+//     // primary2Color: "#2173B3",
+//     // primary3Color: "#A9D2EB",
+//     // accent1Color: "#ED3B3B",
+//     // accent2Color: "#ED2B2B",
+//     // accent3Color: "#F58C8C"
+//   },
+//   bottomNavigation:{
+//   	selectedColor: 'white'
+//   },
+//   floatingActionButton:{
+//   	color: darkBlack
+//   }
+// });
+
+
 
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import SelectField from 'material-ui/SelectField';
 import MenuItem from 'material-ui/MenuItem';
-// import AppBar from 'material-ui/AppBar';
-// import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
-// import IconMenu from 'material-ui/IconMenu';
-// import Drawer from 'material-ui/Drawer';
 import {BottomNavigation, BottomNavigationItem} from 'material-ui/BottomNavigation';
 import {Tabs, Tab} from 'material-ui/Tabs';
 import Paper from 'material-ui/Paper';
-// import IconLocationOn from 'material-ui/svg-icons/communication/location-on';
 import IconSearch from 'material-ui/svg-icons/action/search';
 import IconDiscover from 'material-ui/svg-icons/action/lightbulb-outline';
 import IconTV from 'material-ui/svg-icons/hardware/tv';
@@ -20,33 +46,27 @@ import IconTrackChanges from 'material-ui/svg-icons/action/track-changes';
 import IconStar from 'material-ui/svg-icons/action/grade';
 import FontIcon from 'material-ui/FontIcon';
 import FloatingActionButton from 'material-ui/FloatingActionButton';
-// import FlatButton from 'material-ui/FlatButton';
-// import IconButton from 'material-ui/IconButton';
 import ActionAdd from 'material-ui/svg-icons/content/add';
 import ActionAddCircleOutline from 'material-ui/svg-icons/content/add-circle-outline';
 import ActionClear from 'material-ui/svg-icons/content/clear';
 import ActionBack from 'material-ui/svg-icons/hardware/keyboard-backspace';
+import IconButton from 'material-ui/IconButton';
 
 import CastPlayer from './CastVideos.js'
 
-// const recentsIcon = <FontIcon className="material-icons">restore</FontIcon>;
-// const favoritesIcon = <FontIcon className="material-icons">favorite</FontIcon>;
-// const nearbyIcon = <IconLocationOn/>;
 const findIcon = <IconSearch/>;
 const tvIcon = <IconTV/>;
 const trackIcon = <IconTrackChanges/>;
 const discoverIcon = <IconDiscover/>;
-// const starIcon = <IconStar/>;
 
-// import MenuItem from 'material-ui/MenuItem';
-import IconButton from 'material-ui/IconButton';
-// import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
 
 import { BrowserRouter as Router, Route, Link } from 'react-router-dom'
 
+import MMainNavigation from './navigation/Navigation'
+import BotNavigation from './navigation/BotNavigation'
+
 import Select from './Select.jsx'
-import './App.css';
-// import './media.css';
+// import './App.css';
 import './CastVideos.css';
 import injectTapEventPlugin from 'react-tap-event-plugin';
 injectTapEventPlugin();
@@ -389,7 +409,7 @@ class WatchSeriesEpisodeItem extends Component {
 					</div>
 
 				</div>
-				<MBottomNavigation value={3} onRouteChange={this.onRouteChange.bind(this)}/>
+				<BotNavigation value={3} onRouteChange={this.onRouteChange.bind(this)}/>
 			</div>
 		)
 	}
@@ -915,7 +935,7 @@ class WatchItem extends Component {
 					</div>
 
 				</div>
-				<MBottomNavigation value={3} onRouteChange={this.onRouteChange.bind(this)}/>
+				<BotNavigation value={3} onRouteChange={this.onRouteChange.bind(this)}/>
 			</div>
 		)
 	}
@@ -1724,18 +1744,34 @@ class SeriesCard extends Component {
 						// style={{opacity:0.7}}  
 						src={backdrop_path} 
 						alt="" />
-					<div className='movie-card-color'></div>
+					<div className='movie-card-color' 
+					// style={{
+					// 	backgroundColor:muiTheme.palette.primary1Color
+					// }}
+					></div>
 					<img className='movie-card-poster' src={image_path} alt="" />
-					<div className='movie-card-title'>
+					<div className='movie-card-title' 
+					// style={{
+					// 	color:muiTheme.palette.textColor
+					// }}
+					>
 						{title}
 					</div>
-					<div className='movie-card-popularity'>
-						{popularity}
+					<div className='movie-card-popularity' 
+					// style={{
+					// 	color:muiTheme.palette.textColor
+					// }}
+					>
 						 <FontIcon >
-							<IconStar style={{color:'white', position:'absolute', left:'2px', bottom:'-2px', height:'16px', width:'16px'}}/>
+							<IconStar style={{position:'absolute', left:'-20px', bottom:'-3px', height:'16px', width:'16px'}}/>
 						</FontIcon>
+						{popularity}
 					</div>
-					<div className='movie-card-genre'>
+					<div className='movie-card-genre' 
+					// style={{
+					// 	color:muiTheme.palette.textColor
+					// }}
+					>
 						{genre_string}
 					</div>
 				</Link>
@@ -1792,7 +1828,6 @@ class MovieCard extends Component {
 		return (
 			<div className='movie-card'>
 				<img className='movie-image' 
-					// style={{opacity:0.7}}  
 					src={backdrop_path} 
 					alt="" />
 				<div className='movie-card-color'></div>
@@ -1801,10 +1836,10 @@ class MovieCard extends Component {
 					{title}
 				</div>
 				<div className='movie-card-popularity'>
-					{popularity}
 					 <FontIcon >
-						<IconStar style={{color:'white', position:'absolute', left:'2px', bottom:'-2px', height:'16px', width:'16px'}}/>
+						<IconStar style={{color:'white', position:'absolute', left:'-20px', bottom:'-2px', height:'16px', width:'16px'}}/>
 					</FontIcon>
+					{popularity}
 				</div>
 				<div className='movie-card-genre'>
 					{genre_string}
@@ -1844,20 +1879,20 @@ class Find extends Component {
 			},
 			sort: {
 				options:[
-					{value:'pd',text:"Popularity Descending"},
-					{value:'pa',text:"Popularity Ascending"},
+					{value:'pd',text:"Popularity"},
+					// {value:'pa',text:"Popularity Ascending"},
 
-					{value:'rd',text:"Revenue Descending"},
-					{value:'ra',text:"Revenue Ascending"},
+					{value:'rd',text:"Revenue"},
+					// {value:'ra',text:"Revenue Ascending"},
 
-					{value:'otd',text:"Original Title Descending"},
-					{value:'ota',text:"Original Title Ascending"},
+					{value:'otd',text:"Title"},
+					// {value:'ota',text:"Original Title Ascending"},
 
-					{value:'vod',text:"Vote Average Descending"},
-					{value:'voa',text:"Vote Average Ascending"},
+					{value:'vod',text:"Vote"},
+					// {value:'voa',text:"Vote Average Ascending"},
 					
-					{value:'rdd',text:"Release Date Descending"},
-					{value:'rda',text:"Release Date Ascending"}
+					{value:'rdd',text:"Release"},
+					// {value:'rda',text:"Release Date Ascending"}
 				],
 				value:'pd',
 				title:'Sort By'
@@ -2074,7 +2109,10 @@ class Find extends Component {
 	}
 
 	render(){
-		// console.log('movies', this.movies.length)
+		console.log('movies', this.movies.length)
+		console.log(this)
+		console.log('-----')
+		
 		var scope = this;
 		var hasContent = this.movies.length > 0 ? true : false
 		var areMovies = this.category ==='movies' ? true: false
@@ -2091,11 +2129,11 @@ class Find extends Component {
 										settings={this.settings.year} 
 										onChange={this.handleYearChange.bind(this)}/>
 									<MSelectField 
-										style={{marginTop: '-10px', float:'left', width:'150px'}} 
+										style={{marginTop: '-10px', float:'left', width:'150px', paddingLeft:'8px'}} 
 										settings={this.settings.sort} 
 										onChange={this.handleSortChange.bind(this)}/>
 									<MSelectField 
-										style={{marginTop: '-10px', float:'left', width:'100px'}} 
+										style={{marginTop: '-10px', float:'left', width:'100px', paddingLeft:'16px'}} 
 										settings={this.settings.genre} 
 										onChange={this.handleGenreChange.bind(this)}/>
 								</div>
@@ -2106,9 +2144,9 @@ class Find extends Component {
 							<div className='movie-container'>
 							{this.movies.map(function(item, index){
 								return <MovieCard 
-													onTouch={scope.addItem.bind(scope)}
-													key={index} 
-													data={item}/>
+											onTouch={scope.addItem.bind(scope)}
+											key={index} 
+											data={item}/>
 							})}
 							</div>
 						}
@@ -2117,10 +2155,10 @@ class Find extends Component {
 							<div className='movie-container'>
 							{this.movies.map(function(item, index){
 								return <SeriesCard 
-													onTouch={scope.addItem.bind(scope)}
-													key={index}
-													match={scope.props.match}
-													data={item}/>
+											onTouch={scope.addItem.bind(scope)}
+											key={index}
+											match={scope.props.match}
+											data={item}/>
 							})}
 							</div>
 						}
@@ -2136,128 +2174,160 @@ class Find extends Component {
 	}
 }
 
+// class MMainNavigation extends Component {
 
+// 	constructor(props){
+// 		console.log('MMainNavigation', props.value)
+// 		super(props);
 
-class MMainNavigation extends Component {
+// 		this.value = props.value;
 
-	constructor(props){
-		console.log('MMainNavigation', props.value)
-		super(props);
+// 		this.color = [
+// 			"#42A5F4",
+// 			"#66BA6B",
+// 			"#EF544F",
+// 			"#FFC91E"
+// 		]
+// 	}
 
-		this.value = props.value;
-	}
+// 	onActionChange = function(action){
+// 		console.log('onActionChange', action)
 
-	onActionChange = function(action){
-		console.log('onActionChange', action)
+// 		this.value = {
+// 			'action':action, 
+// 			'category': this.value.category
+// 		}
+// 		console.log('\tvalue', this.value)
 
-		this.value = {
-			'action':action, 
-			'category': this.value.category
-		}
-		console.log('\tvalue', this.value)
+// 		this.props.onChange(this.value)
+// 	}
 
-		this.props.onChange(this.value)
-	}
+// 	onCategoryChange = function(category){
+// 		console.log('onCategoryChange', category)
 
-	onCategoryChange = function(category){
-		console.log('onCategoryChange', category)
+// 		this.value = {
+// 			'action': this.value.action,
+// 			'category':category
+// 		}
+// 		console.log('\tvalue', this.value)
 
-		this.value = {
-			'action': this.value.action,
-			'category':category
-		}
-		console.log('\tvalue', this.value)
+// 		this.props.onChange(this.value)
+// 	}
 
-		this.props.onChange(this.value)
-	}
+// 	getColor = function(){
+// 		console.log("getColor")
+// 		var index = ['discover', 'find', 'track', 'watch'].indexOf(this.value.action);
+// 		var color = this.color[index];
+// 		console.log('\tresult', color)
+// 		return color
+// 	}
 
-	render(){
-		console.log('render', this.props)
+// 	render(){
+// 		console.log('render', this.props)
 		
-		return (
-			<div className='main-navigation'>
-				<MTopNavigation value={this.value.category} onCategoryChange={this.onCategoryChange.bind(this)}/>
-				<MBottomNavigation value={this.value.action} onActionChange={this.onActionChange.bind(this)}/>
-			</div>
-		)
-	}
-}
+// 		return (
+// 			<div className='main-navigation'>
+// 				<MTopNavigation 
+// 					value={this.value.category} 
+// 					color={this.getColor()} 
+// 					onCategoryChange={this.onCategoryChange.bind(this)}
+// 				/>
+// 				<MBottomNavigation 
+// 					value={this.value.action} 
+// 					color={this.getColor()} 
+// 					onActionChange={this.onActionChange.bind(this)}
+// 				/>
+// 			</div>
+// 		)
+// 	}
+// }
 
-class MTopNavigation extends Component {
+// class MTopNavigation extends Component {
 	
-	constructor(props) {
-		super(props);
-	}	
+// 	constructor(props) {
+// 		super(props);
+// 	}	
 
-	handleChange = (value) => {
-		console.log('handleChange', value)
+// 	handleChange = (value) => {
+// 		console.log('handleChange', value)
 
-		this.props.onCategoryChange(value)
-	}
+// 		this.props.onCategoryChange(value)
+// 	}
 
-	render(){
-		console.log('render', this.props.value)
-		return (
-			<Tabs
-				inkBarStyle={{color:'#00bcd4', background:'#00bcd4'}}
-				tabItemContainerStyle={{background:'white'}}
-				style={{color:'#00bcd4', background:'white'}}
-				value={this.props.value}
-				onChange={this.handleChange}
-			>
-				<Tab 
-					buttonStyle={{color:'black'}}
-					label="Movies" 
-					value="movies"
-				/>
-				<Tab 
-					buttonStyle={{color:'black'}}
-					label="Series" 
-					value="series"
-				/>
-			</Tabs>
-		)
-	}
-}
+// 	render(){
+// 		console.log('render', this.props.value)
+// 		console.log('props', this.props)
+// 		// console.log('theme', muiTheme)
 
-class MBottomNavigation extends Component {
+// 		return (
+// 			<Tabs
+// 				inkBarStyle={{
+// 					color:this.props.color, 
+// 					background:this.props.color
+// 				}}
+// 				// tabItemContainerStyle={{background:'white'}}
+// 				style={{
+// 					color:this.props.color 
+// 					// background:'white'
+// 				}}
+// 				value={this.props.value}
+// 				onChange={this.handleChange}
+// 			>
+// 				<Tab 
+// 					buttonStyle={{color:'black'}}
+// 					label="Movies" 
+// 					value="movies"
+// 				/>
+// 				<Tab 
+// 					buttonStyle={{color:'black'}}
+// 					label="Series" 
+// 					value="series"
+// 				/>
+// 			</Tabs>
+// 		)
+// 	}
+// }
 
-	select = function(index){
-		this.props.onActionChange(['discover', 'find', 'track', 'watch'][index])
-	}
+// class MBottomNavigation extends Component {
 
-	render() {
-		var index = ['discover', 'find', 'track', 'watch'].indexOf(this.props.value)
-		console.log(this.props.value, 'selectedIndex', index)
+// 	select = function(index){
+// 		this.props.onActionChange(['discover', 'find', 'track', 'watch'][index])
+// 	}
 
-		return (
-			<Paper zDepth={1} style={{position: "fixed", bottom: 0}}>
-				<BottomNavigation selectedIndex={index}>
-					<BottomNavigationItem
-						label="Discover"
-						icon={discoverIcon}
-						onTouchTap={() => this.select(0)}
-					/>
-					<BottomNavigationItem
-						label="Find"
-						icon={findIcon}
-						onTouchTap={() => this.select(1)}
-					/>
-					<BottomNavigationItem
-						label="Track"
-						icon={trackIcon}
-						onTouchTap={() => this.select(2)}
-					/>
-					<BottomNavigationItem
-						label="Watch"
-						icon={tvIcon}
-						onTouchTap={() => this.select(3)}
-					/>
-				</BottomNavigation>
-			</Paper>
-		);
-	}
-}
+// 	render() {
+// 		var index = ['discover', 'find', 'track', 'watch'].indexOf(this.props.value)
+
+// 		return (
+// 			<Paper zDepth={1} style={{position: "fixed", bottom: 0}}>
+// 				<BottomNavigation 
+// 					selectedIndex={index}
+// 					style={{backgroundColor:this.props.color}}
+// 					>
+// 					<BottomNavigationItem
+// 						label="Discover"
+// 						icon={discoverIcon}
+// 						onTouchTap={() => this.select(0)}
+// 					/>
+// 					<BottomNavigationItem
+// 						label="Find"
+// 						icon={findIcon}
+// 						onTouchTap={() => this.select(1)}
+// 					/>
+// 					<BottomNavigationItem
+// 						label="Track"
+// 						icon={trackIcon}
+// 						onTouchTap={() => this.select(2)}
+// 					/>
+// 					<BottomNavigationItem
+// 						label="Watch"
+// 						icon={tvIcon}
+// 						onTouchTap={() => this.select(3)}
+// 					/>
+// 				</BottomNavigation>
+// 			</Paper>
+// 		);
+// 	}
+// }
 
 class Discover extends Component {
 	constructor(props){
@@ -2281,11 +2351,18 @@ class Discover extends Component {
 	render(){
 		var scope = this;
 		console.log('Discover-render', this.parent.route.category)
+		console.log(this)
 
 		return (
 				<div>
-					<MMainNavigation value={this.parent.route} onChange={this.onRouteChange.bind(this)}/>
-					<Select category={this.parent.route.category} socket={scope.socket}/>
+					<MMainNavigation 
+						value={this.parent.route} 
+						onChange={this.onRouteChange.bind(this)}
+					/>
+					<Select 
+						category={this.parent.route.category} 
+						socket={scope.socket}
+					/>
 				</div>
 		)
 	}
@@ -2316,6 +2393,16 @@ class App extends Component {
 		this.cast = undefined
 	}
 
+	// static childContextTypes = {
+ //  	muiTheme: React.PropTypes.object,
+	// };
+
+	// getChildContext(){
+	// 	return {
+	// 		muiTheme: getMuiTheme(MyTheme)
+	// 	}
+	// }
+
 	pathNameToRoute(){
 		var bd = window.location.pathname.split('/')
 		if(bd.length > 2){
@@ -2326,8 +2413,10 @@ class App extends Component {
 	}
 
 	render(){
+		// console.log("___________")
+		// console.log(this)
 		return (
-			<MuiThemeProvider>
+			<MuiThemeProvider muiTheme={getMuiTheme(MyTheme)}>
 				<Router>
 					<div>
 						<Route exact path="/" render={(props) => (
