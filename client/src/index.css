@@ -6,6 +6,18 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+.visible {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity .85s linear;
+}
+
+.hidden {
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0s .85s, opacity .85s linear;
+}
+
 .Select {
 	padding: 16px;
 	padding-top:32px;

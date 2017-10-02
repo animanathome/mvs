@@ -261,27 +261,27 @@ class FindSeriesItem extends Component {
 
 			return (
 				<div>
-
-						<div className='series-header'>
-							<Link to="/find/series" className='series-back'>
-								<IconButton>
-									<ActionBack color={'white'}/>
-								</IconButton>
-							</Link>
-							
-							<img className='series-backdrop' src={backdrop_path} alt="" />
-							<img className='series-poster' src={poster_path} alt="" />
-							<div className='series-intro'>
-									<h2>{this.data.name}</h2>
-							</div>
+					<div className='series-header'>
+						<Link to="/find/series" className='series-back'>
+							<IconButton>
+								<ActionBack color={'white'}/>
+							</IconButton>
+							<a style={{color:"white"}}>Back to Series</a>
+						</Link>
+						
+						<img className='series-backdrop' src={backdrop_path} alt="" />
+						<img className='series-poster' src={poster_path} alt="" />
+						<div className='series-intro'>
+								<h2>{this.data.name}</h2>
 						</div>
+					</div>
 
-						<div className='series-overview'>
-							<h3>Overview</h3>
-							<div className='overview'>
-								<p>{this.data.overview}</p>
-							</div>
+					<div className='series-overview'>
+						<h3>Overview</h3>
+						<div className='overview'>
+							<p>{this.data.overview}</p>
 						</div>
+					</div>
 
 					<div className="white_column">
 						<div>

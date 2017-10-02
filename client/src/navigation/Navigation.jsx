@@ -8,7 +8,7 @@ import BotNavigation from './BotNavigation'
 class MMainNavigation extends Component {
 
 	constructor(props){
-		console.log('MMainNavigation', props.value)
+		// console.log('MMainNavigation', props.value)
 		super(props);
 
 		this.value = props.value;
@@ -22,7 +22,7 @@ class MMainNavigation extends Component {
 	}
 
 	onActionChange = function(action){
-		console.log('onActionChange', action)
+		// console.log('onActionChange', action)
 
 		this.value = {
 			'action':action, 
@@ -34,7 +34,7 @@ class MMainNavigation extends Component {
 	}
 
 	onCategoryChange = function(category){
-		console.log('onCategoryChange', category)
+		// console.log('onCategoryChange', category)
 
 		this.value = {
 			'action': this.value.action,
@@ -46,15 +46,15 @@ class MMainNavigation extends Component {
 	}
 
 	getColor = function(){
-		console.log("getColor")
+		// console.log("getColor")
 		var index = ['discover', 'find', 'track', 'watch'].indexOf(this.value.action);
 		var color = this.color[index];
-		console.log('\tresult', color)
+		// console.log('\tresult', color)
 		return color
 	}
 
 	render(){
-		console.log('render', this.props)
+		// console.log('render', this.props)
 		
 		return (
 			<div className='main-navigation'>

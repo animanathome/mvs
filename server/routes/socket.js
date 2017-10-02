@@ -41,6 +41,23 @@ module.exports = function (socket) {
 	socket.on('series:watch', function(input){
 		console.log('series:watch', input)
 
+		if(input === undefined || input.action === undefined){
+			socket.emit('series:watch', {
+				action:'unknown',
+				error: 'Unknown or undefined action'
+			})
+		}
+
+		if(input.action === 'genres'){
+			tmdbs.genres()
+			.then(function(data){
+				socket.emit('series:watch', {
+					action:'genres',
+					data:data
+				})
+			})
+		}
+
 		if(input.action === 'list_details'){
 			_series.details(input.data)
 			.then(function(data){
@@ -83,6 +100,7 @@ module.exports = function (socket) {
 		}
 	})
 	
+	// TRACK
 	socket.on('series:track', function(input){
 		console.log('series:track', input)
 
@@ -159,20 +177,21 @@ module.exports = function (socket) {
 		}
 	})
 
-	// socket.on('series:details', function(input){
-	// 	tmdbs.details(input)
-	// 	.then(function(data){
-	// 		console.log(data)
-	// 		socket.emit('series:details', {
-	// 			'data':data
-	// 		})
-	// 	})
-	// })
-
+	// FIND
 	// list of series we want to discover
 	socket.on('series:find', function(input){
 		console.log('series:find', input)
 		
+		if(input.action === 'genres'){
+			tmdbs.genres()
+			.then(function(data){
+				socket.emit('series:find', {
+					action:'genres',
+					data:data
+				})
+			})
+		}
+
 		if(input.action === 'list'){
 			tmdbs.find(input.data)
 			.then(function(data){
@@ -242,6 +261,16 @@ module.exports = function (socket) {
 			})
 		}
 
+		if(input.action === 'genres'){
+			tmdbm.genres()
+			.then(function(data){
+				socket.emit('movies:watch', {
+					action:'genres',
+					data:data
+				})
+			})
+		}
+
 		if(input.action === 'list'){
 			_movies.list({
 				track:false, 
@@ -273,6 +302,13 @@ module.exports = function (socket) {
 
 	socket.on('movies:track', function(input){
 		console.log('movies:track', input)
+
+		if(input === undefined || input.action === undefined){
+			socket.emit('movies:track', {
+				action:'unknown',
+				error: 'Unknown or undefined action'
+			})
+		}
 
 		if(input.action === 'list'){
 			_movies.list({
@@ -357,6 +393,16 @@ module.exports = function (socket) {
 
 	// list of movies we want to discover
 	socket.on('movies:find', function(input){
+
+		if(input.action === 'genres'){
+			tmdbm.genres()
+			.then(function(data){
+				socket.emit('movies:find', {
+					action:'genres',
+					data:data
+				})
+			})
+		}
 
 		if(input.action === 'list'){
 			tmdbm.find(input.data)

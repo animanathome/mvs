@@ -71,6 +71,18 @@ var movies = (function(){
 		return deferred.promise;
 	}
 
+	// Get the list of official genres for movies.
+	var genres = function(){
+		console.log('genres')
+
+		// https://api.themoviedb.org/3/genre/tv/list?api_key=1a899ad77496510e9c5643b05f17146a&language=en-US
+		var path = '/3/genre/movie/list?'
+		path += '&api_key='+api_key
+		path += '&language=en-US'
+		console.log('full query', path)
+		return query(path)
+	}
+
 	var discover = function(input){
 		console.log('discover', input)
 
@@ -135,6 +147,7 @@ var movies = (function(){
 
 	return {
 		configuration: configuration,
+		genres: genres,
 		upcoming: upcoming,
 		discover: discover,
 		find: discover

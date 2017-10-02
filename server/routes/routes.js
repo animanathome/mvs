@@ -12,6 +12,14 @@ var routes = (function(){
 		var deferred = Q.defer();
 
 		switch(query.action){
+			case "genres":
+				tmdbs.genres()
+				.then(function(data){
+					console.log("got genres back:", data)
+					deferred.resolve(data)
+				})
+			break;
+
 			case "list_episodes":
 				_series.listEpisodes({
 					track:true,
@@ -59,6 +67,14 @@ var routes = (function(){
 		var deferred = Q.defer();
 
 		switch(query.action){
+			case "genres":
+				tmdbm.genres()
+				.then(function(data){
+					console.log("got genres back:", data)
+					deferred.resolve(data)
+				})
+			break;
+			
 			case "list":
 				_movies.list({
 					track:true, 

@@ -15,8 +15,8 @@ class MTopNavigation extends Component {
 	}
 
 	render(){
-		console.log('render', this.props.value)
-		console.log('props', this.props)
+		// console.log('render', this.props.value)
+		// console.log('props', this.props)
 		// console.log('theme', muiTheme)
 
 		return (

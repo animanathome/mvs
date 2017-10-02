@@ -13,100 +13,31 @@ import MenuItem from 'material-ui/MenuItem';
 import MMainNavigation from '../navigation/Navigation'
 import './Find.css'
 
-var genres = {
-	"genres": [
-		{
-			"id": 28,
-			"name": "Action"
-		},
-		{
-			"id": 12,
-			"name": "Adventure"
-		},
-		{
-			"id": 16,
-			"name": "Animation"
-		},
-		{
-			"id": 35,
-			"name": "Comedy"
-		},
-		{
-			"id": 80,
-			"name": "Crime"
-		},
-		{
-			"id": 99,
-			"name": "Documentary"
-		},
-		{
-			"id": 18,
-			"name": "Drama"
-		},
-		{
-			"id": 10751,
-			"name": "Family"
-		},
-		{
-			"id": 14,
-			"name": "Fantasy"
-		},
-		{
-			"id": 36,
-			"name": "History"
-		},
-		{
-			"id": 27,
-			"name": "Horror"
-		},
-		{
-			"id": 10402,
-			"name": "Music"
-		},
-		{
-			"id": 9648,
-			"name": "Mystery"
-		},
-		{
-			"id": 10749,
-			"name": "Romance"
-		},
-		{
-			"id": 878,
-			"name": "Science Fiction"
-		},
-		{
-			"id": 10770,
-			"name": "TV Movie"
-		},
-		{
-			"id": 53,
-			"name": "Thriller"
-		},
-		{
-			"id": 10752,
-			"name": "War"
-		},
-		{
-			"id": 37,
-			"name": "Western"
-		}
-	]
-}
-
-
 var genresToDict = function(genres_data){
-	console.log('genresToDict', genres_data, genres_data.length)
-	var genres = {}
+	// console.log('genresToDict', genres_data, genres_data.length)
+	var genres = {0:'All'}
 	for(var i = 0; i < genres_data.length; i++){
 		// console.log(i, genres_data[i])
 		genres[genres_data[i].id] = genres_data[i].name;
 	}
-	console.log('\toutput', genres)
+	// console.log('\toutput', genres)
 	return genres
 }
 
-var movie_genres = genresToDict(genres.genres)
+// convert backend data to a native material-ui language
+var genresToMaterialUI = function(genres_data){
+	console.log('genresToMaterialUI', genres_data)
+
+	var result = [{value:0, text:"All"}]
+	genres_data.map(function(item){
+		result.push({
+			value: item['id'],
+			text: item['name']
+		})
+	})
+	console.log('\tresult:', result)
+	return result
+}
 
 class SeriesCard extends Component {
 	constructor(props){
@@ -116,7 +47,7 @@ class SeriesCard extends Component {
 	}
 
 	render(){
-		console.log('SeriesCard - render', this.props)
+		// console.log('SeriesCard - render', this.props)
 		// console.log(this.props.data.poster_path)
 		var image_path = 'https://image.tmdb.org/t/p/w92'+this.props.data.poster_path
 		if(!this.props.data.poster_path){
@@ -147,7 +78,7 @@ class SeriesCard extends Component {
 			if(i > 0){
 				genre_string += ', '
 			}
-			genre_string += movie_genres[this.props.data.genre_ids[i]]
+			genre_string += this.props.genres[this.props.data.genre_ids[i]]
 		}
 		if(genre_string.length > 30){
 			genre_string = genre_string.slice(0, 34)+' ...'
@@ -203,7 +134,7 @@ class MovieCard extends Component {
 	}
 
 	render(){
-		console.log('render', this)
+		// console.log('render', this)
 
 		// console.log(this.props.data.poster_path)
 		var image_path = 'https://image.tmdb.org/t/p/w92'+this.props.data.poster_path
@@ -235,7 +166,7 @@ class MovieCard extends Component {
 			if(i > 0){
 				genre_string += ', '
 			}
-			genre_string += movie_genres[this.props.data.genre_ids[i]]
+			genre_string += this.props.genres[this.props.data.genre_ids[i]]
 		}
 		if(genre_string.length > 30){
 			genre_string = genre_string.slice(0, 34)+' ...'
@@ -248,7 +179,11 @@ class MovieCard extends Component {
 		}
 		
 		var match = this.props.match;
-		var link = this.props.data.id+'-'+this.props.data.title.split(' ').join('-')
+		// console.log('title', this.props.data.title, this.props.data)
+		var link;
+		if(this.props.data.title){
+			link = this.props.data.id+'-'+this.props.data.title.split(' ').join('-')
+		}
 		var muiTheme = this.props.muiTheme;
 
 		return (
@@ -275,56 +210,17 @@ class MovieCard extends Component {
 				</div>
 		</div>
 		)
-
-		// return (
-		// 	<div className='movie-card'>
-		// 		<img className='movie-image' 
-		// 			src={backdrop_path} 
-		// 			alt="" />
-		// 		<div className='movie-card-color'
-		// 			style={{background:muiTheme.palette.primary1Color}}
-		// 		></div>
-		// 		<img className='movie-card-poster' src={image_path} alt="" />
-		// 		<div className='movie-card-title'
-		// 			 style={{color:muiTheme.palette.textColor}}
-		// 		>
-		// 			{title}
-		// 		</div>
-		// 		<div className='movie-card-popularity'
-		// 			 style={{color:muiTheme.palette.textColor}}
-		// 		>
-		// 			 <FontIcon >
-		// 				<IconStar style={{position:'absolute', left:'-20px', bottom:'-2px', height:'16px', width:'16px'}}/>
-		// 			</FontIcon>
-		// 			{popularity}
-		// 		</div>
-		// 		<div className='movie-card-genre'
-		// 			 style={{color:muiTheme.palette.textColor}}
-		// 		>
-		// 			{genre_string}
-		// 		</div>
-		// 		<div className='movie-card-add'>
-		// 			<FloatingActionButton>
-		// 				<ActionAdd onTouchTap={this.add.bind(this)}/>
-		// 			</FloatingActionButton>
-		// 		</div>
-		// 	</div>
-		// )
 	}
 }
 
 class MSelectField extends Component {
 	constructor(props){
 		super(props)
-		this.state = {
-			value: this.props.settings.value
-		}
-		// console.log(props)
 	}
 
 	handleChange = function(event, index, value){
 		// console.log('handleChange', value, index)
-		this.setState({value})
+		// this.setState({value})
 		this.props.onChange(value)
 	}
 
@@ -335,7 +231,7 @@ class MSelectField extends Component {
 			<div>
 				<SelectField
 					floatingLabelText={this.props.settings.title}
-					value={this.state.value}
+					value={this.props.settings.value}
 					onChange={this.handleChange.bind(this)}
 					maxHeight={200}
 					style={this.props.style}
@@ -360,6 +256,12 @@ class Find extends Component {
 		// console.log('genres:', this.genres)
 
 		this.settings = {
+			velocity: 0,
+			average_velocity: 0,
+			top: 0,
+			time: Date.now(),
+			border: true,
+			
 			year: {
 				options:[
 					{value:1, text:"None"},
@@ -375,75 +277,79 @@ class Find extends Component {
 				title:'Year'
 			},
 			sort: {
-				options:[
-					{value:'pd',text:"Popularity"},
-					// {value:'pa',text:"Popularity Ascending"},
-
-					{value:'rd',text:"Revenue"},
-					// {value:'ra',text:"Revenue Ascending"},
-
-					{value:'otd',text:"Title"},
-					// {value:'ota',text:"Original Title Ascending"},
-
-					{value:'vod',text:"Vote"},
-					// {value:'voa',text:"Vote Average Ascending"},
-					
-					{value:'rdd',text:"Release"},
-					// {value:'rda',text:"Release Date Ascending"}
-				],
-				value:'pd',
-				title:'Sort By'
+				movies:{
+					options:[
+						{value:'pd',text:"Popularity"},
+						{value:'rd',text:"Revenue"},
+						{value:'otd',text:"Title"},
+						{value:'vod',text:"Vote"},
+						{value:'rdd',text:"Release"},
+					],
+					value:'pd',
+					title:'Sort By'
+				},
+				series:{
+					options:[
+						{value:'pd',text:"Popularity"},
+						{value:'otd',text:"Title"},
+						{value:'vod',text:"Vote"},
+						{value:'rdd',text:"Release"},
+					],
+					value:'pd',
+					title:'Sort By'	
+				}
 			},
 			genre: {
-				options:[
-					{value:0, text:"All"},
-					{value:28, text:"Action"},
-					{value:12, text:"Adventure"},
-					{value:16, text:"Animation"},
-					{value:35, text:"Comedy"},
-					{value:80, text:"Crime"},
-					{value:99, text:"Documentary"},
-					{value:18, text:"Drama"},
-					{value:10751, text:"Family"},
-					{value:14, text:"Fantasy"},
-					{value:36, text:"History"},
-					{value:27, text:"Horror"},
-					{value:10402, text:"Music"},
-					{value:9648, text:"Mystery"},
-					{value:10749, text:"Romance"},
-					{value:878, text:"Science Fiction"},
-					{value:10770, text:"TV Movie"},
-					{value:53, text:"Thriller"},
-					{value:10752, text:"War"},
-					{value:37, text:"Western"}
-				],
-				value:0,
-				title:'Genre'
+				movies:{
+					values:[],
+					options:[],
+					value:0,
+					title:'Genre'
+				},
+				series:{
+					values:[],
+					options:[],
+					value:0,
+					title:'Genre'
+				}
 			}
 		}
 		this.movies = []
 
 		this.state = {
-			updated: 0
+			updated: 0,
+			border: true
 		}
 		
 		this.card_height = -1;
 		this.total_pages = -1;
 		this.updated_query = false;
 		
-		this.query = {
-			year: this.settings.year.value,
-			sort: this.settings.sort.value,
-			genre: this.settings.genre.value,
-			page: 1
-		}
-
 		this.parent = props.parent;
 		this.socket = props.socket;
 		this.category = props.parent.route.category || 'movies';
 
+		this.navElement = undefined;
+		this.filterElement = undefined;
+		this.scrollEnd;
+		this.scroll = this.handleScroll.bind(this);
+
+		this.query = {
+			year: this.settings.year.value,
+			sort: this.settings.sort[this.category].value,
+			genre: this.settings.genre[this.category].value,
+			page: 1
+		}
+
 		var setData = function(result){
 			
+			if(scope._mounted && result.action === 'genres'){
+				var data = JSON.parse(result.data)
+				console.log("got genres back", data.genres)
+				scope.settings.genre[scope.category].options = genresToMaterialUI(data.genres);
+				scope.settings.genre[scope.category].values = genresToDict(data.genres);
+			}
+
 			if(scope._mounted && result.action === 'list'){
 				var data = JSON.parse(result.data)
 				scope.total_pages = data.total_pages
@@ -459,7 +365,8 @@ class Find extends Component {
 				// TODO: localize scroll
 				// const element = ReactDOM.findDOMNode(this);
 				if(scope.updated_query){
-					document.body.scrollTop = 0;
+					// document.body.scrollTop = 0;
+					window.scrollTo(0,0);
 					scope.updated_query = false;
 				}
 			}
@@ -468,12 +375,13 @@ class Find extends Component {
 		this.socket.on('movies:find', function(res){setData(res)})
 		this.socket.on('series:find', function(res){setData(res)})
 
+		this.getGenres()
 		this.getContent()
 	}
 
 	componentDidMount() { 
 		this._mounted = true;
-		window.addEventListener('scroll', this.handleScroll.bind(this));
+		window.addEventListener('scroll', this.scroll);
 	}
 
 	componentDidUpdate(){
@@ -491,13 +399,16 @@ class Find extends Component {
 	}
 
 	componentWillUnmount() {
+		console.log('removing scroll event')
+		
 		this._mounted = false;
-		window.removeEventListener('scroll', this.handleScroll.bind(this));
+		window.removeEventListener('scroll', this.scroll);
 	}
 
 	handleYearChange(value){
-		// console.log('year', value)
+		console.log('year', value)
 
+		this.settings.year.value = value
 		this.query.year = value
 		this.query.page = 1
 		this.total_pages = -1
@@ -506,7 +417,11 @@ class Find extends Component {
 	}
 
 	handleSortChange(value){
-		// console.log('change', value)
+		console.log('change', this.category, value)
+		
+		this.settings.sort[this.category].value = value;
+		console.log('\tsort settings', this.settings.sort[this.category])
+
 		this.query.sort = value
 		this.query.page = 1
 		this.total_pages = -1
@@ -515,7 +430,11 @@ class Find extends Component {
 	}
 
 	handleGenreChange(value){
-		// console.log('change', value)
+		console.log('change', value)
+
+		this.settings.genre[this.category].value = value
+		console.log('\tgenre settings', this.settings.genre[this.category])
+
 		this.query.genre = value
 		this.query.page = 1
 		this.total_pages = -1
@@ -523,10 +442,16 @@ class Find extends Component {
 		this.updated_query = true;
 	}
 
+	getGenres(){
+		// console.log('getGenres', this.category)
+		this.socket.emit(this.category+':find', {
+			action: 'genres'
+		})
+	}
+
 	getContent(){
-		console.log('getContent', this.category, this.query)
+		// console.log('getContent', this.category, this.query)
 		var scope = this;
-		// this.socket.emit('movies:find', this.query)
 		var payload = {
 			action:'list',
 			data: scope.query
@@ -538,34 +463,81 @@ class Find extends Component {
 		if(this.card_height < 0){
 			return
 		}
-		// console.log('scroll')
+		console.log('scroll')
 
-		let scrollTop = event.srcElement.body.scrollTop;
+		var scope = this;
+		if(this.navElement === undefined || this.filterElement === undefined){
+			this.navElement = document.getElementsByClassName('main-navigation')[0];
+			this.filterElement = document.getElementsByClassName('find-container')[0]
+		}
+
+		// let scrollTop = event.srcElement.body.scrollTop;
+		let scrollTop = window.scrollY;
 		// console.log('top', scrollTop)
 		// console.log('card', this.card_height)
-		// console.log('card number', scrollTop/this.card_height)
+		// console.log('card number:', scrollTop/this.card_height)
 
 		var next_trigger = (((this.query.page -1) * 20) + 10)
 		var position = Math.floor(scrollTop/this.card_height)
-		// console.log(next_trigger, position)
+		
+		// console.log('position:', next_trigger, position)
+		
 		if(next_trigger < position){
 			if(this.query.page < this.total_pages){
 				this.query.page += 1;
 				this.getContent()
 			}
 		}
+
+		// TODO: use css the hide border elements
+		if(scrollTop != this.settings.top){
+			var now = Date.now();
+			var dist = Math.abs(this.settings.top - scrollTop);
+			var time = now - this.settings.time;
+			
+			// console.log('distance', dist)
+			// console.log('time', time)
+			var velocity = dist/time;
+			var smoothing_factor = .5;
+			this.settings.average_velocity = (velocity * smoothing_factor) + (this.settings.average_velocity * (1.0 - smoothing_factor));
+			// console.log('velocity', velocity)
+			// console.log('average_velocity', this.settings.average_velocity)
+
+			if(this.settings.average_velocity > 0.075){
+				// console.log('\thide')
+				this.navElement.className = "main-navigation hidden";
+				this.filterElement.className = "find-container hidden";
+
+				if(this.scrollEnd){
+					clearTimeout(this.scrollEnd);
+				}
+				this.scrollEnd = setTimeout(function(){
+					// console.log('done')
+					scope.navElement.className = "main-navigation visible";
+					scope.filterElement.className = "find-container visible";
+				}, 250)
+			}
+
+			this.settings.top = scrollTop;
+			this.settings.time = now;
+		}
 	}
 
 	componentWillUpdate(nextProps, nextState){
-		console.log('componentWillUpdate', nextProps, nextState)
-
+		// console.log('componentWillUpdate', nextProps, nextState)
 		if(nextProps.parent && nextProps.parent.route.category !== this.category){
+			console.log('new category ('+nextProps.parent.route.category, 'from', this.category+')')
 			document.body.scrollTop	= 0;
 			this.category = nextProps.parent.route.category;
 			this.data = {};
 			this.page = 1;
+			this.query.sort = this.settings.sort[this.category].value;
+			this.query.genre = this.settings.genre[this.category].value;
 			this.query.page = 1;
+			// console.log('sort', this.query.sort)
+			// console.log('genre', this.query.genre)
 			this.total_pages = -1;
+			this.getGenres();
 			this.getContent();
 		}
 	}
@@ -581,7 +553,7 @@ class Find extends Component {
 	}
 
 	addItem(data){
-		console.log('addItem')
+		// console.log('addItem')
 		var payload = {
 			action: 'add',
 			data:{
@@ -606,18 +578,22 @@ class Find extends Component {
 	}
 
 	render(){
-		console.log('movies', this.movies.length)
-		console.log(this)
-		console.log('muiTheme:', this.props.muiTheme)
-		console.log('-----')
+		// console.log('movies', this.movies.length)
+		// console.log(this)
+		// console.log('muiTheme:', this.props.muiTheme)
+		// console.log('-----')
 		
 		var scope = this;
 		var hasContent = this.movies.length > 0 ? true : false
 		var areMovies = this.category ==='movies' ? true: false
 
+		console.log('sort', this.settings.sort[this.category])
+		console.log('genre', this.settings.genre[this.category])
+
 		return (
-			<div>
+			<div className='root'>
 				<MMainNavigation value={this.parent.route} onChange={this.onRouteChange.bind(this)}/>
+				
 				<div className='root-container'>
 						<div className='find-container'>
 							<Paper>
@@ -628,15 +604,16 @@ class Find extends Component {
 										onChange={this.handleYearChange.bind(this)}/>
 									<MSelectField 
 										style={{marginTop: '-10px', float:'left', width:'150px', paddingLeft:'8px'}} 
-										settings={this.settings.sort} 
+										settings={this.settings.sort[this.category]} 
 										onChange={this.handleSortChange.bind(this)}/>
 									<MSelectField 
 										style={{marginTop: '-10px', float:'left', width:'100px', paddingLeft:'16px'}} 
-										settings={this.settings.genre} 
+										settings={this.settings.genre[this.category]} 
 										onChange={this.handleGenreChange.bind(this)}/>
 								</div>
 							</Paper>
 						</div>
+						
 
 						{hasContent && areMovies &&
 							<div className='movie-container'>
@@ -646,6 +623,7 @@ class Find extends Component {
 											onTouch={scope.addItem.bind(scope)}
 											key={index} 
 											match={scope.props.match}
+											genres={scope.settings.genre[scope.category].values}
 											data={item}/>
 							})}
 							</div>
@@ -659,6 +637,7 @@ class Find extends Component {
 											onTouch={scope.addItem.bind(scope)}
 											key={index}
 											match={scope.props.match}
+											genres={scope.settings.genre[scope.category].values}
 											data={item}/>
 							})}
 							</div>

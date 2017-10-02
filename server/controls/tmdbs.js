@@ -61,7 +61,7 @@ var series = (function(){
 
 		  res.on("end", function () {
 			var body = Buffer.concat(chunks);
-			// console.log('result', body.toString())
+			console.log('result', body.toString())
 			deferred.resolve(body.toString());
 		  });
 		});
@@ -70,6 +70,19 @@ var series = (function(){
 		req.end();
 
 		return deferred.promise;
+	}
+
+	// Get the list of official genres for series.
+	var genres = function(){
+		console.log('genres')
+
+		// https://api.themoviedb.org/3/genre/tv/list?api_key=1a899ad77496510e9c5643b05f17146a&language=en-US
+		var path = '/3/genre/tv/list?'
+		path += '&api_key='+api_key
+		path += '&language=en-US'
+
+		// console.log('full query', path)
+		return query(path)
 	}
 
 	var season_details = function(input){
@@ -182,6 +195,7 @@ var series = (function(){
 
 	return {
 		configuration: configuration,
+		genres: genres,
 		upcoming: upcoming,
 		discover: discover,
 		find: discover,
