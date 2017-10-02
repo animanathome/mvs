@@ -6,99 +6,125 @@ import IconButton from 'material-ui/IconButton';
 import ActionClear from 'material-ui/svg-icons/content/clear';
 import MMainNavigation from '../navigation/Navigation'
 
-var genres = {
-	"genres": [
-		{
-			"id": 28,
-			"name": "Action"
-		},
-		{
-			"id": 12,
-			"name": "Adventure"
-		},
-		{
-			"id": 16,
-			"name": "Animation"
-		},
-		{
-			"id": 35,
-			"name": "Comedy"
-		},
-		{
-			"id": 80,
-			"name": "Crime"
-		},
-		{
-			"id": 99,
-			"name": "Documentary"
-		},
-		{
-			"id": 18,
-			"name": "Drama"
-		},
-		{
-			"id": 10751,
-			"name": "Family"
-		},
-		{
-			"id": 14,
-			"name": "Fantasy"
-		},
-		{
-			"id": 36,
-			"name": "History"
-		},
-		{
-			"id": 27,
-			"name": "Horror"
-		},
-		{
-			"id": 10402,
-			"name": "Music"
-		},
-		{
-			"id": 9648,
-			"name": "Mystery"
-		},
-		{
-			"id": 10749,
-			"name": "Romance"
-		},
-		{
-			"id": 878,
-			"name": "Science Fiction"
-		},
-		{
-			"id": 10770,
-			"name": "TV Movie"
-		},
-		{
-			"id": 53,
-			"name": "Thriller"
-		},
-		{
-			"id": 10752,
-			"name": "War"
-		},
-		{
-			"id": 37,
-			"name": "Western"
-		}
-	]
-}
+// var genres = {
+// 	"genres": [
+// 		{
+// 			"id": 28,
+// 			"name": "Action"
+// 		},
+// 		{
+// 			"id": 12,
+// 			"name": "Adventure"
+// 		},
+// 		{
+// 			"id": 16,
+// 			"name": "Animation"
+// 		},
+// 		{
+// 			"id": 35,
+// 			"name": "Comedy"
+// 		},
+// 		{
+// 			"id": 80,
+// 			"name": "Crime"
+// 		},
+// 		{
+// 			"id": 99,
+// 			"name": "Documentary"
+// 		},
+// 		{
+// 			"id": 18,
+// 			"name": "Drama"
+// 		},
+// 		{
+// 			"id": 10751,
+// 			"name": "Family"
+// 		},
+// 		{
+// 			"id": 14,
+// 			"name": "Fantasy"
+// 		},
+// 		{
+// 			"id": 36,
+// 			"name": "History"
+// 		},
+// 		{
+// 			"id": 27,
+// 			"name": "Horror"
+// 		},
+// 		{
+// 			"id": 10402,
+// 			"name": "Music"
+// 		},
+// 		{
+// 			"id": 9648,
+// 			"name": "Mystery"
+// 		},
+// 		{
+// 			"id": 10749,
+// 			"name": "Romance"
+// 		},
+// 		{
+// 			"id": 878,
+// 			"name": "Science Fiction"
+// 		},
+// 		{
+// 			"id": 10770,
+// 			"name": "TV Movie"
+// 		},
+// 		{
+// 			"id": 53,
+// 			"name": "Thriller"
+// 		},
+// 		{
+// 			"id": 10752,
+// 			"name": "War"
+// 		},
+// 		{
+// 			"id": 37,
+// 			"name": "Western"
+// 		}
+// 	]
+// }
+
+// var genresToDict = function(genres_data){
+// 	console.log('genresToDict', genres_data, genres_data.length)
+// 	var genres = {}
+// 	for(var i = 0; i < genres_data.length; i++){
+// 		// console.log(i, genres_data[i])
+// 		genres[genres_data[i].id] = genres_data[i].name;
+// 	}
+// 	console.log('\toutput', genres)
+// 	return genres
+// }
+
+// var movie_genres = genresToDict(genres.genres)
 
 var genresToDict = function(genres_data){
-	console.log('genresToDict', genres_data, genres_data.length)
-	var genres = {}
+	// console.log('genresToDict', genres_data, genres_data.length)
+	var genres = {0:'All'}
 	for(var i = 0; i < genres_data.length; i++){
 		// console.log(i, genres_data[i])
 		genres[genres_data[i].id] = genres_data[i].name;
 	}
-	console.log('\toutput', genres)
+	// console.log('\toutput', genres)
 	return genres
 }
 
-var movie_genres = genresToDict(genres.genres)
+// convert backend data to a native material-ui language
+var genresToMaterialUI = function(genres_data){
+	console.log('genresToMaterialUI', genres_data)
+
+	var result = [{value:0, text:"All"}]
+	genres_data.map(function(item){
+		result.push({
+			value: item['id'],
+			text: item['name']
+		})
+	})
+	console.log('\tresult:', result)
+	return result
+}
 
 class WatchSeries extends Component {
 	remove(){
@@ -107,7 +133,7 @@ class WatchSeries extends Component {
 	}
 
 	render(){
-		// console.log('render', this.props)
+		console.log('render', this.props)
 
 		var poster_path = 'https://image.tmdb.org/t/p/w92'+this.props.data.poster_path
 		if(!this.props.data.poster_path){
@@ -127,12 +153,15 @@ class WatchSeries extends Component {
 		}
 
 		// generate genre string
-		var genre_string = ''
+		var genre_string = '';
+		// var genre_ids = Object.keys(this.props.data.genre_ids);
+		// console.log('genre_ids', genre_ids)
 		for(var i = 0; i < this.props.data.genre_ids.length; i++){
 			if(i > 0){
 				genre_string += ', '
 			}
-			genre_string += movie_genres[this.props.data.genre_ids[i]]
+			console.log('\t', i, this.props.data.genre_ids[i])
+			genre_string += this.props.genres[this.props.data.genre_ids[i]]
 		}
 		if(genre_string.length > 30){
 			genre_string = genre_string.slice(0, 34)+' ...'
@@ -208,7 +237,8 @@ class WatchMovie extends Component {
 			if(i > 0){
 				genre_string += ', '
 			}
-			genre_string += movie_genres[this.props.data.genre_ids[i]]
+			console.log('\t', i, this.props.data.genre_ids[i])
+			genre_string += this.props.genres[this.props.data.genre_ids[i]]
 		}
 		if(genre_string.length > 30){
 			genre_string = genre_string.slice(0, 34)+' ...'
@@ -260,8 +290,21 @@ class Watch extends Component {
 		this._mounted = false;
 		this.category = props.parent.route.category || 'movies';
 
+		this.genres = {
+			movies:{},
+			series:{}
+		}
+
 		this.data = []
 		var setData = function(result){
+
+			if(scope._mounted && result.action === 'genres'){
+				var data = JSON.parse(result.data)
+				console.log("got genres back", data.genres)
+				scope.genres[scope.category] = genresToDict(data.genres);
+				scope.setState({updated:scope.state.updated+1})
+			}
+
 			if(scope._mounted && result.action === 'list'){
 				console.log('got', result.data)
 				scope.data = result.data
@@ -271,6 +314,7 @@ class Watch extends Component {
 		this.socket.on('movies:watch', function(res){setData(res)})
 		this.socket.on('series:watch', function(res){setData(res)})
 
+		this.getGenres()
 		this.getContent()
 	}
 
@@ -282,8 +326,17 @@ class Watch extends Component {
 		this._mounted = false;
 	}
 
+	getGenres(){
+		// console.log('getGenres', this.category)
+		this.socket.emit(this.category+':watch', {
+			action: 'genres'
+		})
+	}
+
 	getContent(){
-		this.socket.emit(this.category+':watch', {action:'list'})
+		this.socket.emit(this.category+':watch', {
+			action:'list'
+		})
 	}
 
 	componentWillUpdate(nextProps, nextState){
@@ -292,6 +345,7 @@ class Watch extends Component {
 		if(nextProps.parent && nextProps.parent.route.category !== this.category){
 			this.category = nextProps.parent.route.category;
 			this.data = []
+			this.getGenres();
 			this.getContent();
 		}
 	}
@@ -332,43 +386,53 @@ class Watch extends Component {
 		var scope = this;
 		var match = this.props.match
 		var hasContent = this.data.length > 0 ? true : false
+		var hasGenres = Object.keys(this.genres[this.category]).length > 0 ? true : false
 		var areMovies = this.category ==='movies' ? true: false
 		
+		console.log('this', this)
+		console.log('category', this.category)
+		console.log('genres', this.genres[this.category])
+
 		return (
 				<div>
-					<MMainNavigation value={this.parent.route} onChange={this.onRouteChange.bind(this)}/>
+					<MMainNavigation 
+						value={this.parent.route} 
+						onChange={this.onRouteChange.bind(this)}
+					/>
 
-					{hasContent && areMovies &&
+					{hasContent && hasGenres && areMovies &&
 						<div className='watch-container'>
 						{this.data.map(function(item, index){
 							return <WatchMovie 
 										key={index} 
 										data={item} 
 										match={match}
+										genres={scope.genres[scope.category]}
 										remove={scope.remove.bind(scope)}
 									/>
 						})}
 						</div>
 					}
 
-					{hasContent && !areMovies &&
+					{hasContent && hasGenres && !areMovies &&
 						<div className="watch-container">
 						{this.data.map(function(item, index){
 							return <WatchSeries 
-												key={index} 
-												data={item} 
-												match={match}
-												remove={scope.remove.bind(scope)}
-											/>
+										key={index} 
+										data={item} 
+										match={match}
+										genres={scope.genres[scope.category]}
+										remove={scope.remove.bind(scope)}
+									/>
 						})}
 						</div>
 					}
 
-					{!hasContent && 
-							<div className='Loading'>
-								Loading...
-							</div>
-						}
+					{!hasContent && !hasGenres &&
+						<div className='Loading'>
+							Loading...
+						</div>
+					}
 				</div>
 		)
 	}

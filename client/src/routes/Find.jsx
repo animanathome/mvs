@@ -587,8 +587,8 @@ class Find extends Component {
 		var hasContent = this.movies.length > 0 ? true : false
 		var areMovies = this.category ==='movies' ? true: false
 
-		console.log('sort', this.settings.sort[this.category])
-		console.log('genre', this.settings.genre[this.category])
+		// console.log('sort', this.settings.sort[this.category])
+		// console.log('genre', this.settings.genre[this.category])
 
 		return (
 			<div className='root'>

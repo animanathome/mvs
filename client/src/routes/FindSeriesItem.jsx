@@ -290,10 +290,10 @@ class FindSeriesItem extends Component {
 								<ol className="seasons scroller">
 								{this.data.seasons.reverse().map(function(item, index){
 									return <SeasonCard
-														key={index}
-														onTouch={scope.addItem.bind(scope)}
-														data={item}
-												 />
+												key={index}
+												onTouch={scope.addItem.bind(scope)}
+												data={item}
+											/>
 								})}
 								</ol>
 							</section>

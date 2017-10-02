@@ -51,6 +51,7 @@ module.exports = function (socket) {
 		if(input.action === 'genres'){
 			tmdbs.genres()
 			.then(function(data){
+				console.log(data)
 				socket.emit('series:watch', {
 					action:'genres',
 					data:data
@@ -273,8 +274,8 @@ module.exports = function (socket) {
 
 		if(input.action === 'list'){
 			_movies.list({
-				track:false, 
-				available:true
+				// track:false, 
+				// available:true
 			})
 			.then(function(result){
 				socket.emit('movies:watch', {
