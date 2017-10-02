@@ -198,9 +198,9 @@ class WatchMovie extends Component {
 
 		// overview
 		var overview = this.props.data.overview
-		if(overview.length > 236){
-			overview = overview.slice(0, 230)+' ...'
-		}
+		// if(overview.length > 236){
+		// 	overview = overview.slice(0, 230)+' ...'
+		// }
 
 		// generate genre string
 		var genre_string = ''
@@ -342,11 +342,11 @@ class Watch extends Component {
 						<div className='watch-container'>
 						{this.data.map(function(item, index){
 							return <WatchMovie 
-												key={index} 
-												data={item} 
-												match={match}
-												remove={scope.remove.bind(scope)}
-											/>
+										key={index} 
+										data={item} 
+										match={match}
+										remove={scope.remove.bind(scope)}
+									/>
 						})}
 						</div>
 					}

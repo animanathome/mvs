@@ -4,7 +4,12 @@ import { Link } from 'react-router-dom';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 
 import IconButton from 'material-ui/IconButton';
+import IconMenu from 'material-ui/IconMenu';
+import MenuItem from 'material-ui/MenuItem';
+
+import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
 import ActionBack from 'material-ui/svg-icons/hardware/keyboard-backspace';
+
 import ActionClear from 'material-ui/svg-icons/content/clear';
 import FileQueue from 'material-ui/svg-icons/file/cloud-queue';
 import FileDone from 'material-ui/svg-icons/file/cloud-done';
@@ -20,6 +25,10 @@ class WatchSeriesEpisode extends Component {
 		}
 		console.log('image', this.props.data.poster_path)
 
+		console.log('overview', this.props.data.overview)
+
+		var overview = this.props.data.overview.length == 0 ? 'No summary yet.' : this.props.data.overview;
+
 		return (
 			<div className='watch-episode'>
 				<div className='watch-episode-image'>
@@ -28,15 +37,28 @@ class WatchSeriesEpisode extends Component {
 					</Link>
 				</div>
 				<div className='watch-episode-details'>
-					<div className='watch-episode-title'>
-						<a>{this.props.data.episode}. {this.props.data.title}</a>
-						<IconButton style={{float: 'right', width: '36px', height: '32px', padding: '0px 0px 0px 0px'}}>
+					<div className='watch-episode-header'>
+						<div className='watch-episode-title'>
+							{this.props.data.episode}. {this.props.data.title}
+						</div>
+						
+						<IconMenu
+							style={{float: 'right', width: '32px', height: '32px', padding: '0px 0px 0px 0px', marginTop: '-10px'}}
+							iconButtonElement={<IconButton><MoreVertIcon /></IconButton>}
+							anchorOrigin={{horizontal: 'right', vertical: 'top'}}
+							targetOrigin={{horizontal: 'right', vertical: 'top'}}
+						>
+							<MenuItem primaryText="Remove Episode" />
+						</IconMenu>
+						
+						<IconButton style={{float: 'right', width: '28px', height: '28px', padding: '0px 0px 0px 0px'}}>
 							{!this.props.data.available && <FileQueue/>}
 							{this.props.data.available && <FileDone/>}
 						</IconButton>
 					</div>
+					
 					<div className='watch-episode-overview'>
-						{this.props.data.overview}
+						{overview}
 					</div>
 				</div>
 			</div>
@@ -181,7 +203,7 @@ class WatchSeriesItem extends Component {
 		}
 		
 		var match = this.props.match;
-
+		var muiTheme = this.props.muiTheme;
 		return (
 			<div>
 				{!hasContent && 
@@ -195,13 +217,20 @@ class WatchSeriesItem extends Component {
 						<div className='series-header'>
 							<Link to="/track/series" className='series-back'>
 								<IconButton>
-									<ActionBack color={'white'}/>
+									<ActionBack/>
 								</IconButton>
+								<a>Back to Series</a>
 							</Link>
 							
 							<img className='series-backdrop' src={backdrop_path} alt="" />
 							<img className='series-poster' src={poster_path} alt="" />
-							<div className='series-intro'>
+							<div 
+								className='series-intro'
+								style={{
+									background:muiTheme.palette.primary1Color,
+									color:muiTheme.palette.textColor
+								}}
+							>
 								<h2>{this.data.name}</h2>
 							</div>
 						</div>
@@ -214,7 +243,7 @@ class WatchSeriesItem extends Component {
 											match={match}
 											remove={scope.remove.bind(scope)}
 										 />
-							})}							
+							})}
 						</div>
 					</div>
 				}

@@ -236,7 +236,6 @@ class TrackItem extends Component {
 
 		return (
 			<div className='track-item-card'>
-				
 				<div className='track-item-card-poster'>
 					<img src={poster_path} alt="" />
 				</div>

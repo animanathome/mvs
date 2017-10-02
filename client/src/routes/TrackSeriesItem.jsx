@@ -3,6 +3,10 @@ import { Link } from 'react-router-dom';
 
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import IconButton from 'material-ui/IconButton';
+import IconMenu from 'material-ui/IconMenu';
+import MenuItem from 'material-ui/MenuItem';
+
+import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
 import ActionClear from 'material-ui/svg-icons/content/clear';
 import ActionBack from 'material-ui/svg-icons/hardware/keyboard-backspace';
 
@@ -23,6 +27,17 @@ class TrackSeriesItemProgress extends Component {
 					<IconButton>
 						<ActionClear onTouchTap={this.remove.bind(this)}/>
 					</IconButton>
+					<IconMenu
+						iconButtonElement={<IconButton><MoreVertIcon /></IconButton>}
+						anchorOrigin={{horizontal: 'right', vertical: 'top'}}
+						targetOrigin={{horizontal: 'right', vertical: 'top'}}
+					>
+						<MenuItem primaryText="Refresh" />
+						<MenuItem primaryText="Send feedback" />
+						<MenuItem primaryText="Settings" />
+						<MenuItem primaryText="Help" />
+						<MenuItem primaryText="Sign out" />
+					</IconMenu>
 				</div>
 				<div className='season-overview'>
 					{this.props.data.available}/{this.props.data.track} Episodes
@@ -159,7 +174,7 @@ class TrackSeriesItem extends Component {
 											data={item}
 											remove={scope.remove.bind(scope)}
 									 	/>
-							})}							
+							})}
 						</div>
 					</div>
 				}
