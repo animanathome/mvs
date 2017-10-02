@@ -3,6 +3,8 @@ var Series = require('../models/series.js')
 var Season = require('../models/season.js')
 var Episode = require('../models/episode.js')
 
+var tmdbs = require('../controls/tmdbs.js')
+
 var series = (function(){
 
 	var hasParameters = function(input, required_params){
@@ -122,45 +124,50 @@ var series = (function(){
 
 		var deferred = Q.defer();
 
-		Series.findOne({'mid':data.mid}, function(err, res){
+		Series.findOne({'mid':data.mid}, function(err, result){
 			if(err){
 				// console.error(err)
 				deferred.reject(err);
 			}else{
-				if(res === null){
+				if(result === null){
 					console.log('Unable to find series')
 					deferred.reject('Unable to find series');
 				}else{
 					var data = {
-						_id: res._id,
-						backdrop_path: res.backdrop_path,
-						poster_path: res.poster_path,
-						name: res.title,
+						_id: result._id,
+						backdrop_path: result.backdrop_path,
+						poster_path: result.poster_path,
+						name: result.title,
 						seasons:[]
 					}
 					
+					console.log('get season details')
+
 					var i, j;
-					for(i = 0; i < res.seasons.length; i++){
+					for(i = 0; i < result.seasons.length; i++){
 						var info = {}
-						info.season = res.seasons[i].season
-						console.log('season:', info.season)
+						info.season = result.seasons[i].season
+						console.log(i, 'season:', info.season)
+
+						info.episodes = result.seasons[i].episodes;
 						
 						var available_count = 0;
 						var available = []
-						for(j = 0; j < res.seasons[i].episodes.length; j++){
-							// console.log(j, res.seasons[i].episodes[j])
-							if(res.seasons[i].episodes[j].available){
+						for(j = 0; j < result.seasons[i].episodes.length; j++){
+							console.log(j, result.seasons[i].episodes[j])
+							if(result.seasons[i].episodes[j].available){
 								available_count += 1;
-								available.push(res.seasons[i].episodes[j].episode)
+								available.push(result.seasons[i].episodes[j].episode)
 							}
 						}
 						info.available = available_count
 						info.available_episodes = available
 						
-						info.track = res.seasons[i].episode_count
+						info.track = result.seasons[i].episode_count
 						data.seasons.push(info)
 					}
-					console.log(data)
+					console.log('result:', data)
+					console.log('-----------------------------')
 					deferred.resolve(data);
 				}
 			}
@@ -194,27 +201,45 @@ var series = (function(){
 					}
 					
 					if(!season_exists){
-						// create season
-						var season = new Season({
-							season:data.season, 
-							episode_count:data.episode_count
+						// get the season details
+						tmdbs.season_details({
+							tv_id:data.mid, 
+							season_number:data.season
 						})
+						.then(function(season_details){
+							console.log("details", season_details)
 
-						// create episodes
-						for(i = 0; i < data.episode_count; i++){
-							var episode = new Episode({
-								episode:i+1,
-								track: true
+							season_details = JSON.parse(season_details)
+
+							// create season
+							var season = new Season({
+								season:data.season, 
+								episode_count:data.episode_count
 							})
-							episode.save()
-							season.episodes.push(episode)
-						}
-						item.seasons.push(season)
-						season.save()
-						item.save(function(err, product, numAffected){
-							deferred.resolve();
+
+							// create episodes
+							// TODO: add tmdb details here
+							for(i = 0; i < data.episode_count; i++){
+								var episode = new Episode({
+									episode:i+1,
+									track: true,
+
+									title: season_details.episodes[i].name,
+									release_date: season_details.episodes[i].air_date,
+									overview: season_details.episodes[i].overview,
+									vote_average: season_details.episodes[i].vote_average,
+									poster_path: season_details.episodes[i].still_path
+								})
+								episode.save()
+								season.episodes.push(episode)
+							}
+							item.seasons.push(season)
+							season.save()
+							item.save(function(err, product, numAffected){
+								deferred.resolve();
+							})
+							console.log('Adding season', data.season)
 						})
-						console.log('Adding season', data.season)
 					}else{
 						console.log('Season', data.season, 'already exists')
 						deferred.resolve();
@@ -305,13 +330,15 @@ var series = (function(){
 			}
 
 			if(!season_exists){
-				console.log('Adding season', data.season)
+				console.log('Adding season', data)
+
 				var season = new Season({
 					season: data.season, 
 					episode_count: data.episode_count
 				})
 
 				// create episodes
+				// TODO: add tmdb details here
 				for(i = 0; i < data.episode_count; i++){
 					var episode = new Episode({
 						episode:i+1,

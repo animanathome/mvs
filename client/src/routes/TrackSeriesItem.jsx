@@ -25,7 +25,7 @@ class TrackSeriesItemProgress extends Component {
 					</IconButton>
 				</div>
 				<div className='season-overview'>
-					{this.props.data.available}/{this.props.data.track}
+					{this.props.data.available}/{this.props.data.track} Episodes
 				</div>
 			</div>
 		)
@@ -116,38 +116,49 @@ class TrackSeriesItem extends Component {
 			poster_path = 'images/a_poster.jpg'
 		}
 
+		var muiTheme = this.props.muiTheme;
+
 		return (
 			<div>
 
 				{!hasContent && 
 					<div className='Loading'>
-							Loading...
+						Loading...
 					</div>
 				}
 
 				{hasContent && 
 					<div>
 						<div className='series-header'>
-							<Link to="/track/series" className='series-back'>
-								<IconButton>
-									<ActionBack color={'white'}/>
-								</IconButton>
-							</Link>
+							<div className='series-link'>
+								<Link to="/track/series" className='series-back'>
+									<IconButton>
+										<ActionBack/>
+									</IconButton>
+									<a>Back to Series</a>
+								</Link>
+							</div>
 							
 							<img className='series-backdrop' src={backdrop_path} alt="" />
 							<img className='series-poster' src={poster_path} alt="" />
-							<div className='series-intro'>
-									<h2>{this.data.name}</h2>
+							<div 
+								className='series-intro' 
+								style={{
+									background:muiTheme.palette.primary1Color,
+									color:muiTheme.palette.textColor
+								}}
+							>
+								<h2>{this.data.name}</h2>
 							</div>
 						</div>
 
 						<div className="series-tracking">
 							{this.data.seasons.reverse().map(function(item, index){
 								return <TrackSeriesItemProgress
-													key={index}
-													data={item}
-													remove={scope.remove.bind(scope)}
-											 />
+											key={index}
+											data={item}
+											remove={scope.remove.bind(scope)}
+									 	/>
 							})}							
 						</div>
 					</div>

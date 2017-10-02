@@ -330,6 +330,13 @@ ol.seasons {
 .series-back {
 	position: absolute;
 	padding: 0 5px;
+	text-decoration: none;
+}
+
+.series-back a {
+	color: black;
+	position: relative;
+	bottom: 6px;	
 }
 
 .series-backdrop {
@@ -368,30 +375,40 @@ ol.seasons {
 }
 
 .series-tracking {
-	padding: 10px 20px 20px 20px;
-	background: white;
+	/*padding: 10px 20px 20px 20px;*/
+	/*background: white;*/
 }
 
 .season-container {
-	padding: 10px;
+	padding: 40px 10px 10px 10px;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 	height: 20px;
 }
 
 .season-title {
 	float: left;
+	line-height: 12px;
+	font-size: 20px;
 	font-weight: 600;
 }
 
 .season-overview {
 	float: right;
-	margin-right: 10px;
+	font-weight: 100;
+	/*margin-right: 10px;*/
 }
 
 .season-clear {
 	float: right;
 	margin-top: -15px;
-	margin-right: -10px;
+}
+
+.series-link {
+	height: 45px;
+	width: 100%;
+	background: white;
+	position: absolute;
+	top: 0px;
 }
 
 h3 {
@@ -575,13 +592,18 @@ h3 {
 }
 
 .season-watch-container {
-	padding: 10px;
+	/*padding: 10px;*/
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 	overflow: auto;
 }
 
+.season-intro {
+	padding: 40px 2px 2px 18px;
+	overflow: auto;
+}
+
 .season-episodes {
-	padding-top: 36px;
+	padding-top: 10px;
 	width: 100%;
 	font-size: 14px;
 }
@@ -589,24 +611,41 @@ h3 {
 .watch-episode {
 	text-decoration: none;
 	background: white;
-	padding: 10px;
-	margin-bottom: 4px;
+	/*padding: 10px;*/
+	height: 82px;
+	/*overflow: auto;*/
+	margin-bottom: 20px;
 	box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
 }
 
-.watch-episode a{
-	text-decoration: none;
-	color: black;
+.watch-episode-image {
+	float: left;
+	width: 155px;
 }
 
-.watch-episode-dark {	
-	background: lightgray;
-	padding: 10px;
-	margin-bottom: 4px;
-	box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;	
+.watch-episode-image img {
+	width: 145px;	
 }
 
-.watch-episode-dark a{
-	text-decoration: none;
-	color: black;
+.watch-episode-details {
+	padding: 0px 12px 0px 0px;
+	height: 78px;
+}
+
+.watch-episode-title a{
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-size: 12px;
+	line-height: 32px;
+	font-weight: 600;
+}
+
+.watch-episode-overview {
+	font-size: 12px;
+	font-weight: 100;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
 }

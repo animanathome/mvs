@@ -109,16 +109,17 @@ class SeasonCard extends Component {
 		this.props.onTouch(this.props.data.season_number, this.props.data.episode_count)
 	}
 	render(){
+		// console.log('render', this.props.data)
+
 		var poster_path = 'https://image.tmdb.org/t/p/w92'+this.props.data.poster_path
 		if(!this.props.data.poster_path){
 			poster_path = 'images/a_poster.jpg'
 		}
 
 		var title = 'Season '+this.props.data.season_number
-		var release = this.props.data.air_date.split('-')[0]
+		var release = this.props.data.air_date === null ? "Unknown" : this.props.data.air_date.split('-')[0];
 		var episodes = this.props.data.episode_count+' episodes'
 
-		console.log(this.props.data)
 		return (
 			<li className='card'>
 				

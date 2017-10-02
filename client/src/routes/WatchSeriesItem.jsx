@@ -6,23 +6,40 @@ import muiThemeable from 'material-ui/styles/muiThemeable';
 import IconButton from 'material-ui/IconButton';
 import ActionBack from 'material-ui/svg-icons/hardware/keyboard-backspace';
 import ActionClear from 'material-ui/svg-icons/content/clear';
+import FileQueue from 'material-ui/svg-icons/file/cloud-queue';
+import FileDone from 'material-ui/svg-icons/file/cloud-done';
 
 class WatchSeriesEpisode extends Component {
 	render(){
-		// console.log('render', this.props.data)
-		var className = 'watch-episode';
-		if(!this.props.data.available){
-			className += '-dark'
-		}
+		console.log('render', this.props.data)
 
 		var link = this.props.match.url+'/s'+this.props.data.season+'-e'+this.props.data.episode
+		var poster_path = '/images/a_backdrop.jpg'
+		if(this.props.data && this.props.data.poster_path){
+			poster_path = 'https://image.tmdb.org/t/p/w185'+this.props.data.poster_path
+		}
+		console.log('image', this.props.data.poster_path)
 
 		return (
-				<div className={className}>
+			<div className='watch-episode'>
+				<div className='watch-episode-image'>
 					<Link to={link}>
-						{"Episode "+this.props.data.episode}
+						<img src={poster_path}></img>
 					</Link>
 				</div>
+				<div className='watch-episode-details'>
+					<div className='watch-episode-title'>
+						<a>{this.props.data.episode}. {this.props.data.title}</a>
+						<IconButton style={{float: 'right', width: '36px', height: '32px', padding: '0px 0px 0px 0px'}}>
+							{!this.props.data.available && <FileQueue/>}
+							{this.props.data.available && <FileDone/>}
+						</IconButton>
+					</div>
+					<div className='watch-episode-overview'>
+						{this.props.data.overview}
+					</div>
+				</div>
+			</div>
 		)
 	}
 }
@@ -39,6 +56,9 @@ class WatchSeriesSeason extends Component {
 		var episodes = []
 		for(var i = 0; i < this.props.data.track; i++){
 			data = {
+				title: this.props.data.episodes[i].title,
+				overview: this.props.data.episodes[i].overview,
+				poster_path: this.props.data.episodes[i].poster_path,
 				season: this.props.data.season,
 				episode: i+1,
 				available : this.props.data.available_episodes.indexOf(i+1) > -1 ? true : false
@@ -49,24 +69,27 @@ class WatchSeriesSeason extends Component {
 		var match = this.props.match;
 		return (
 			<div className='season-watch-container'>
-				<div className='season-title'>
-					Season {this.props.data.season}
+				<div className='season-intro'>
+					<div className='season-title'>
+						Season {this.props.data.season}
+					</div>
+					<div className='season-clear'>
+						<IconButton style={{float: 'right', width: '36px', height: '32px'}}>
+							<ActionClear onTouchTap={this.remove.bind(this)}/>
+						</IconButton>
+					</div>
+					<div className='season-overview'>
+						{this.props.data.available}/{this.props.data.track} Episodes
+					</div>
 				</div>
-				<div className='season-clear'>
-					<IconButton>
-						<ActionClear onTouchTap={this.remove.bind(this)}/>
-					</IconButton>
-				</div>
-				<div className='season-overview'>
-					{this.props.data.available}/{this.props.data.track} episodes
-				</div>
+
 				<div className='season-episodes'>
 						{episodes.map(function(item, index){
 							return <WatchSeriesEpisode
-												data={item}
-												key={index}
-												match={match}
-										/>
+										data={item}
+										key={index}
+										match={match}
+									/>
 						})}
 					</div>
 			</div>
@@ -163,7 +186,7 @@ class WatchSeriesItem extends Component {
 			<div>
 				{!hasContent && 
 					<div className='Loading'>
-							Loading...
+						Loading...
 					</div>
 				}
 
@@ -179,18 +202,18 @@ class WatchSeriesItem extends Component {
 							<img className='series-backdrop' src={backdrop_path} alt="" />
 							<img className='series-poster' src={poster_path} alt="" />
 							<div className='series-intro'>
-									<h2>{this.data.name}</h2>
+								<h2>{this.data.name}</h2>
 							</div>
 						</div>
 
 						<div className="series-tracking">
 							{this.data.seasons.reverse().map(function(item, index){
 								return <WatchSeriesSeason
-													key={index}
-													data={item}
-													match={match}
-													remove={scope.remove.bind(scope)}
-											 />
+											key={index}
+											data={item}
+											match={match}
+											remove={scope.remove.bind(scope)}
+										 />
 							})}							
 						</div>
 					</div>

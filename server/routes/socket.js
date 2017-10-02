@@ -37,50 +37,7 @@ module.exports = function (socket) {
 		console.warn('Deprecated, use series or movies instead.')
 	})
 
-
-	// // SERIES
-	// socket.on('series:update', function(input){
-
-	// 	console.log('series:update', input)
-		
-	// 	var mid = input.data.mid;
-
-	// 	if(input.action === 'addSeason'){
-	// 		_series.addSeason(input.data)
-	// 		.then(function(){
-	// 			return _series.details(input.data)
-	// 		})
-	// 		.then(function(data){
-	// 			socket.emit('series:list_details', {
-	// 			'data': data})
-	// 		})
-	// 	}
-
-	// 	if(input.action === 'removeSeason'){
-	// 		// TODO: when we remove the last season, we also need to remove the actual series
-	// 		_series.removeSeason(input.data)
-	// 		.then(function(){
-	// 			return _series.details(input.data)
-	// 		})
-	// 		.then(function(data){
-	// 			socket.emit('series:list_details', {
-	// 			'data': data})
-	// 		})
-	// 	}
-
-	// 	if(input.action === 'addEpisode'){
-	// 		_series.addEpisode(input.data)
-	// 	}
-
-	// 	if(input.action === 'removeEpisode'){
-	// 		_series.removeEpisode(input.data)
-	// 	}
-
-	// 	if(input.action === 'updateEpisode'){
-	// 		_series.updateEpisode(input.data)
-	// 	}
-	// })
-
+	// SERIES
 	socket.on('series:watch', function(input){
 		console.log('series:watch', input)
 
@@ -126,38 +83,6 @@ module.exports = function (socket) {
 		}
 	})
 	
-	// socket.on('series:list_episodes', function(input){
-	// 	_series.listEpisodes(input)
-	// 	.then(function(data){
-	// 		console.log(data)
-	// 		socket.emit('series:list_episodes', {
-	// 			'data': data
-	// 		})
-	// 	})
-	// })
-
-	// socket.on('series:list_details', function(input){
-	// 	console.log('series:list_details', input)
-		
-	// 	_series.details(input)
-	// 	.then(function(data){
-	// 		socket.emit('series:list_details', {
-	// 			'data': data
-	// 		})	
-	// 	})
-	// })
-
-	// socket.on('series:list', function(){
-	// 	console.log('series:list')
-
-	// 	_series.list()
-	// 	.then(function(data){
-	// 		socket.emit('series:list', {
-	// 			'data': data
-	// 		})
-	// 	})
-	// })
-
 	socket.on('series:track', function(input){
 		console.log('series:track', input)
 
@@ -309,6 +234,13 @@ module.exports = function (socket) {
 	// list of movies which are available
 	socket.on('movies:watch', function(input){
 		console.log('movies:watch', input)
+
+		if(input === undefined || input.action === undefined){
+			socket.emit('movies:watch', {
+				action:'unknown',
+				error: 'Unknown or undefined action'
+			})
+		}
 
 		if(input.action === 'list'){
 			_movies.list({

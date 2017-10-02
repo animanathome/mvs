@@ -72,6 +72,37 @@ var series = (function(){
 		return deferred.promise;
 	}
 
+	var season_details = function(input){
+		console.log('season_details', input)
+
+		if(input.tv_id === undefined){
+			input.tv_id = '1399';
+		}
+		if(input.season_number === undefined){
+			input.season_number = '7';
+		}
+
+		var path = '/3/tv/'
+		path += input.tv_id
+		path += '/season/'
+		path += input.season_number
+		path += '?api_key='+api_key
+		path += '&language=en-US'
+		return query(path)
+
+		// /tv/{tv_id}/season/{season_number}
+		// 1399
+		// 7
+		// https://api.themoviedb.org/3/tv/1399/season/7?api_key=1a899ad77496510e9c5643b05f17146a&language=en-US
+	
+		// air_date
+		// name
+		// overview
+		// mid -> id
+		// still_path
+		// vote_average
+	}
+
 	var details = function(input){
 		// https://api.themoviedb.org/3/tv/1399?api_key=1a899ad77496510e9c5643b05f17146a&language=en-US
 		var path = '/3/tv/'+input.id
@@ -82,6 +113,13 @@ var series = (function(){
 
 	var discover = function(input){
 		console.log('discover', input)
+
+		if(input.year === undefined){
+			input.year = '2017';
+		}
+		if(input.sort === undefined){
+			input.sort = 'pd';
+		}
 
 		var year = input.year || '2017';
 		var sort_by;
@@ -147,7 +185,8 @@ var series = (function(){
 		upcoming: upcoming,
 		discover: discover,
 		find: discover,
-		details: details
+		details: details,
+		season_details: season_details
 	}
 })()
 

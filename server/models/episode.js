@@ -17,6 +17,23 @@ var EpisodeSchema = new Schema({
   episode:{
     type: Number
   },
+
+  title: {
+    type: String
+  },
+  release_date: {
+    type: String
+  },
+  overview: {
+    type: String
+  },
+  vote_average: {
+    type: Number
+  },
+  poster_path: {
+    type: String
+  },
+  
   // path to file
   movie_path: {
     type: String

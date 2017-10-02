@@ -5,12 +5,13 @@ import muiThemeable from 'material-ui/styles/muiThemeable';
 import Paper from 'material-ui/Paper';
 import SelectField from 'material-ui/SelectField';
 import MenuItem from 'material-ui/MenuItem';
-import FloatingActionButton from 'material-ui/FloatingActionButton';
-import ActionAdd from 'material-ui/svg-icons/content/add';
-import IconStar from 'material-ui/svg-icons/action/grade';
-import FontIcon from 'material-ui/FontIcon';
+// import FloatingActionButton from 'material-ui/FloatingActionButton';
+// import ActionAdd from 'material-ui/svg-icons/content/add';
+// import IconStar from 'material-ui/svg-icons/action/grade';
+// import FontIcon from 'material-ui/FontIcon';
 
 import MMainNavigation from '../navigation/Navigation'
+import './Find.css'
 
 var genres = {
 	"genres": [
@@ -110,7 +111,7 @@ var movie_genres = genresToDict(genres.genres)
 class SeriesCard extends Component {
 	constructor(props){
 		super(props)
-		var scope = this;
+		// var scope = this;
 		this.socket = props.socket;
 	}
 
@@ -123,15 +124,21 @@ class SeriesCard extends Component {
 		}
 
 		// console.log('props: ', this.props.data)
-		var backdrop_path = 'https://image.tmdb.org/t/p/w300'+this.props.data.backdrop_path
-		if(!this.props.data.backdrop_path){
-			backdrop_path = 'images/a_backdrop.jpg'
-		}
+		// var backdrop_path = 'https://image.tmdb.org/t/p/w300'+this.props.data.backdrop_path
+		// if(!this.props.data.backdrop_path){
+		// 	backdrop_path = 'images/a_backdrop.jpg'
+		// }
 
 		// title
 		var title = this.props.data.title || this.props.data.name
 		if(title.length > 26){
 			title = title.slice(0, 22)+' ...'
+		}
+
+		// overview
+		var overview = this.props.data.overview
+		if(overview.length > 236){
+			overview = overview.slice(0, 230)+' ...'
 		}
 
 		// generate genre string
@@ -158,47 +165,31 @@ class SeriesCard extends Component {
 
 		var match = this.props.match;
 		var link = this.props.data.id+'-'+this.props.data.name.split(' ').join('-')
-		var muiTheme = this.props.muiTheme;
+		// var muiTheme = this.props.muiTheme;
 
 		return (
-			<div className='movie-card'>
-				<Link to={`${match.url}/${link}`}>
-					<img className='movie-image' 
-						// style={{opacity:0.7}}  
-						src={backdrop_path} 
-						alt="" />
-					<div className='movie-card-color' 
-					style={{
-						backgroundColor:muiTheme.palette.primary1Color
-					}}
-					></div>
-					<img className='movie-card-poster' src={image_path} alt="" />
-					<div className='movie-card-title' 
-					style={{
-						color:muiTheme.palette.textColor
-					}}
-					>
-						{title}
+			<div>
+				<div className='find-item-card'>
+					<div className='find-item-card-poster'>
+						<Link to={`${match.url}/${link}`}>
+							<img src={image_path} alt="" />
+						</Link>
 					</div>
-					<div className='movie-card-popularity' 
-					style={{
-						color:muiTheme.palette.textColor
-					}}
-					>
-						 <FontIcon >
-							<IconStar style={{position:'absolute', left:'-20px', bottom:'-3px', height:'16px', width:'16px'}}/>
-						</FontIcon>
-						{popularity}
+					<div className='find-item-card-details'>
+						<div className='find-item-card-title'>
+							<Link to={`${match.url}/${this.props.data.title}`}>
+								{title}
+							</Link>
+						</div>
+						<div className='find-item-card-genres'>
+							{genre_string}
+						</div>
+						<div className='find-item-card-overview'>
+							{overview}
+						</div>
 					</div>
-					<div className='movie-card-genre' 
-					style={{
-						color:muiTheme.palette.textColor
-					}}
-					>
-						{genre_string}
-					</div>
-				</Link>
-			</div>
+				</div>
+		</div>
 		)
 	}
 }
@@ -232,6 +223,12 @@ class MovieCard extends Component {
 			title = title.slice(0, 22)+' ...'
 		}
 
+		// overview
+		var overview = this.props.data.overview
+		if(overview.length > 236){
+			overview = overview.slice(0, 230)+' ...'
+		}
+
 		// generate genre string
 		var genre_string = ''
 		for(var i = 0; i < this.props.data.genre_ids.length; i++){
@@ -250,42 +247,69 @@ class MovieCard extends Component {
 			popularity = popularity.slice(0, 2)
 		}
 		
+		var match = this.props.match;
+		var link = this.props.data.id+'-'+this.props.data.title.split(' ').join('-')
 		var muiTheme = this.props.muiTheme;
 
 		return (
-			<div className='movie-card'>
-				<img className='movie-image' 
-					src={backdrop_path} 
-					alt="" />
-				<div className='movie-card-color'
-					style={{background:muiTheme.palette.primary1Color}}
-				></div>
-				<img className='movie-card-poster' src={image_path} alt="" />
-				<div className='movie-card-title'
-					 style={{color:muiTheme.palette.textColor}}
-				>
-					{title}
+			<div>
+				<div className='find-item-card'>
+					<div className='find-item-card-poster'>
+						<Link to={`${match.url}/${link}`}>
+							<img src={image_path} alt="" />
+						</Link>
+					</div>
+					<div className='find-item-card-details'>
+						<div className='find-item-card-title'>
+							<Link to={`${match.url}/${this.props.data.title}`}>
+								{title}
+							</Link>
+						</div>
+						<div className='find-item-card-genres'>
+							{genre_string}
+						</div>
+						<div className='find-item-card-overview'>
+							{overview}
+						</div>
+					</div>
 				</div>
-				<div className='movie-card-popularity'
-					 style={{color:muiTheme.palette.textColor}}
-				>
-					 <FontIcon >
-						<IconStar style={{position:'absolute', left:'-20px', bottom:'-2px', height:'16px', width:'16px'}}/>
-					</FontIcon>
-					{popularity}
-				</div>
-				<div className='movie-card-genre'
-					 style={{color:muiTheme.palette.textColor}}
-				>
-					{genre_string}
-				</div>
-				<div className='movie-card-add'>
-					<FloatingActionButton>
-						<ActionAdd onTouchTap={this.add.bind(this)}/>
-					</FloatingActionButton>
-				</div>
-			</div>
+		</div>
 		)
+
+		// return (
+		// 	<div className='movie-card'>
+		// 		<img className='movie-image' 
+		// 			src={backdrop_path} 
+		// 			alt="" />
+		// 		<div className='movie-card-color'
+		// 			style={{background:muiTheme.palette.primary1Color}}
+		// 		></div>
+		// 		<img className='movie-card-poster' src={image_path} alt="" />
+		// 		<div className='movie-card-title'
+		// 			 style={{color:muiTheme.palette.textColor}}
+		// 		>
+		// 			{title}
+		// 		</div>
+		// 		<div className='movie-card-popularity'
+		// 			 style={{color:muiTheme.palette.textColor}}
+		// 		>
+		// 			 <FontIcon >
+		// 				<IconStar style={{position:'absolute', left:'-20px', bottom:'-2px', height:'16px', width:'16px'}}/>
+		// 			</FontIcon>
+		// 			{popularity}
+		// 		</div>
+		// 		<div className='movie-card-genre'
+		// 			 style={{color:muiTheme.palette.textColor}}
+		// 		>
+		// 			{genre_string}
+		// 		</div>
+		// 		<div className='movie-card-add'>
+		// 			<FloatingActionButton>
+		// 				<ActionAdd onTouchTap={this.add.bind(this)}/>
+		// 			</FloatingActionButton>
+		// 		</div>
+		// 	</div>
+		// )
 	}
 }
 
@@ -621,6 +645,7 @@ class Find extends Component {
 											muiTheme={scope.props.muiTheme}
 											onTouch={scope.addItem.bind(scope)}
 											key={index} 
+											match={scope.props.match}
 											data={item}/>
 							})}
 							</div>
