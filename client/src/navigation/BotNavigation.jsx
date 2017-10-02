@@ -16,11 +16,11 @@ const discoverIcon = <IconDiscover/>;
 class BotNavigation extends Component {
 
 	select = function(index){
-		this.props.onActionChange(['discover', 'find', 'track', 'watch'][index])
+		this.props.onActionChange(['discover', 'find', 'watch'][index])
 	}
 
 	render() {
-		var index = ['discover', 'find', 'track', 'watch'].indexOf(this.props.value)
+		var index = ['discover', 'find', 'watch'].indexOf(this.props.value)
 
 		return (
 			<Paper zDepth={1} style={{position: "fixed", bottom: 0}}>
@@ -39,14 +39,9 @@ class BotNavigation extends Component {
 						onTouchTap={() => this.select(1)}
 					/>
 					<BottomNavigationItem
-						label="Track"
-						icon={trackIcon}
-						onTouchTap={() => this.select(2)}
-					/>
-					<BottomNavigationItem
 						label="Watch"
 						icon={tvIcon}
-						onTouchTap={() => this.select(3)}
+						onTouchTap={() => this.select(2)}
 					/>
 				</BottomNavigation>
 			</Paper>
