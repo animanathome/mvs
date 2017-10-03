@@ -215,11 +215,11 @@ class WatchSeriesItem extends Component {
 				{hasContent && 
 					<div>
 						<div className='series-header'>
-							<Link to="/track/series" className='series-back'>
+							<Link to="/watch/series" className='series-back'>
 								<IconButton>
-									<ActionBack/>
+									<ActionBack color={'white'}/>
 								</IconButton>
-								<a>Back to Series</a>
+								<a style={{color:"white"}}>Back to Series</a>
 							</Link>
 							
 							<img className='series-backdrop' src={backdrop_path} alt="" />
