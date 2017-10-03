@@ -3,102 +3,11 @@ import { Link } from 'react-router-dom';
 
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import IconButton from 'material-ui/IconButton';
-import ActionClear from 'material-ui/svg-icons/content/clear';
 import MMainNavigation from '../navigation/Navigation'
 
-// var genres = {
-// 	"genres": [
-// 		{
-// 			"id": 28,
-// 			"name": "Action"
-// 		},
-// 		{
-// 			"id": 12,
-// 			"name": "Adventure"
-// 		},
-// 		{
-// 			"id": 16,
-// 			"name": "Animation"
-// 		},
-// 		{
-// 			"id": 35,
-// 			"name": "Comedy"
-// 		},
-// 		{
-// 			"id": 80,
-// 			"name": "Crime"
-// 		},
-// 		{
-// 			"id": 99,
-// 			"name": "Documentary"
-// 		},
-// 		{
-// 			"id": 18,
-// 			"name": "Drama"
-// 		},
-// 		{
-// 			"id": 10751,
-// 			"name": "Family"
-// 		},
-// 		{
-// 			"id": 14,
-// 			"name": "Fantasy"
-// 		},
-// 		{
-// 			"id": 36,
-// 			"name": "History"
-// 		},
-// 		{
-// 			"id": 27,
-// 			"name": "Horror"
-// 		},
-// 		{
-// 			"id": 10402,
-// 			"name": "Music"
-// 		},
-// 		{
-// 			"id": 9648,
-// 			"name": "Mystery"
-// 		},
-// 		{
-// 			"id": 10749,
-// 			"name": "Romance"
-// 		},
-// 		{
-// 			"id": 878,
-// 			"name": "Science Fiction"
-// 		},
-// 		{
-// 			"id": 10770,
-// 			"name": "TV Movie"
-// 		},
-// 		{
-// 			"id": 53,
-// 			"name": "Thriller"
-// 		},
-// 		{
-// 			"id": 10752,
-// 			"name": "War"
-// 		},
-// 		{
-// 			"id": 37,
-// 			"name": "Western"
-// 		}
-// 	]
-// }
-
-// var genresToDict = function(genres_data){
-// 	console.log('genresToDict', genres_data, genres_data.length)
-// 	var genres = {}
-// 	for(var i = 0; i < genres_data.length; i++){
-// 		// console.log(i, genres_data[i])
-// 		genres[genres_data[i].id] = genres_data[i].name;
-// 	}
-// 	console.log('\toutput', genres)
-// 	return genres
-// }
-
-// var movie_genres = genresToDict(genres.genres)
+import ActionClear from 'material-ui/svg-icons/content/clear';
+import FileQueue from 'material-ui/svg-icons/file/cloud-queue';
+import FileDone from 'material-ui/svg-icons/file/cloud-done';
 
 var genresToDict = function(genres_data){
 	// console.log('genresToDict', genres_data, genres_data.length)
@@ -154,13 +63,11 @@ class WatchSeries extends Component {
 
 		// generate genre string
 		var genre_string = '';
-		// var genre_ids = Object.keys(this.props.data.genre_ids);
-		// console.log('genre_ids', genre_ids)
 		for(var i = 0; i < this.props.data.genre_ids.length; i++){
 			if(i > 0){
 				genre_string += ', '
 			}
-			console.log('\t', i, this.props.data.genre_ids[i])
+			// console.log('\t', i, this.props.data.genre_ids[i])
 			genre_string += this.props.genres[this.props.data.genre_ids[i]]
 		}
 		if(genre_string.length > 30){
@@ -182,6 +89,10 @@ class WatchSeries extends Component {
 							<Link to={`${match.url}/${this.props.data.title}`}>
 								{title}
 							</Link>
+							<IconButton style={{float: 'right', width: '28px', height: '28px', margin: '0px 36px 0px 0px', padding: '0px 0px 0px 0px'}}>
+								{!this.props.data.available && <FileQueue/>}
+								{this.props.data.available && <FileDone/>}
+							</IconButton>
 						</div>
 						<div className='track-item-card-genres'>
 							{genre_string}
@@ -191,7 +102,7 @@ class WatchSeries extends Component {
 						</div>
 						<div className='track-item-card-remove'>
 							<IconButton>
-									<ActionClear onTouchTap={this.remove.bind(this)}/>
+								<ActionClear onTouchTap={this.remove.bind(this)}/>
 							</IconButton>
 						</div>
 					</div>
@@ -212,7 +123,7 @@ class WatchMovie extends Component {
 	}
 
 	render(){
-		// console.log('render', this.props)
+		console.log('render', this.props)
 
 		var poster_path = 'https://image.tmdb.org/t/p/w92'+this.props.data.poster_path
 		if(!this.props.data.poster_path){

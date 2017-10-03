@@ -91,7 +91,8 @@ var series = (function(){
 			mtitle:1, 
 			poster_path:1, 
 			overview:1, 
-			genre_ids:1
+			genre_ids:1,
+			available:1
 		}, function(err, result){
 
 			if(err){
