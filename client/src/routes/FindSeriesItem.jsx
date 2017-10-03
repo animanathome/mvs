@@ -8,99 +8,99 @@ import ActionAddCircleOutline from 'material-ui/svg-icons/content/add-circle-out
 import ActionBack from 'material-ui/svg-icons/hardware/keyboard-backspace';
 import MMainNavigation from '../navigation/Navigation'
 
-var genres = {
-	"genres": [
-		{
-			"id": 28,
-			"name": "Action"
-		},
-		{
-			"id": 12,
-			"name": "Adventure"
-		},
-		{
-			"id": 16,
-			"name": "Animation"
-		},
-		{
-			"id": 35,
-			"name": "Comedy"
-		},
-		{
-			"id": 80,
-			"name": "Crime"
-		},
-		{
-			"id": 99,
-			"name": "Documentary"
-		},
-		{
-			"id": 18,
-			"name": "Drama"
-		},
-		{
-			"id": 10751,
-			"name": "Family"
-		},
-		{
-			"id": 14,
-			"name": "Fantasy"
-		},
-		{
-			"id": 36,
-			"name": "History"
-		},
-		{
-			"id": 27,
-			"name": "Horror"
-		},
-		{
-			"id": 10402,
-			"name": "Music"
-		},
-		{
-			"id": 9648,
-			"name": "Mystery"
-		},
-		{
-			"id": 10749,
-			"name": "Romance"
-		},
-		{
-			"id": 878,
-			"name": "Science Fiction"
-		},
-		{
-			"id": 10770,
-			"name": "TV Movie"
-		},
-		{
-			"id": 53,
-			"name": "Thriller"
-		},
-		{
-			"id": 10752,
-			"name": "War"
-		},
-		{
-			"id": 37,
-			"name": "Western"
-		}
-	]
-}
+// var genres = {
+// 	"genres": [
+// 		{
+// 			"id": 28,
+// 			"name": "Action"
+// 		},
+// 		{
+// 			"id": 12,
+// 			"name": "Adventure"
+// 		},
+// 		{
+// 			"id": 16,
+// 			"name": "Animation"
+// 		},
+// 		{
+// 			"id": 35,
+// 			"name": "Comedy"
+// 		},
+// 		{
+// 			"id": 80,
+// 			"name": "Crime"
+// 		},
+// 		{
+// 			"id": 99,
+// 			"name": "Documentary"
+// 		},
+// 		{
+// 			"id": 18,
+// 			"name": "Drama"
+// 		},
+// 		{
+// 			"id": 10751,
+// 			"name": "Family"
+// 		},
+// 		{
+// 			"id": 14,
+// 			"name": "Fantasy"
+// 		},
+// 		{
+// 			"id": 36,
+// 			"name": "History"
+// 		},
+// 		{
+// 			"id": 27,
+// 			"name": "Horror"
+// 		},
+// 		{
+// 			"id": 10402,
+// 			"name": "Music"
+// 		},
+// 		{
+// 			"id": 9648,
+// 			"name": "Mystery"
+// 		},
+// 		{
+// 			"id": 10749,
+// 			"name": "Romance"
+// 		},
+// 		{
+// 			"id": 878,
+// 			"name": "Science Fiction"
+// 		},
+// 		{
+// 			"id": 10770,
+// 			"name": "TV Movie"
+// 		},
+// 		{
+// 			"id": 53,
+// 			"name": "Thriller"
+// 		},
+// 		{
+// 			"id": 10752,
+// 			"name": "War"
+// 		},
+// 		{
+// 			"id": 37,
+// 			"name": "Western"
+// 		}
+// 	]
+// }
 
-var genresToDict = function(genres_data){
-	console.log('genresToDict', genres_data, genres_data.length)
-	var genres = {}
-	for(var i = 0; i < genres_data.length; i++){
-		// console.log(i, genres_data[i])
-		genres[genres_data[i].id] = genres_data[i].name;
-	}
-	console.log('\toutput', genres)
-	return genres
-}
+// var genresToDict = function(genres_data){
+// 	console.log('genresToDict', genres_data, genres_data.length)
+// 	var genres = {}
+// 	for(var i = 0; i < genres_data.length; i++){
+// 		// console.log(i, genres_data[i])
+// 		genres[genres_data[i].id] = genres_data[i].name;
+// 	}
+// 	console.log('\toutput', genres)
+// 	return genres
+// }
 
-var movie_genres = genresToDict(genres.genres)
+// var movie_genres = genresToDict(genres.genres)
 
 
 class SeasonCard extends Component {
@@ -223,7 +223,7 @@ class FindSeriesItem extends Component {
 				vote_average: scope.data.vote_average,
 				backdrop_path: scope.data.backdrop_path,
 				poster_path: scope.data.poster_path,
-				genre_ids: genresToDict(scope.data.genres),
+				genre_ids: scope.data.genres,
 				season: season,
 				episode_count: episode_count,
 				track: true

@@ -47,7 +47,7 @@ class MMainNavigation extends Component {
 
 	getColor = function(){
 		// console.log("getColor")
-		var index = ['discover', 'find', 'track', 'watch'].indexOf(this.value.action);
+		var index = ['discover', 'find', 'watch'].indexOf(this.value.action);
 		var color = this.color[index];
 		// console.log('\tresult', color)
 		return color

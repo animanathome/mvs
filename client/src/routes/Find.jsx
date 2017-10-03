@@ -96,7 +96,6 @@ class SeriesCard extends Component {
 
 		var match = this.props.match;
 		var link = this.props.data.id+'-'+this.props.data.name.split(' ').join('-')
-		// var muiTheme = this.props.muiTheme;
 
 		return (
 			<div>

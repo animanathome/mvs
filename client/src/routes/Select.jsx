@@ -103,6 +103,15 @@ class Select extends Component {
 				mid: movie_data.id,
 				mtitle: movie_data.title,
 				myear: movie_data.year,
+
+				title: movie_data.title,
+				overview: movie_data.overview,
+				backdrop_path: movie_data.backdrop_path,
+				poster_path: movie_data.poster_path,
+				genre_ids: movie_data.genre_ids,
+				vote_average: movie_data.vote_average,
+				release_date: movie_data.release_date,
+
 				track: true
 			}
 		})
@@ -113,16 +122,16 @@ class Select extends Component {
 	removeItem(){
 		console.log('removeItem')
 		
-		var movie_data = this.data.results[this.state.index]
-		this.socket.emit(this.category+':track', {
-			action:'remove',
-			data:{
-				mid: movie_data.id,
-				mtitle: movie_data.title,
-				myear: movie_data.year,
-				track: false
-			}
-		})
+		// var movie_data = this.data.results[this.state.index]
+		// this.socket.emit(this.category+':track', {
+		// 	action:'remove',
+		// 	data:{
+		// 		mid: movie_data.id,
+		// 		mtitle: movie_data.title,
+		// 		myear: movie_data.year,
+		// 		track: false
+		// 	}
+		// })
 
 		this.setState({'index': this.nextItem()})
 	}
@@ -182,7 +191,7 @@ class Select extends Component {
 							<div className='movie-overview'
 								style={{color:muiTheme.palette.textColor}} 
 							>
-								{entry.overview.substring(0,220)+" ..."}
+								{entry.overview}
 							</div>
 						</div>
 						<div className='movie-add'>

@@ -125,9 +125,14 @@ body {
 	font-weight: 700;
 	font-size: 20px;
 	margin-top: 4px;
-	line-height: 2;
+	line-height: 2.5;
 	padding-left: 25px;
 	color: white;
+
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 300px;
 }
 .movie-overview {
 	line-height: 1.25;
@@ -136,6 +141,13 @@ body {
 	font-size: 14px;
 	padding-left: 25px;
 	padding-right: 25px;
+
+	overflow: hidden;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	display: -webkit-box;
+	-webkit-line-clamp: 5;
+	-webkit-box-orient: vertical;
 }
 
 .root-container {

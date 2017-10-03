@@ -207,10 +207,41 @@ module.exports = function (socket) {
 		if(input.action === 'list_details'){
 			tmdbs.details(input.data)
 			.then(function(data){
-				console.log(data)
+				console.log('got data back', data)
+				console.log('test')
+				
+				pdata = JSON.parse(data)
+
+				// simplify genres
+				var genres = [];
+				pdata.genres.map(function(item){
+					genres.push(item['id'])
+				})
+				console.log('genres', genres)
+				pdata.genres = genres;
+
+				var cdata = {}
+				var properties = [
+					'genres', 
+					'id', 
+					'first_air_date',
+					'name', 
+					'number_of_episodes', 
+					'number_of_seasons', 
+					'overview', 
+					'popularity', 
+					'poster_path',
+					'backdrop_path',
+					'seasons'
+				]
+				for(i = 0; i < properties.length; i++){
+					cdata[properties[i]] = pdata[properties[i]]
+				}
+				console.log('clean', cdata);
+
 				socket.emit('series:find', {
 					action:'list_details',
-					data:data
+					data:JSON.stringify(cdata)
 				})
 			})
 		}
