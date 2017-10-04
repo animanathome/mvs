@@ -83,6 +83,22 @@ var movies = (function(){
 		return query(path)
 	}
 
+	var details = function(input){
+		console.log('details', input)
+
+		// https://api.themoviedb.org/3/movie/293660?api_key=1a899ad77496510e9c5643b05f17146a&language=en-US
+		var path = '/3/movie/'
+		path += input.id
+		path += '?api_key='+api_key
+		path += '&language=en-US'
+		console.log('full query', path)
+		return query(path)
+	}
+
+	// TODO: add the ability to load trailers
+	// https://api.themoviedb.org/3/movie/297761/videos?api_key=1a899ad77496510e9c5643b05f17146a&language=en-US
+	// key -> CmRih_VtVAs -> https://www.youtube.com/watch?v=CmRih_VtVAs
+
 	var discover = function(input){
 		console.log('discover', input)
 
@@ -147,6 +163,7 @@ var movies = (function(){
 
 	return {
 		configuration: configuration,
+		details: details,
 		genres: genres,
 		upcoming: upcoming,
 		discover: discover,

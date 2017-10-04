@@ -4,9 +4,9 @@ import muiThemeable from 'material-ui/styles/muiThemeable';
 
 class MTopNavigation extends Component {
 	
-	constructor(props) {
-		super(props);
-	}	
+	// constructor(props) {
+	// 	super(props);
+	// }	
 
 	handleChange = (value) => {
 		console.log('handleChange', value)

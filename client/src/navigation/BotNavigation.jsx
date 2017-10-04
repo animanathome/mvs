@@ -6,11 +6,11 @@ import Paper from 'material-ui/Paper';
 import IconSearch from 'material-ui/svg-icons/action/search';
 import IconDiscover from 'material-ui/svg-icons/action/lightbulb-outline';
 import IconTV from 'material-ui/svg-icons/hardware/tv';
-import IconTrackChanges from 'material-ui/svg-icons/action/track-changes';
+// import IconTrackChanges from 'material-ui/svg-icons/action/track-changes';
 
 const findIcon = <IconSearch/>;
 const tvIcon = <IconTV/>;
-const trackIcon = <IconTrackChanges/>;
+// const trackIcon = <IconTrackChanges/>;
 const discoverIcon = <IconDiscover/>;
 
 class BotNavigation extends Component {

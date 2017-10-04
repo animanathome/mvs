@@ -5,103 +5,10 @@ import muiThemeable from 'material-ui/styles/muiThemeable';
 import IconButton from 'material-ui/IconButton';
 
 import ActionAddCircleOutline from 'material-ui/svg-icons/content/add-circle-outline';
+import FloatingActionButton from 'material-ui/FloatingActionButton';
+import ActionAdd from 'material-ui/svg-icons/content/add';
 import ActionBack from 'material-ui/svg-icons/hardware/keyboard-backspace';
 import MMainNavigation from '../navigation/Navigation'
-
-// var genres = {
-// 	"genres": [
-// 		{
-// 			"id": 28,
-// 			"name": "Action"
-// 		},
-// 		{
-// 			"id": 12,
-// 			"name": "Adventure"
-// 		},
-// 		{
-// 			"id": 16,
-// 			"name": "Animation"
-// 		},
-// 		{
-// 			"id": 35,
-// 			"name": "Comedy"
-// 		},
-// 		{
-// 			"id": 80,
-// 			"name": "Crime"
-// 		},
-// 		{
-// 			"id": 99,
-// 			"name": "Documentary"
-// 		},
-// 		{
-// 			"id": 18,
-// 			"name": "Drama"
-// 		},
-// 		{
-// 			"id": 10751,
-// 			"name": "Family"
-// 		},
-// 		{
-// 			"id": 14,
-// 			"name": "Fantasy"
-// 		},
-// 		{
-// 			"id": 36,
-// 			"name": "History"
-// 		},
-// 		{
-// 			"id": 27,
-// 			"name": "Horror"
-// 		},
-// 		{
-// 			"id": 10402,
-// 			"name": "Music"
-// 		},
-// 		{
-// 			"id": 9648,
-// 			"name": "Mystery"
-// 		},
-// 		{
-// 			"id": 10749,
-// 			"name": "Romance"
-// 		},
-// 		{
-// 			"id": 878,
-// 			"name": "Science Fiction"
-// 		},
-// 		{
-// 			"id": 10770,
-// 			"name": "TV Movie"
-// 		},
-// 		{
-// 			"id": 53,
-// 			"name": "Thriller"
-// 		},
-// 		{
-// 			"id": 10752,
-// 			"name": "War"
-// 		},
-// 		{
-// 			"id": 37,
-// 			"name": "Western"
-// 		}
-// 	]
-// }
-
-// var genresToDict = function(genres_data){
-// 	console.log('genresToDict', genres_data, genres_data.length)
-// 	var genres = {}
-// 	for(var i = 0; i < genres_data.length; i++){
-// 		// console.log(i, genres_data[i])
-// 		genres[genres_data[i].id] = genres_data[i].name;
-// 	}
-// 	console.log('\toutput', genres)
-// 	return genres
-// }
-
-// var movie_genres = genresToDict(genres.genres)
-
 
 class SeasonCard extends Component {
 	
@@ -117,7 +24,7 @@ class SeasonCard extends Component {
 		}
 
 		var title = 'Season '+this.props.data.season_number
-		var release = this.props.data.air_date === null ? "Unknown" : this.props.data.air_date.split('-')[0];
+		// var release = this.props.data.air_date === null ? "Unknown" : this.props.data.air_date.split('-')[0];
 		var episodes = this.props.data.episode_count+' episodes'
 
 		return (
@@ -157,11 +64,12 @@ class FindSeriesItem extends Component {
 			updated: 0
 		}
 
+		this.category = props.parent.route.category || 'movies';
+		console.log('category', this.category)
 		this.id = props.match.params.series.split('-')[0]
-		console.log('tv:', this.id)
+		console.log('id', this.id)
 
-		this.socket.on('series:find', function(result){
-			
+		var setData = function(result){
 			if(scope._mounted && result.action === 'list_details'){
 				var data = JSON.parse(result.data)
 				scope.data = data;
@@ -174,7 +82,10 @@ class FindSeriesItem extends Component {
 				var route = '/find/series'
 				scope.props.history.push(route)
 			}
-		})
+		}
+		this.socket.on('movies:find', function(res){setData(res)})
+		this.socket.on('series:find', function(res){setData(res)})
+
 		this.getContent()
 	}
 
@@ -187,8 +98,9 @@ class FindSeriesItem extends Component {
 	}
 
 	getContent(){
-		console.log('getContent')
-		this.socket.emit('series:find', {
+		console.log('getContent', this.category)
+		
+		this.socket.emit(this.category+':find', {
 			action:'list_details',
 			data:{
 				id:this.id
@@ -226,12 +138,40 @@ class FindSeriesItem extends Component {
 				genre_ids: scope.data.genres,
 				season: season,
 				episode_count: episode_count,
+				
 				track: true
 			}
 		}
 		console.log('payload:', payload)
 
 		this.socket.emit('series:track', payload)
+	}
+
+	addMovie(){
+		console.log("Tracking movie")
+		console.log('data', this.data)
+
+		var scope = this
+		var payload = {
+			action: 'add',
+			data:{
+				mid: scope.data.id,
+				mtitle: scope.data.title,
+				myear: scope.data.release_date.split('-')[0],
+				
+				title: scope.data.title,
+				overview: scope.data.overview,
+				vote_average: scope.data.vote_average,
+				backdrop_path: scope.data.backdrop_path,
+				poster_path: scope.data.poster_path,
+				genre_ids: scope.data.genres,
+
+				track: true
+			}
+		}
+
+		console.log('payload:', payload)
+		this.socket.emit('movies:track', payload)
 	}
 
 	render(){
@@ -242,7 +182,7 @@ class FindSeriesItem extends Component {
 			return (
 				<div>
 					<div className='Loading'>
-							Loading...
+						Loading...
 					</div>
 					<MMainNavigation value={this.parent.route} onChange={this.onRouteChange.bind(this)}/>
 				</div>
@@ -259,20 +199,24 @@ class FindSeriesItem extends Component {
 				poster_path = 'images/a_poster.jpg'
 			}
 
+			var isSeries = this.category ==='series' ? true: false;
+			var category = this.category;
+
 			return (
 				<div>
 					<div className='series-header'>
-						<Link to="/find/series" className='series-back'>
+						<Link to={"/find/"+category} className='series-back'>
 							<IconButton>
 								<ActionBack color={'white'}/>
 							</IconButton>
-							<a style={{color:"white"}}>Back to Series</a>
+							<a style={{color:"white"}}>{"Back to "+category}</a>
 						</Link>
 						
 						<img className='series-backdrop' src={backdrop_path} alt="" />
 						<img className='series-poster' src={poster_path} alt="" />
 						<div className='series-intro'>
-								<h2>{this.data.name}</h2>
+							{isSeries && <h2>{this.data.name}</h2>}
+							{!isSeries && <h2>{this.data.title}</h2>}
 						</div>
 					</div>
 
@@ -283,7 +227,7 @@ class FindSeriesItem extends Component {
 						</div>
 					</div>
 
-					<div className="white_column">
+					{isSeries && <div className="white_column">
 						<div>
 							<section className="panel scroller">
 								<h3>Seasons</h3>
@@ -298,7 +242,15 @@ class FindSeriesItem extends Component {
 								</ol>
 							</section>
 						</div>
+					</div>}
+
+					{!isSeries && 
+					<div className='add-movie'>
+						<FloatingActionButton>
+							<ActionAdd onTouchTap={this.addMovie.bind(this)}/>
+						</FloatingActionButton>
 					</div>
+					}
 
 				</div>
 			)

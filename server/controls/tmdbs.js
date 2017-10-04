@@ -124,6 +124,10 @@ var series = (function(){
 		return query(path)
 	}
 
+	// TODO: add the ability to load trailers
+	// https://api.themoviedb.org/3/tv/1399/videos?api_key=1a899ad77496510e9c5643b05f17146a&language=en-US
+	// key -> CmRih_VtVAs -> https://www.youtube.com/watch?v=CmRih_VtVAs
+
 	var discover = function(input){
 		console.log('discover', input)
 

@@ -142,10 +142,10 @@ class MovieCard extends Component {
 		}
 
 		// console.log('props: ', this.props.data)
-		var backdrop_path = 'https://image.tmdb.org/t/p/w300'+this.props.data.backdrop_path
-		if(!this.props.data.backdrop_path){
-			backdrop_path = 'images/a_backdrop.jpg'
-		}
+		// var backdrop_path = 'https://image.tmdb.org/t/p/w300'+this.props.data.backdrop_path
+		// if(!this.props.data.backdrop_path){
+		// 	backdrop_path = 'images/a_backdrop.jpg'
+		// }
 
 		// title
 		var title = this.props.data.title || this.props.data.name
@@ -183,7 +183,7 @@ class MovieCard extends Component {
 		if(this.props.data.title){
 			link = this.props.data.id+'-'+this.props.data.title.split(' ').join('-')
 		}
-		var muiTheme = this.props.muiTheme;
+		// var muiTheme = this.props.muiTheme;
 
 		return (
 			<div>
@@ -213,9 +213,9 @@ class MovieCard extends Component {
 }
 
 class MSelectField extends Component {
-	constructor(props){
-		super(props)
-	}
+	// constructor(props){
+	// 	super(props)
+	// }
 
 	handleChange = function(event, index, value){
 		// console.log('handleChange', value, index)
@@ -489,7 +489,7 @@ class Find extends Component {
 		}
 
 		// TODO: use css the hide border elements
-		if(scrollTop != this.settings.top){
+		if(scrollTop !== this.settings.top){
 			var now = Date.now();
 			var dist = Math.abs(this.settings.top - scrollTop);
 			var time = now - this.settings.time;

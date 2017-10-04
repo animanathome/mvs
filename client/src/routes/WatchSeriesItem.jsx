@@ -27,13 +27,13 @@ class WatchSeriesEpisode extends Component {
 
 		console.log('overview', this.props.data.overview)
 
-		var overview = this.props.data.overview.length == 0 ? 'No summary yet.' : this.props.data.overview;
+		var overview = this.props.data.overview.length === 0 ? 'No summary yet.' : this.props.data.overview;
 
 		return (
 			<div className='watch-episode'>
 				<div className='watch-episode-image'>
 					<Link to={link}>
-						<img src={poster_path}></img>
+						<img src={poster_path} alt=""></img>
 					</Link>
 				</div>
 				<div className='watch-episode-details'>

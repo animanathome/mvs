@@ -436,6 +436,51 @@ module.exports = function (socket) {
 			})
 		}
 
+		if(input.action === 'list_details'){
+			tmdbm.details(input.data)
+			.then(function(data){
+				console.log(data)
+
+				pdata = JSON.parse(data)
+
+				// simplify genres
+				var genres = [];
+				pdata.genres.map(function(item){
+					genres.push(item['id'])
+				})
+				// console.log('genres', genres)
+				pdata.genres = genres;
+
+				// console.log('properties', Object.keys(pdata))
+
+				var cdata = {}
+				var properties = [
+					'genres', 
+					'id', 
+					'release_date',
+					'title', 
+					'overview', 
+					'popularity', 
+					'poster_path',
+					'backdrop_path',
+				]
+				for(i = 0; i < properties.length; i++){
+					cdata[properties[i]] = pdata[properties[i]]
+				}
+				console.log('clean', cdata);
+				socket.emit('movies:find', {
+					action:'list_details',
+					data: JSON.stringify(cdata)
+				})	
+			})
+			.fail(function(err){
+				socket.emit('movies:find', {
+					action:'redirect',
+					err:err
+				})
+			})
+		}
+
 		if(input.action === 'list'){
 			tmdbm.find(input.data)
 			.then(function(data){

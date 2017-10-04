@@ -38,7 +38,8 @@ var movies = (function(){
 						poster_path: movies[i].poster_path,
 						overview: movies[i].overview,
 						genre_ids: movies[i].genre_ids,
-						movie_path: movies[i].movie_path
+						movie_path: movies[i].movie_path,
+						available: movies[i].available
 					})
 				}
 				console.log('data', data)

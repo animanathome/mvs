@@ -380,7 +380,13 @@ ol.seasons {
 	width: 100%;
 	height: 60px;
 	background: #0b0e10;
-	color: white;
+	color: white;	
+}
+
+.add-movie {
+	position: fixed;
+	right: 34px;
+	bottom: 64px;
 }
 
 .series-intro h2 {
@@ -389,6 +395,11 @@ ol.seasons {
 	padding-left: 140px;
 	font-family: 'Source Sans Pro', sans-serif;
 	font-size: calc(0.7em + 3vw);
+
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 250px;
 }
 
 .series-overview {
@@ -520,7 +531,8 @@ h3 {
 
 .track-item-card-title {
 	padding: 6px 4px;
-	font-size: 18px;	
+	font-size: 18px;
+	line-height: 24px;
 }
 
 .track-item-card-title a {
@@ -549,7 +561,7 @@ h3 {
 .track-item-card-remove {
 	position: absolute;
 	right: 0px;
-	top: 0px;
+	top: -4px;
 	transform: scale(0.8);
 }
 

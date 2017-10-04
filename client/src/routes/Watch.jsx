@@ -21,19 +21,19 @@ var genresToDict = function(genres_data){
 }
 
 // convert backend data to a native material-ui language
-var genresToMaterialUI = function(genres_data){
-	console.log('genresToMaterialUI', genres_data)
+// var genresToMaterialUI = function(genres_data){
+// 	// console.log('genresToMaterialUI', genres_data)
 
-	var result = [{value:0, text:"All"}]
-	genres_data.map(function(item){
-		result.push({
-			value: item['id'],
-			text: item['name']
-		})
-	})
-	console.log('\tresult:', result)
-	return result
-}
+// 	var result = [{value:0, text:"All"}]
+// 	genres_data.map(function(item){
+// 		result.push({
+// 			value: item['id'],
+// 			text: item['name']
+// 		})
+// 	})
+// 	// console.log('\tresult:', result)
+// 	return result
+// }
 
 class WatchSeries extends Component {
 	remove(){
@@ -148,7 +148,7 @@ class WatchMovie extends Component {
 			if(i > 0){
 				genre_string += ', '
 			}
-			console.log('\t', i, this.props.data.genre_ids[i])
+			// console.log('\t', i, this.props.data.genre_ids[i])
 			genre_string += this.props.genres[this.props.data.genre_ids[i]]
 		}
 		if(genre_string.length > 30){
@@ -169,6 +169,10 @@ class WatchMovie extends Component {
 							<Link to={`${match.url}/${this.props.data.title}`}>
 								{title}
 							</Link>
+							<IconButton style={{float: 'right', width: '28px', height: '28px', margin: '0px 36px 0px 0px', padding: '0px 0px 0px 0px'}}>
+								{!this.props.data.available && <FileQueue/>}
+								{this.props.data.available && <FileDone/>}
+							</IconButton>
 						</div>
 						<div className='track-item-card-genres'>
 							{genre_string}
@@ -178,7 +182,7 @@ class WatchMovie extends Component {
 						</div>
 						<div className='track-item-card-remove'>
 							<IconButton>
-									<ActionClear onTouchTap={this.remove.bind(this)}/>
+								<ActionClear onTouchTap={this.remove.bind(this)}/>
 							</IconButton>
 						</div>
 					</div>
