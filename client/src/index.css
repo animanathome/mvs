@@ -481,21 +481,44 @@ h3 {
 	float: left;
 }
 
+.watch-item-card-back-name{
+	text-decoration: none;
+	position: absolute;
+	top: 16px;
+	left: 48px;
+	color: black;
+}
+
+.watch-item-card-remove {
+	position: absolute;
+	right: 0px;
+	/*top: -4px;*/
+	/*transform: scale(0.8);*/
+}
+
+.watch-item-card-details {
+	height: 250px;
+	padding: 10px 20px;
+}
+
 .watch-item-card-title {
-	float: left;
+	/*float: left;*/
 	padding: 13px 0px;
-	font-size: 18px;
+	font-size: 16px;
 }
 
 .watch-item-card-overview {
-	padding: 0px 10px 20px 10px;
-	font-size: 12px;
+	/*padding: 0px 10px 20px 10px;*/
+	font-size: 14px;
+	line-height: 20px;
+	font-weight: 100;
 }
 
-.watch-item-card-genres {
-	padding: 14px 10px 6px 10px;
-	font-size: 12px;
-	font-weight: bold;
+.watch-item-card-nav {
+	bottom: 5px;
+	position: absolute;
+	right: 5px;
+	width: 100%;
 }
 
 .track-container {

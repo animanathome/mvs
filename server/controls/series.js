@@ -505,7 +505,12 @@ var series = (function(){
 							for(j = 0; j < result.seasons[i].episodes.length; j++){
 								if(+result.seasons[i].episodes[j].episode === +data.episode){
 									// console.log(result.seasons[i].episodes[j])
+									output.episode_count = result.seasons[i].episode_count;
+									output.etitle = result.seasons[i].episodes[j].title;
+									output.overview = result.seasons[i].episodes[j].overview;
+									output.available = result.seasons[i].episodes[j].available;
 									output.movie_path = result.seasons[i].episodes[j].movie_path;
+									
 									// console.log('output:', output)
 									deferred.resolve(output)
 								}

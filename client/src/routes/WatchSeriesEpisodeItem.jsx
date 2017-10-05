@@ -7,6 +7,8 @@ import muiThemeable from 'material-ui/styles/muiThemeable';
 
 import ActionClear from 'material-ui/svg-icons/content/clear';
 import ActionBack from 'material-ui/svg-icons/hardware/keyboard-backspace';
+import ArrowLeft from 'material-ui/svg-icons/hardware/keyboard-arrow-left';
+import ArrowRight from 'material-ui/svg-icons/hardware/keyboard-arrow-right';
 import IconButton from 'material-ui/IconButton';
 
 import BotNavigation from '../navigation/BotNavigation'
@@ -122,7 +124,7 @@ class WatchSeriesEpisodeItem extends Component {
 		this.data = []
 		this.socket.on('series:watch', function(result){
 			if(scope._mounted && result.action === 'episode'){
-				// console.log(result)
+				console.log('got data back', result.data)
 				scope.data = result.data
 				scope.setState({data_available:true})
 			}
@@ -189,7 +191,7 @@ class WatchSeriesEpisodeItem extends Component {
 	}
 
 	render(){
-		// console.log('render', this.props)
+		console.log('render', this.data)
 
 		var backdrop_path = '/images/a_backdrop.jpg'
 		if(this.data && this.data.backdrop_path){
@@ -197,6 +199,10 @@ class WatchSeriesEpisodeItem extends Component {
 		}
 		// console.log('backdrop_path', backdrop_path)
 		
+
+		var hasBefore = this.data.episode > 1 ? true : false;
+		var hasAfter = (+this.data.episode + 1) < this.data.episode_count ? true : false;
+
 		// generate genre string
 		var genre_string = ''
 		if(this.data && this.data.genre_ids){
@@ -237,33 +243,34 @@ class WatchSeriesEpisodeItem extends Component {
 		var back_link = '/watch/series/'+this.props.match.params['series']
 		console.log('back_link', back_link)
 
+		var prev_link = '/watch/series/'+this.props.match.params['series']+'/s'+this.data.season+'-e'+(+this.data.episode-1)
+		var next_link = '/watch/series/'+this.props.match.params['series']+'/s'+this.data.season+'-e'+(+this.data.episode+1)
+
 		return (
 			<div>
 				<Script 
-						url="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"
-						onCreate={this.handleScriptCreate.bind(this)}
-						onError={this.handleScriptError.bind(this)}
-						onLoad={this.handleScriptLoad.bind(this)}
+					url="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"
+					onCreate={this.handleScriptCreate.bind(this)}
+					onError={this.handleScriptError.bind(this)}
+					onLoad={this.handleScriptLoad.bind(this)}
 				/>
 				
 				<div className='watch-item-card'>
 					<div className='watch-item-card-top'>
-						
 						<div className='watch-item-card-back'>
 							<Link to={back_link}>
 								<IconButton>
 									<ActionBack/>
 								</IconButton>
+								<div className='watch-item-card-back-name'>
+									Back to {this.data.title}: Season {this.data.season}
+								</div>
 							</Link>
 						</div>
 						
-						<div className='watch-item-card-title'>
-							{this.props.match.params.title}
-						</div>
-						
-						<div className='track-item-card-remove'>
+						<div className='watch-item-card-remove'>
 							<IconButton>
-									<ActionClear onTouchTap={this.remove.bind(this)}/>
+								<ActionClear onTouchTap={this.remove.bind(this)}/>
 							</IconButton>
 						</div>
 
@@ -297,13 +304,31 @@ class WatchSeriesEpisodeItem extends Component {
 						</div>
 					</div>
 
-					<div className="watch-item-card-genres">
-						{genre_string}
-					</div>
-					<div className="watch-item-card-overview">
-						{this.data.overview}
-					</div>
+					<div className="watch-item-card-details">
+						<div className="watch-item-card-title">
+							{this.data.episode}. {this.data.etitle}
+						</div>
+						<div className="watch-item-card-overview">
+							{this.data.overview}
+						</div>
+						<div className="watch-item-card-nav">
+							{hasBefore && 
+								<Link to={prev_link}>
+									<IconButton style={{float:'left', paddingLeft:'17px'}}>
+										<ArrowLeft/>
+									</IconButton>
+								</Link>
+							}
 
+							{hasAfter && 
+								<Link to={next_link}>
+									<IconButton style={{float:'right'}}>
+										<ArrowRight/>
+									</IconButton>
+								</Link>
+							}
+						</div>
+					</div>
 				</div>
 				<BotNavigation value={3} onRouteChange={this.onRouteChange.bind(this)}/>
 			</div>
