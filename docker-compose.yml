@@ -7,7 +7,7 @@ services:
     ports:
       - 80:80
     volumes:
-      - $PROJ_DIR/mvs/client/build:/code/mvs
+      - /Users/manu/Code/mvs/client/build:/code/mvs
   mongo:
     container_name: mongo
     image: mongo
@@ -20,66 +20,76 @@ services:
   mongodata:
     image: tianon/true
     volumes:
-      - $PROJ_DIR/mvs/data/mongo-db:/data/db
+      - /Users/manu/Code/mvs/data/mongo-db:/data/db
   web:
     container_name: web
     build: ./server
     volumes:
-      - $PROJ_DIR/mvs/server/:/app
+      - /Users/manu/Code/mvs/server/:/app
     ports:
       - "3001:3001"
-    # links:
-    #   - mongo
-    environment:
-      - NODE_ENV=development
-  pia:
-    container_name: pia
-    image: derbenni/docker-pia-openvpn
-    devices: 
-      - "/dev/net/tun"
-    cap_add:
-      - NET_ADMIN
-    dns:
-      - 209.222.18.222
-      - 209.222.18.218
-    networks:
-      - vpn
-    environment:
-      - USERNAME=$PIA_USR
-      - PASSWORD=$PIA_PAS
-  search:
-    container_name: search
     depends_on: 
-      - pia
-    build: ./search
-    network_mode: service:pia
-    environment:
-        - NODE_ENV=development      
-    volumes:
-      - $PROJ_DIR/mvs/search/:/app
-      - $PROJ_DIR/mvs/data/download/:/download
-  trigger:
-    container_name: trigger
-    build: ./trigger
-    networks:
-      - default
-      - vpn
-    environment:
-        - NODE_ENV=development      
-    volumes:
-      - $PROJ_DIR/mvs/trigger/:/app
-  player:
-    container_name: player
-    build: ./player
-    networks:
-      - default
+      - mongo
     environment:
       - NODE_ENV=development
-    volumes:
-      - $PROJ_DIR/mvs/player/:/app
-      - $PROJ_DIR/mvs/data/download/:/download
-    ports:
-      - "8888:8888"
+  # pia:
+  #   container_name: pia
+  #   image: derbenni/docker-pia-openvpn
+  #   devices: 
+  #     - "/dev/net/tun"
+  #   cap_add:
+  #     - NET_ADMIN
+  #   dns:
+  #     - 209.222.18.222
+  #     - 209.222.18.218
+  #   networks:
+  #     - vpn
+  #   environment:
+  #     - USERNAME=$PIA_USR
+  #     - PASSWORD=$PIA_PAS
+  # redis:
+  #   container_name: redis
+  #   image: redis
+  #   # expose:
+  #   #   - "6379"
+  #   network_mode: service:pia
+  # search:
+  #   container_name: search
+  #   depends_on:
+  #     - pia
+  #     - redis 
+  #   build: ./search
+  #   network_mode: service:pia
+  #   environment:
+  #       - NODE_ENV=development      
+  #   volumes:
+  #     - /Users/manu/Code/mvs/search/:/app
+  #     - /Users/manu/Code/mvs/data/download/:/download
+  # trigger:
+  #   container_name: trigger
+  #   build: ./trigger
+  #   networks:
+  #     - default
+  #     - vpn
+  #   depends_on:
+  #     - web
+  #     - search
+  #   environment:
+  #       - NODE_ENV=development      
+  #   volumes:
+  #     - /Users/manu/Code/mvs/trigger/:/app
+  # player:
+  #   container_name: player
+  #   build: ./player
+  #   networks:
+  #     - default
+  #   environment:
+  #     - NODE_ENV=development
+  #   volumes:
+  #     - /Users/manu/Code/mvs/player/:/app
+  #     - /Users/manu/Code/mvs/data/download/:/download
+  #   ports:
+  #     - "8888:8888"
 
 networks:
   vpn:

@@ -33,19 +33,40 @@
 
 // DOES NOT WORK
 // 
-var mongoose = require('mongoose');
-var movie = require('./models/movies.js')
-mongoose.connect('mongodb://mongo:27017/mvs', { useMongoClient: true }, function(err){  
-  if(err){
-    console.error(err)
-  }else{
-    console.log('successfully connected to mongo database')
-    console.log('connection status:', mongoose.connection.readyState);
+// var mongoose = require('mongoose');
+// var movie = require('./models/movies.js')
+// mongoose.connect('mongodb://mongo:27017/mvs', { useMongoClient: true }, function(err){  
+//   if(err){
+//     console.error(err)
+//   }else{
+//     console.log('successfully connected to mongo database')
+//     console.log('connection status:', mongoose.connection.readyState);
     
-    console.log('getting number of movies:')
-    movie.count({}, function(err, result){
-      console.log('error', err)
-          console.log('count is '+result)
-      })
+//     console.log('getting number of movies:')
+//     movie.count({}, function(err, result){
+//       console.log('error', err)
+//           console.log('count is '+result)
+//       })
+//   }
+// });
+
+var tmdbs = require('./controls/tmdbs.js')
+
+// discover series
+// tmdbs.discover({sort:'pd', year:2017})
+// .then(function(res){
+//   console.log('result', res)
+// })
+
+tmdbs.season_details({tv_id:1399, season_number:7})
+.then(function(res){
+  // console.log('result', typeof(res))
+  
+  if(typeof(res) === 'string'){
+    res = JSON.parse(res)
   }
-});
+  
+  for(i = 0; i < res.episodes.length; i++){
+    console.log(i, res.episodes[i].name, res.episodes[i].air_date)
+  }
+})

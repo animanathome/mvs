@@ -13,11 +13,14 @@ var MovieSchema = new Schema({
   myear: {
   	type: Number
   },
-  msize: {
+  download_size: {
+    type: Number
+  },
+  download_time: {
     type: Number
   },
   
-  // user details
+  // tmdb details
   title: {
     type: String
   },
@@ -36,14 +39,16 @@ var MovieSchema = new Schema({
   poster_path: {
     type: String
   },
-  movie_path: {
-    type: String
-  },
   genre_ids: {
     type: Array
   },
 
-  // internal status 
+  // server details
+  movie_path: {
+    type: String
+  },
+
+  // internal data
   track: {
     type: Boolean,
     default: false

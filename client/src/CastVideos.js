@@ -8,7 +8,7 @@ var MEDIA_SOURCE_ROOT = 'http://192.168.1.68:3000/images/';
  * Width of progress bar in pixel
  * @const
  */
-var PROGRESS_BAR_WIDTH = 600;
+var PROGRESS_BAR_WIDTH = 140;
 
 /** @const {number} Time in milliseconds for minimal progress update */
 var TIMER_STEP = 1000;
@@ -239,6 +239,8 @@ CastPlayer.prototype.incrementMediaTime = function() {
  * Update progress bar based on timer
  */
 CastPlayer.prototype.updateProgressBarByTimer = function() {
+    console.log("progress: "+(this.currentMediaTime / this.currentMediaDuration))
+
     var p = document.getElementById('progress');
     if (isNaN(parseInt(p.style.width, 10))) {
         p.style.width = 0;
@@ -250,7 +252,7 @@ CastPlayer.prototype.updateProgressBarByTimer = function() {
 
     p.style.width = pp + 'px';
     var pi = document.getElementById('progress_indicator');
-    pi.style.marginLeft = -21 - PROGRESS_BAR_WIDTH + pp + 'px';
+    pi.style.marginLeft = -11 - PROGRESS_BAR_WIDTH + pp + 'px';
 
     if (pp >= PROGRESS_BAR_WIDTH) {
         this.endPlayback();

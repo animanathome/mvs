@@ -1,7 +1,8 @@
 var http = require("https");
 var Q = require("q");
 
-var movies = (function(){	
+var series = (function(){
+
 	var hostname = 'api.themoviedb.org'
 	var api_key = '1a899ad77496510e9c5643b05f17146a'
 
@@ -60,7 +61,7 @@ var movies = (function(){
 
 		  res.on("end", function () {
 			var body = Buffer.concat(chunks);
-			// console.log('result', body.toString())
+			console.log('result', body.toString())
 			deferred.resolve(body.toString());
 		  });
 		});
@@ -71,8 +72,71 @@ var movies = (function(){
 		return deferred.promise;
 	}
 
+	// Get the list of official genres for series.
+	var genres = function(){
+		console.log('genres')
+
+		// https://api.themoviedb.org/3/genre/tv/list?api_key=1a899ad77496510e9c5643b05f17146a&language=en-US
+		var path = '/3/genre/tv/list?'
+		path += '&api_key='+api_key
+		path += '&language=en-US'
+
+		// console.log('full query', path)
+		return query(path)
+	}
+
+	var season_details = function(input){
+		console.log('season_details', input)
+
+		if(input.tv_id === undefined){
+			input.tv_id = '1399';
+		}
+		if(input.season_number === undefined){
+			input.season_number = '7';
+		}
+
+		var path = '/3/tv/'
+		path += input.tv_id
+		path += '/season/'
+		path += input.season_number
+		path += '?api_key='+api_key
+		path += '&language=en-US'
+		return query(path)
+
+		// /tv/{tv_id}/season/{season_number}
+		// 1399
+		// 7
+		// https://api.themoviedb.org/3/tv/1399/season/7?api_key=1a899ad77496510e9c5643b05f17146a&language=en-US
+	
+		// air_date
+		// name
+		// overview
+		// mid -> id
+		// still_path
+		// vote_average
+	}
+
+	var details = function(input){
+		// https://api.themoviedb.org/3/tv/1399?api_key=1a899ad77496510e9c5643b05f17146a&language=en-US
+		var path = '/3/tv/'+input.id
+		path += '?api_key='+api_key
+		path += '&language=en-US'
+		return query(path)
+	}
+
+	// TODO: add the ability to load trailers
+	// https://api.themoviedb.org/3/tv/1399/videos?api_key=1a899ad77496510e9c5643b05f17146a&language=en-US
+	// key -> CmRih_VtVAs -> https://www.youtube.com/watch?v=CmRih_VtVAs
+
 	var discover = function(input){
 		console.log('discover', input)
+
+		if(input.year === undefined){
+			input.year = '2017';
+		}
+		if(input.sort === undefined){
+			input.sort = 'pd';
+		}
 
 		var year = input.year || '2017';
 		var sort_by;
@@ -100,7 +164,7 @@ var movies = (function(){
 		console.log('genres:', with_genres)
 		console.log('page:', page)
 
-		var path = '/3/discover/movie?'
+		var path = '/3/discover/tv?'
 		path += 'primary_release_date.gte='+year+'-01-01'
 		path += '&primary_release_date.lte='+year+'-12-30'
 		path += '&region=US&language=en-US'
@@ -114,7 +178,7 @@ var movies = (function(){
 		console.log('full query', path)
 
 		return query(path)
-	}	
+	}
 
 	var upcoming = function(input){
 		console.log('upcoming', input)
@@ -127,7 +191,7 @@ var movies = (function(){
 				page = input.page;
 			}
 
-			return "/3/movie/upcoming?page="+page+"&region=US&language=en-US&api_key="+api_key
+			return "/3/tv/upcoming?page="+page+"&region=US&language=en-US&api_key="+api_key
 		}
 		
 		return query(get_path(input))
@@ -135,10 +199,13 @@ var movies = (function(){
 
 	return {
 		configuration: configuration,
+		genres: genres,
 		upcoming: upcoming,
 		discover: discover,
-		find: discover
+		find: discover,
+		details: details,
+		season_details: season_details
 	}
 })()
 
-module.exports = movies
+module.exports = series

@@ -3,6 +3,19 @@ body {
   padding: 0;
   font-family: sans-serif;
   background: #f4f4f4;
+  -webkit-font-smoothing: antialiased;
+}
+
+.visible {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity .85s linear;
+}
+
+.hidden {
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0s .85s, opacity .85s linear;
 }
 
 .Select {
@@ -47,6 +60,12 @@ body {
 	transform: translate(-50%, -50%);
 }
 
+.main-navigation {
+	position: fixed;
+	z-index: 20;
+	width: 100%;
+}
+
 .movie_card {
 	margin: 10px;
     padding: 12px;
@@ -79,10 +98,6 @@ body {
 	padding-right: 16px;
 }*/
 
-.movie-card {
-	padding-bottom: 10px;
-}
-
 .movie-image {
 	/*margin-top: -5px;*/
 	max-width:100%;
@@ -100,18 +115,24 @@ body {
 	position: fixed;
 	height: 150px;
 	bottom: 56px;
-	background: gray;
+	/*background: gray;*/
 	width: 100%;
-	opacity: .9;
+	/*opacity: .9;*/
+	background: #1a2127;
 }
 
 .movie-title {
-	font-weight: 100;
-	font-size: 24px;
+	font-weight: 700;
+	font-size: 20px;
 	margin-top: 4px;
-	line-height: 2;
+	line-height: 2.5;
 	padding-left: 25px;
 	color: white;
+
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 300px;
 }
 .movie-overview {
 	line-height: 1.25;
@@ -120,6 +141,13 @@ body {
 	font-size: 14px;
 	padding-left: 25px;
 	padding-right: 25px;
+
+	overflow: hidden;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	display: -webkit-box;
+	-webkit-line-clamp: 5;
+	-webkit-box-orient: vertical;
 }
 
 .root-container {
@@ -129,18 +157,314 @@ body {
 
 .find-container {
 	position: fixed;
-	top: 10px;
-	left: 10px;
-	right: 10px;
+	top: 48px;
+	width: 100%;
+	/*left: 10px;*/
+	/*right: 10px;*/
+	/*bottom: 10px;*/
 	z-index: 10;
 	/*width: 100%;*/
 	/*padding: 10px;*/
 	/*padding-right: 100px;*/
 }
 
+div.white_column {
+	width: 100%;
+    height: auto;
+    min-height: auto;
+    justify-content: flex-start;
+    padding: 0;
+	background-color: #fff;
+	flex-wrap: wrap;
+	display: flex;
+}
+
+div.header_poster_wrapper {
+    min-height: auto;
+    display: flex;
+    min-height: 450px;
+    background: #1a2127;
+}
+
+div.poster {
+    float: none;
+    display: block;
+    margin: 0 auto;
+    width: 100vw;
+    height: 50vw;
+    z-index: 1;
+    position: relative;
+    top: 0;
+}
+
+div.title {
+	background-color: rgba(0,0,0,0.6);
+    box-sizing: border-box;
+    position: relative;
+    top: 0;
+    left: 0;
+    color: #fff;
+	margin-bottom: 30px;
+    text-align: left;
+}
+
+section.inner_content h3{
+	font-weight: 600;
+    line-height: 1.3em;
+    font-size: 1.3em;
+}
+
+section.header {
+	width: 100%;
+    position: relative;
+    bottom: 0;
+    top: 0;
+    float: none;
+    box-sizing: border-box;
+    padding-left: 0;
+    align-items: flex-start;
+	display: flex;
+    flex-wrap: wrap;
+	color: #fff;
+}
+
+section.inner_content section.header h3 {
+	width: 100%;
+    margin: 0 0 8px 0;
+}
+
+section.header div.pad {
+	padding: 0 20px;
+}
+
+section.panel.scroller {
+	padding: 10px 0 20px 0;
+}
+
+section.panel.scroller h3{
+	padding: 0 20px;
+}
+
+section.panel:first-of-type {
+    border-top: none;
+}
+
+section.panel {	
+	width: 100vw;
+	display: block;
+	box-sizing: border-box;
+}
+
+section.images {
+	z-index: 1;
+	width: 100%;
+	height: 100%;
+	position: static;
+	overflow: hidden;
+}
+
+section.images img.backdrop {
+	position: relative;
+    top: 0;
+    width: 100vw;
+    height: 56vw;
+}
+
+ol.seasons {
+	width: 100vw;
+	height: 60vw;
+	-webkit-overflow-scrolling: touch;
+	overflow-y: hidden;
+	overflow-x: scroll;
+	white-space: nowrap;
+	box-sizing: border-box;
+	padding-bottom: 16px;
+	list-style-type: none;
+	list-style-position: inside;
+	margin: 0;
+	padding: 0;
+	display: flex;
+}
+
+ol.seasons li:first-child {
+	margin-left: 20px;
+}
+
+ol.seasons li:first-child {
+    margin-left: 20px;
+}
+
+ol.seasons li.card {
+    border: 1px solid #e3e3e3;
+    padding-bottom: 10px;
+}
+
+ol.seasons li {
+    display: inline-block;
+    width: 122px;
+    text-align: left;
+}
+
+ol.seasons li {
+    width: 140px;
+    background-color: #fff;
+    box-sizing: border-box;
+    margin-right: 10px;
+}
+
+ol.seasons li p {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+    word-wrap: break-word;
+    line-height: 1.0em;
+    padding: 0 10px;
+    font-size: 0.7em;
+}
+
+ol.seasons li p a {
+	font-size: 1.2em;
+    font-weight: bold;
+    color: #000;
+}
+
+ol.seasons {
+	white-space: nowrap;
+	list-style-type: none;
+    list-style-position: inside;
+}
+
+.season-add {
+	float: right;
+	margin-top: -15px;
+	margin-right: 0px;
+}
+
+.card {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+}
+
+
+
+.series-header {
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.series-back {
+	position: absolute;
+	padding: 0 5px;
+	text-decoration: none;
+}
+
+.series-back a {
+	color: black;
+	position: relative;
+	bottom: 6px;	
+}
+
+.series-backdrop {
+	width: 100%;
+}
+
+.series-poster {
+	position: absolute;
+	left: 20px;
+	top: 84px;
+	z-index: 10;
+}
+
+.series-intro {
+	position: absolute;
+	top: 178px;
+	width: 100%;
+	height: 60px;
+	background: #0b0e10;
+	color: white;	
+}
+
+.add-movie {
+	position: fixed;
+	right: 34px;
+	bottom: 64px;
+}
+
+.series-intro h2 {
+	line-height: 1.1em;
+	font-weight: 700;
+	padding-left: 140px;
+	font-family: 'Source Sans Pro', sans-serif;
+	font-size: calc(0.7em + 3vw);
+
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 250px;
+}
+
+.series-overview {
+	padding: 10px 20px 20px 20px;
+	background: #1a2127;
+	line-height: 1.3em;
+	color: white;
+}
+
+.series-tracking {
+	/*padding: 10px 20px 20px 20px;*/
+	/*background: white;*/
+}
+
+.season-container {
+	padding: 40px 10px 10px 10px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	height: 20px;
+}
+
+.season-title {
+	float: left;
+	line-height: 12px;
+	font-size: 20px;
+	font-weight: 600;
+}
+
+.season-overview {
+	float: right;
+	font-weight: 100;
+	/*margin-right: 10px;*/
+}
+
+.season-clear {
+	float: right;
+	margin-top: -15px;
+}
+
+.series-link {
+	height: 45px;
+	width: 100%;
+	/*background: white;*/
+	position: absolute;
+	/*color: white;*/
+	top: 0px;
+}
+
+h3 {
+	font-weight: 600;
+	line-height: 1.3em;
+	font-size: 1.3em;
+}
+
+.select-container {
+	padding-left: 10px;
+	/*position: fixed;*/
+	/*top: 100px;*/
+	/*width: 100%;*/
+	/*margin-top: -10px;*/
+	height: 60px;
+}
+
 .watch-container {
-	padding: 10px;
-	/*padding-top: 80px;*/
+	/*padding: 10px;*/
+	padding-top: 56px;
 	padding-bottom: 60px;
 }
 
@@ -157,26 +481,49 @@ body {
 	float: left;
 }
 
+.watch-item-card-back-name{
+	text-decoration: none;
+	position: absolute;
+	top: 16px;
+	left: 48px;
+	color: black;
+}
+
+.watch-item-card-remove {
+	position: absolute;
+	right: 0px;
+	/*top: -4px;*/
+	/*transform: scale(0.8);*/
+}
+
+.watch-item-card-details {
+	height: 250px;
+	padding: 10px 20px;
+}
+
 .watch-item-card-title {
-	float: left;
+	/*float: left;*/
 	padding: 13px 0px;
-	font-size: 18px;
+	font-size: 16px;
 }
 
 .watch-item-card-overview {
-	padding: 0px 10px 20px 10px;
-	font-size: 12px;
+	/*padding: 0px 10px 20px 10px;*/
+	font-size: 14px;
+	line-height: 20px;
+	font-weight: 100;
 }
 
-.watch-item-card-genres {
-	padding: 14px 10px 6px 10px;
-	font-size: 12px;
-	font-weight: bold;
+.watch-item-card-nav {
+	bottom: 5px;
+	position: absolute;
+	right: 5px;
+	width: 100%;
 }
 
 .track-container {
-	padding: 10px;
-	/*padding-top: 80px;*/
+	/*padding: 10px;*/
+	padding-top: 56px;
 	padding-bottom: 60px;
 }
 
@@ -202,11 +549,13 @@ body {
 .track-item-card-details {
 	width: 294px;
 	float: right;
+	color: black;
 }
 
 .track-item-card-title {
 	padding: 6px 4px;
-	font-size: 18px;	
+	font-size: 18px;
+	line-height: 24px;
 }
 
 .track-item-card-title a {
@@ -221,35 +570,34 @@ body {
 }
 
 .track-item-card-overview {
-	padding: 4px 20px 4px 4px;
+	padding: 4px 20px 0px 4px;
 	font-size: 12px;
+	font-weight: 100;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	display: -webkit-box;
+	-webkit-line-clamp: 5;
+	-webkit-box-orient: vertical;
 }
 
 .track-item-card-remove {
 	position: absolute;
 	right: 0px;
-	top: 0px;
+	top: -4px;
 	transform: scale(0.8);
 }
 
 .movie-container {
-	padding: 10px;
-	padding-top: 80px;
+	padding: 0px;
+	padding-top: 115px;
 	padding-bottom: 60px;
-}
-
-.select-container {
-	padding-left: 10px;
-	/*position: fixed;*/
-	/*top: 100px;*/
-	/*width: 100%;*/
-	/*margin-top: -10px;*/
-	height: 60px;
 }
 
 .movie-card {
 	margin-bottom: 10px;
-	height: 210px;
+	height: 225px;
+	padding-bottom: 10px;
 	background: black;
 	position: relative;
 	border-radius: 2px;
@@ -260,27 +608,29 @@ body {
 	position: absolute;
 	left: 0px;
 	right: 0px;
-	top: 160px;
-	bottom: -2px;
-	background: gray;
-	opacity: .9;
+	top: 170px;
+	bottom: 0px;
+	/*background: gray;*/
+	/*opacity: .9;*/
+	background: #0b0e10;
 }
 
 .movie-card-title {	
 	/*padding: 5px;*/
 	font-size: 18px;
+	font-weight: 700;
 	position: absolute;
 	color: white;
 	/*text-shadow: 1px 1px 0 #000;*/
-	bottom: 32px;
+	bottom: 34px;
 	left: 110px;
 }
 
 .movie-card-popularity {
 	position: absolute;
 	color: white;
-	bottom: 10px;
-	right: 30px;
+	bottom: 14px;
+	right: 20px;
 	font-size: 14px;
 	/*text-shadow: 1px 1px 0 #000;*/
 }
@@ -288,7 +638,7 @@ body {
 .movie-card-add {
 	position: absolute;
 	right: 2px;
-	bottom: 32px;
+	bottom: 38px;
 	transform: scale(0.8);
 }
 
@@ -298,12 +648,84 @@ body {
 	position: absolute;
 	color: white;
 	/*text-shadow: 1px 1px 0 #000;*/
-	bottom: 10px;
+	bottom: 14px;
 	left: 110px;
 }
 
 .movie-card-poster {
 	position: absolute;
 	left: 10px;
-	bottom: 10px;
+	bottom: 14px;
+}
+
+.season-watch-container {
+	/*padding: 10px;*/
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	overflow: auto;
+}
+
+.season-intro {
+	padding: 40px 2px 2px 18px;
+	overflow: auto;
+}
+
+.season-episodes {
+	padding-top: 10px;
+	width: 100%;
+	font-size: 14px;
+}
+
+.watch-episode {
+	text-decoration: none;
+	background: white;
+	/*padding: 10px;*/
+	height: 82px;
+	/*overflow: auto;*/
+	margin-bottom: 20px;
+	/*box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;*/
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.watch-episode-image {
+	float: left;
+	width: 155px;
+}
+
+.watch-episode-image img {
+	width: 145px;	
+}
+
+.watch-episode-details {
+	padding: 0px 12px 0px 0px;
+	height: 78px;
+}
+
+.watch-episode-header {
+	width: 100%;
+	height: 32px;
+}
+
+.watch-episode-title {
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-size: 12px;
+	line-height: 32px;
+	font-weight: 600;
+
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 180px;
+	float: left;
+}
+
+.watch-episode-overview {
+	font-size: 12px;
+	font-weight: 100;
+	
+	overflow: hidden;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
 }

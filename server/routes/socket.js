@@ -1,5 +1,7 @@
-var tmdb = require('../controls/tmdb.js')
-var movie = require('../models/movies.js')
+var tmdbm = require('../controls/tmdbm.js')
+var tmdbs = require('../controls/tmdbs.js')
+var _series = require('../controls/series.js')
+var _movies = require('../controls/movies.js')
 
 module.exports = function (socket) {
 	socket.emit('init', {
@@ -17,215 +19,500 @@ module.exports = function (socket) {
 	socket.on('item:getByName', function(data){
 		console.log('item:getByName', data)
 
-		movie.findOne({
-			mtitle:data.title
-		}, {
-			movie_path:1, 
-			overview:1, 
-			genre_ids:1, 
-			backdrop_path:1
-		}, function(err, result){
-			
-			if(err){
-				console.error(err);
-			}
-
-			console.log('details:', result)
-
+		_movies.get(data)
+		.then(function(result){
 			socket.emit('item:getByName', {
 				'data': result
 			})
+		})
+		.fail(function(err){
+			socket.emit('item:getByName', {
+				'error': err
+			})	
 		})
 	})
 
 	// update a given entry
 	socket.on('item:update', function(data){
-		console.log('item:update', {_id:data.id}, {$set:data.update})
-		movie.findOneAndUpdate({
-			_id:data.id
-		}, {
-			$set:data.update
-		}, function(err, result){
-			// console.log(err, result)
-			
-			if(err){
-				console.error(err)
-			}
-		})
+		console.warn('Deprecated, use series or movies instead.')
 	})
 
-	// list of movies which are available
-	socket.on('movies:watch', function(){
-		console.log('movies:watch')
+	// SERIES
+	socket.on('series:watch', function(input){
+		console.log('series:watch', input)
 
-		movie.find({
-			track:true, 
-			available:true
-		}, {
-			myear:1, 
-			mtitle:1, 
-			poster_path:1, 
-			overview:1, 
-			genre_ids:1
-		}, function(err, movies){
-			
-			if(err){
-				console.error(err);
-			}
-
-			console.log(movies)
-
-			var data = []
-			for(var i = 0; i < movies.length; i++){
-				data.push({
-					id: movies[i]._id,
-					title: movies[i].mtitle,
-					poster_path: movies[i].poster_path,
-					overview: movies[i].overview,
-					genre_ids: movies[i].genre_ids,
-					movie_path: movies[i].movie_path
-				})
-			}
-
-			socket.emit('movies:watch', {
-				'data': data
+		if(input === undefined || input.action === undefined){
+			socket.emit('series:watch', {
+				action:'unknown',
+				error: 'Unknown or undefined action'
 			})
-		})
-	});
+		}
 
-	// list of movies we're currently tracking
-	socket.on('movies:list', function(){
-		console.log('movies:list')
-		// console.log('movie', movie)
-
-		movie.count({}, function(err, result){
-      		console.log('Count is '+result)
-    	})
-
-		movie.find({
-			track:true, 
-			available:false
-		}, {
-			myear:1, 
-			mtitle:1, 
-			poster_path:1, 
-			overview:1, 
-			genre_ids:1
-		}, function(err, movies){
-			console.log(err, movies)
-
-			if(err){
-				console.error(err);
-			}
-
-			console.log(movies)
-
-			var data = []
-			for(var i = 0; i < movies.length; i++){
-				data.push({
-					id: movies[i]._id,
-					year: movies[i].myear,
-					title: movies[i].mtitle,
-					poster_path: movies[i].poster_path,
-					overview: movies[i].overview,
-					genre_ids: movies[i].genre_ids
+		if(input.action === 'genres'){
+			tmdbs.genres()
+			.then(function(data){
+				console.log(data)
+				socket.emit('series:watch', {
+					action:'genres',
+					data:data
 				})
-			}
-
-			socket.emit('movies:list', {
-				'data': data
 			})
-		})
+		}
 
-		console.log('done')
-	});
+		if(input.action === 'list_details'){
+			_series.details(input.data)
+			.then(function(data){
+				socket.emit('series:watch', {
+					action:'list_details',
+					data: data
+				})	
+			})
+			.fail(function(err){
+				socket.emit('series:watch', {
+					action:'redirect',
+					err:err
+				})
+			})
+		}
 
-	// add the given to the track list
-	socket.on('movies:track', function(input){
-		console.log('movies:track', input)
+		if(input.action === 'episode'){
+			_series.detailsEpisode(input.data)
+			.then(function(data){
+				console.log(data)
+				socket.emit('series:watch', {
+					action:'episode',
+					data: data
+				})	
+			})
+
+		}
+
+		if(input.action === 'list'){
+			_series.list({
+				track:true,
+				available:false
+			})
+			.then(function(data){
+				socket.emit('series:watch', {
+					action:'list',
+					data: data
+				})
+			})
+		}
+	})
+	
+	// TRACK
+	socket.on('series:track', function(input){
+		console.log('series:track', input)
+
+		if(input.action === 'list'){
+			_series.list()
+			.then(function(data){
+				socket.emit('series:track', {
+					action:'list', 
+					data: data
+				})
+			})
+		}
+
+		if(input.action === 'list_details'){
+			_series.details(input.data)
+			.then(function(data){
+				socket.emit('series:track', {
+					action:'list_details',
+					data: data
+				})	
+			})
+			.fail(function(err){
+				socket.emit('series:track', {
+					action:'redirect',
+					err:err
+				})
+			})
+		}
 
 		if(input.action === 'remove'){
-			console.log('removing', input.data.id, 'from track list')
+			_series.remove(input.data)
+			.then(function(){
+				return _series.list()
+			})
+			.then(function(data){
+				socket.emit('series:track', {
+					action:'list', 
+					data: data
+				})
+			})
+		}
 
-			movie.findOneAndRemove({ _id: input.data.id }, function(err, other){
-				
-				if(err){
-					console.error(err);
-				}
-				
-				console.log('done deleting', other)
+		if(input.action === 'removeSeason'){
+			_series.removeSeason(input.data)
+			.then(function(){
+				return _series.details(input.data)
+			})
+			.then(function(data){
+				socket.emit('series:track', {
+					action:'list_details',
+					data: data
+				})
+			})
+			.fail(function(err){
+				console.warn(err)
+				socket.emit('series:track', {
+					action:'redirect',
+					err: err
+				})
 			})
 		}
 
 		if(input.action === 'add'){
-			console.log('adding', input.data.mtitle, 'to track list')			
+			_series.add(input.data)
+			.then(function(){
+				return _series.list()
+			})
+			.then(function(data){
+				socket.emit('series:track', {
+					action:'list',
+					'data': data
+				})
+			})
+		}
+	})
 
-			movie.findOne({ mid: input.data.mid }, function(err, result){
-				// console.log('findOne')
-				// console.log(err, result)
-				// console.log('------')
-				if(err){
-					console.error(err);
-				}
+	// FIND
+	// list of series we want to discover
+	socket.on('series:find', function(input){
+		console.log('series:find', input)
+		
+		if(input.action === 'genres'){
+			tmdbs.genres()
+			.then(function(data){
+				socket.emit('series:find', {
+					action:'genres',
+					data:data
+				})
+			})
+		}
 
-				// only add a given entry if it doesn't exist
-				if(result === null){
-					var m = new movie(input.data)
-					m.save(function(err){
-						if(err){
-							console.error('error', err)
-						}else{
-							console.log('Added', m.mtitle+'('+m.myear+')', 'to watch list.')
-							movie.count({}, function(err, result){
-								console.log('Count is '+result)
-							})	
-						}
-					})
-				}else{
-					console.log(input.data.mtitle, 'is already on the list')
+		if(input.action === 'list'){
+			tmdbs.find(input.data)
+			.then(function(data){
+				console.log(data)
+				socket.emit('series:find', {
+					action:'list',
+					data:data
+				})
+			})
+		}
+
+		if(input.action === 'list_details'){
+			tmdbs.details(input.data)
+			.then(function(data){
+				console.log('got data back', data)
+				console.log('test')
+				
+				pdata = JSON.parse(data)
+
+				// simplify genres
+				var genres = [];
+				pdata.genres.map(function(item){
+					genres.push(item['id'])
+				})
+				console.log('genres', genres)
+				pdata.genres = genres;
+
+				var cdata = {}
+				var properties = [
+					'genres', 
+					'id', 
+					'first_air_date',
+					'name', 
+					'number_of_episodes', 
+					'number_of_seasons', 
+					'overview', 
+					'popularity', 
+					'poster_path',
+					'backdrop_path',
+					'seasons'
+				]
+				for(i = 0; i < properties.length; i++){
+					cdata[properties[i]] = pdata[properties[i]]
 				}
-			});
+				console.log('clean', cdata);
+
+				socket.emit('series:find', {
+					action:'list_details',
+					data:JSON.stringify(cdata)
+				})
+			})
+		}
+
+	})
+
+	// list of series we want to discover
+	socket.on('series:discover', function(input){
+		console.log('series:discover', input)
+		
+		if(input.action === 'list'){
+			tmdbs.discover(input.data)
+			.then(function(data){
+				console.log(data)
+				socket.emit('series:discover', {
+					action:'list',
+					data:data
+				})
+			})
+		}
+	})
+	
+	// list of upcoming movies
+	socket.on('series:upcoming', function(input){
+		console.log('series:upcoming', input)
+
+		if(input.action === 'list'){
+			tmdbm.upcoming(input)
+			.then(function(data){
+				// remove movies which are already being tracked
+
+				// console.log('result', data)
+				socket.emit('series:upcoming', {
+					action:'list',
+					data:data
+				})
+			})
+		}
+	})
+
+	// list of movies which are available
+	socket.on('movies:watch', function(input){
+		console.log('movies:watch', input)
+
+		if(input === undefined || input.action === undefined){
+			socket.emit('movies:watch', {
+				action:'unknown',
+				error: 'Unknown or undefined action'
+			})
+		}
+
+		if(input.action === 'genres'){
+			tmdbm.genres()
+			.then(function(data){
+				socket.emit('movies:watch', {
+					action:'genres',
+					data:data
+				})
+			})
+		}
+
+		if(input.action === 'list'){
+			_movies.list({
+				// track:false, 
+				// available:true
+			})
+			.then(function(result){
+				socket.emit('movies:watch', {
+					action:'list',
+					data: result
+				})
+			})
+		}
+
+		if(input.action === 'remove'){
+			_movies.remove(input)
+			.then(function(){
+				return _movies.list({
+					track:false, 
+					available:true})
+			})
+			.then(function(result){
+				socket.emit('movies:watch', {
+					action:'list',
+					data: result
+				})
+			})
+		}
+	});
+
+	socket.on('movies:track', function(input){
+		console.log('movies:track', input)
+
+		if(input === undefined || input.action === undefined){
+			socket.emit('movies:track', {
+				action:'unknown',
+				error: 'Unknown or undefined action'
+			})
+		}
+
+		if(input.action === 'list'){
+			_movies.list({
+				track:true, 
+				available:false
+			})
+			.then(function(result){
+				socket.emit('movies:track', {
+					action: 'list',
+					data: result
+				})
+			})
+		}
+
+		if(input.action === 'remove'){
+			console.log('removing', input.data.id, 'from track list')
+
+			_movies.remove(input)
+			.fail(function(err){
+				console.error(err)
+			})
+			.then(function(){
+				console.log('finished removing movie', input.data.id)
+				return _movies.list({
+					track:true, 
+					available:false
+				})
+			})
+			.then(function(result){
+				socket.emit('movies:track', {
+					action: 'list',
+					data: result
+				})
+			})
+		}
+
+		if(input.action === 'update'){
+			console.log('updating', input.data.id)
+
+			_movies.update(input.data)
+			.fail(function(){
+				console.log('unable to update', data.id)
+			})
+			.then(function(){
+				console.log('finished updating', data.id)
+				return _movies.list({
+					track:true, 
+					available:false
+				})
+			})
+			.then(function(result){
+				socket.emit('movies:track', {
+					action: 'list',
+					data: result
+				})
+			})
+		}
+
+		if(input.action === 'add'){
+			console.log('adding', input.data.mtitle, 'to track list')
+
+			_movies.add(input)
+			.fail(function(err){
+				console.error(err)
+			})
+			.then(function(){
+				console.log('finished adding movie', input.data.id)
+				return _movies.list({
+					track:true, 
+					available:false
+				})
+			})
+			.then(function(result){
+				socket.emit('movies:track', {
+					action:'list',
+					data: result
+				})
+			})
 		}
 
 	});
 
 	// list of movies we want to discover
 	socket.on('movies:find', function(input){
-		tmdb.find(input)
-		.then(function(data){
-			console.log(data)
-			// remove the list of movies we're already tracking or have
-			// remove movies that don't have a poster
-			// remove horror + erotica movies
-			// remove B movies???
-			// remove documentaries
-			// add title + actors + score
-			socket.emit('movies:find', {
-				'data':data
+
+		if(input.action === 'genres'){
+			tmdbm.genres()
+			.then(function(data){
+				socket.emit('movies:find', {
+					action:'genres',
+					data:data
+				})
 			})
-		})
+		}
+
+		if(input.action === 'list_details'){
+			tmdbm.details(input.data)
+			.then(function(data){
+				console.log(data)
+
+				pdata = JSON.parse(data)
+
+				// simplify genres
+				var genres = [];
+				pdata.genres.map(function(item){
+					genres.push(item['id'])
+				})
+				// console.log('genres', genres)
+				pdata.genres = genres;
+
+				// console.log('properties', Object.keys(pdata))
+
+				var cdata = {}
+				var properties = [
+					'genres', 
+					'id', 
+					'release_date',
+					'title', 
+					'overview', 
+					'popularity', 
+					'poster_path',
+					'backdrop_path',
+				]
+				for(i = 0; i < properties.length; i++){
+					cdata[properties[i]] = pdata[properties[i]]
+				}
+				console.log('clean', cdata);
+				socket.emit('movies:find', {
+					action:'list_details',
+					data: JSON.stringify(cdata)
+				})	
+			})
+			.fail(function(err){
+				socket.emit('movies:find', {
+					action:'redirect',
+					err:err
+				})
+			})
+		}
+
+		if(input.action === 'list'){
+			tmdbm.find(input.data)
+			.then(function(data){
+				console.log(data)
+				socket.emit('movies:find', {
+					action:'list',
+					data:data
+				})
+			})
+		}
+
 	})
 
+	// DISCOVER
 	// list of movies we want to discover
 	socket.on('movies:discover', function(input){
-		tmdb.discover(input)
-		.then(function(data){
-			console.log(data)
-			// remove the list of movies we're already tracking or have
-			// remove movies that don't have a poster
-			// remove horror + erotica movies
-			// remove B movies???
-			// remove documentaries
-			// add title + actors + score
-			socket.emit('movies:discover', {
-				'data':data
+		
+		if(input.action === 'list'){
+			tmdbm.discover(input.data)
+			.then(function(data){
+				console.log(data)
+				socket.emit('movies:discover', {
+					action:'list',
+					data:data
+				})
 			})
-		})
+		}
 	})
 
-	// list of upcoming movies
+	// UPCOMING
 	socket.on('movies:upcoming', function(input){
-		tmdb.upcoming(input)
+		tmdbm.upcoming(input.data)
 		.then(function(data){
 			// remove movies which are already being tracked
 

@@ -3,11 +3,14 @@ import React, { Component } from 'react';
 // import {Card, CardActions, CardHeader, CardMedia, CardTitle, CardText} from 'material-ui/Card';
 import FloatingActionButton from 'material-ui/FloatingActionButton';
 import ActionAdd from 'material-ui/svg-icons/content/add';
+import muiThemeable from 'material-ui/styles/muiThemeable';
 
 class Select extends Component {
 
 	constructor(props){
 		super(props)
+
+		console.log('Select', props)
 
 		var scope = this;
 
@@ -17,22 +20,38 @@ class Select extends Component {
 			count: 0,
 			done: false
 		}
+		this.category = this.props.category || 'movies';
+		console.log('\tcategory', this.category)
 		this._mounted = true;
 		this.data = {}
 
 		this.socket = props.socket
-		this.socket.emit('movies:list', {})
-
-		this.socket.on('movies:discover', function(result){
-			if(scope._mounted){
-				console.log('result', scope.data)
+		
+		var setData = function(result){
+			
+			if(scope._mounted && result.action === 'list'){
 				scope.data = JSON.parse(result.data);
+				console.log('result', scope.data)
 				scope.setState({
 					'received': scope.state.received+1
 				})
 			}
+		}
+
+		this.socket.on('movies:discover', function(res){setData(res)})
+		this.socket.on('series:discover', function(res){setData(res)})
+		
+		this.getContent()
+	}
+
+	getContent(){
+		console.log('getContent', this.category)
+
+		this.data = {}
+		this.socket.emit(this.category+':discover', {
+			action:'list',
+			data:{}
 		})
-		this.socket.emit('movies:discover', {})
 	}
 
 	componentDidMount() { 
@@ -59,8 +78,11 @@ class Select extends Component {
 			var page = this.data.page + 1;
 			if(page <= this.data.total_pages){
 				console.log('query page', page)
-				this.socket.emit('movies:discover', {
-					page:page
+				this.socket.emit(this.category+':discover', {
+					action:'list',
+					data:{
+						page:page
+					}
 				})
 			}else{
 				// seen all content... what do we do now?
@@ -75,11 +97,14 @@ class Select extends Component {
 		console.log('addItem')
 
 		var movie_data = this.data.results[this.state.index]
-		this.socket.emit('movies:track', {
-			mid: movie_data.id,
-			mtitle: movie_data.title,
-			myear: movie_data.year,
-			track: true
+		this.socket.emit(this.category+':track', {
+			action:'add',
+			data:{
+				mid: movie_data.id,
+				mtitle: movie_data.title,
+				myear: movie_data.year,
+				track: true
+			}
 		})
 
 		this.setState({'index': this.nextItem()})
@@ -89,23 +114,38 @@ class Select extends Component {
 		console.log('removeItem')
 		
 		var movie_data = this.data.results[this.state.index]
-		this.socket.emit('movies:track', {
-			mid: movie_data.id,
-			mtitle: movie_data.title,
-			myear: movie_data.year,
-			track: false
+		this.socket.emit(this.category+':track', {
+			action:'remove',
+			data:{
+				mid: movie_data.id,
+				mtitle: movie_data.title,
+				myear: movie_data.year,
+				track: false
+			}
 		})
 
 		this.setState({'index': this.nextItem()})
 	}
 
+	componentWillUpdate(nextProps, nextState){
+		console.log('componentWillUpdate', nextProps, nextState)
+
+		if(nextProps.category && nextProps.category !== this.props.category){
+			this.category = nextProps.category;
+			this.getContent()
+		}
+	}
+
 	render(){
+		console.log('render', this)
+
 		var scope = this;
-		
+		var muiTheme = this.props.muiTheme;
+
 		var get_data = function(){
-			console.log('get_data', scope.state.index)
+			// console.log('get_data', scope.state.index)
 			if(scope.data.hasOwnProperty('results')){
-				console.log('\tpage', scope.data.page, '/', scope.data.total_pages)
+				// console.log('\tpage', scope.data.page, '/', scope.data.total_pages)
 				return scope.data.results[scope.state.index]
 			}else{
 				return {}
@@ -113,8 +153,8 @@ class Select extends Component {
 		}		
 		
 		var entry = get_data()
-		console.log('entry', entry)
-		console.log('keys', Object.keys(entry).length)
+		// console.log('entry', entry)
+		// console.log('keys', Object.keys(entry).length)
 
 		if(Object.keys(entry).length !== 0){
 			if(this.state.done){
@@ -128,13 +168,21 @@ class Select extends Component {
 				var image = 'https://image.tmdb.org/t/p/w500'+entry.poster_path
 				return (
 					<div>
-						<img className='movie-image' src={image} alt={entry.title}></img>
-						<div onClick={this.removeItem.bind(this)} className='movie-info'>
-							<div className='movie-title'>
-								{entry.title}
+						<img className='movie-image' src={image} alt={entry.title || entry.name}></img>
+						<div 
+							onClick={this.removeItem.bind(this)}
+							className='movie-info'
+							style={{background:muiTheme.palette.primary1Color}}
+						>
+							<div
+								style={{color:muiTheme.palette.textColor}}
+								className='movie-title'>
+								{entry.title || entry.name}
 							</div>
-							<div className='movie-overview'>
-								{entry.overview.substring(0,250)+" ..."}
+							<div className='movie-overview'
+								style={{color:muiTheme.palette.textColor}} 
+							>
+								{entry.overview.substring(0,220)+" ..."}
 							</div>
 						</div>
 						<div className='movie-add'>
@@ -156,4 +204,4 @@ class Select extends Component {
 	}
 }
 
-export default Select
+export default muiThemeable()(Select)

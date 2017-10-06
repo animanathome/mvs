@@ -1,0 +1,51 @@
+.find-item-card {
+	margin-bottom: 10px;
+	height: 138px;
+	background: white;
+	position: relative;
+	border-radius: 2px;
+	box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
+}
+
+.find-item-card-poster {
+	width: 92px;
+	height: 138px;
+	float: left;
+}
+
+.find-item-card-details {
+	width: 294px;
+	float: right;
+	color: black;
+}
+
+.find-item-card-title {
+	padding: 6px 4px;
+	font-size: 16px;
+	font-weight: bold;
+}
+
+.find-item-card-title a {
+	text-decoration: none;
+	color: black;
+}
+
+.find-item-card-genres {
+	padding: 3px 4px 7px 4px;
+	font-size: 12px;	
+	/*font-weight: bold;*/
+}
+
+.find-item-card-overview {
+	padding: 4px 20px 0px 4px;
+	font-size: 12px;
+
+	font-size: 12px;
+	font-weight: 100;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	display: -webkit-box;
+	-webkit-line-clamp: 5;
+	-webkit-box-orient: vertical;
+}
